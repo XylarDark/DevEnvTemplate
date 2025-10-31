@@ -1,0 +1,72 @@
+name: Governance Checks
+
+on:
+  pull_request:
+    branches: [ main, master, develop ]
+    paths:
+      - '.projectrules'
+      - 'docs/rules-changelog.md'
+      - '.github/**'
+      - 'scripts/**'
+      - 'quality-budgets.json'
+
+  push:
+    branches: [ main, master ]
+    paths:
+      - '.projectrules'
+      - 'docs/rules-changelog.md'
+
+jobs:
+  governance:
+    name: Governance Compliance
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for diff comparisons
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies (if package.json exists)
+        run: |
+          if [ -f package.json ]; then
+            npm ci
+          fi
+        continue-on-error: true
+
+      - name: Run governance checks
+        run: |
+          chmod +x scripts/check-governance
+          ./scripts/check-governance
+        continue-on-error: true  # Report-only, never fail the build
+
+      - name: Comment on PR (if applicable)
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            // Read the step summary if it exists
+            let summary = '';
+            const summaryFile = process.env.GITHUB_STEP_SUMMARY;
+            if (summaryFile && fs.existsSync(summaryFile)) {
+              summary = fs.readFileSync(summaryFile, 'utf8');
+            }
+
+            // If we have a summary, post it as a comment
+            if (summary.trim()) {
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: `## Governance Check Results\n\n${summary}`
+              });
+            }

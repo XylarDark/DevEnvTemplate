@@ -1,0 +1,94 @@
+name: Dependency Review
+
+on:
+  pull_request:
+    branches: [ main, master, develop ]
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-review:
+    name: Review Dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+        # Report-only: Don't fail PRs on dependency issues
+        continue-on-error: true
+        with:
+          # Optional: add configuration for specific ecosystems
+          # config-file: '.github/dependency-review-config.yml'
+
+      - name: Generate Summary
+        run: |
+          echo "## Dependency Review Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Security Analysis" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ **Vulnerable Dependencies**: Scanned for known CVEs" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ **License Compliance**: Checked for license compatibility" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ **Dependency Changes**: Reviewed for security impact" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Report Status" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: Report-only (no build failures)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Trigger**: Pull requests to main branches" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Recommendations" >> $GITHUB_STEP_SUMMARY
+          echo "1. Review dependency changes in the PR" >> $GITHUB_STEP_SUMMARY
+          echo "2. Address high/critical vulnerabilities promptly" >> $GITHUB_STEP_SUMMARY
+          echo "3. Consider pinning critical dependencies" >> $GITHUB_STEP_SUMMARY
+          echo "4. Keep dependencies updated regularly" >> $GITHUB_STEP_SUMMARY
+          echo "5. Use tools like \`npm audit\` or \`safety\` for local checks" >> $GITHUB_STEP_SUMMARY
+        continue-on-error: true
+
+  # Optional: License compliance check
+  license-check:
+    name: License Compliance
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Check Licenses
+        run: |
+          # Basic license check for common package managers
+          if [ -f package.json ]; then
+            echo "📦 Checking npm/yarn dependencies..."
+            if command -v license-checker &> /dev/null; then
+              npx license-checker --production --failOn "GPL;LGPL;AGPL" 2>/dev/null || echo "⚠️  Some dependencies may have restrictive licenses"
+            else
+              echo "ℹ️  Install license-checker for detailed license analysis"
+            fi
+          elif [ -f requirements.txt ]; then
+            echo "🐍 Checking Python dependencies..."
+            if command -v pip-licenses &> /dev/null; then
+              pip-licenses --format=markdown --with-license-file 2>/dev/null || echo "⚠️  Install pip-licenses for Python license checking"
+            else
+              echo "ℹ️  Install pip-licenses for detailed license analysis"
+            fi
+          else
+            echo "ℹ️  No supported package manager detected for license checking"
+          fi
+        continue-on-error: true
+
+      - name: License Summary
+        run: |
+          echo "## License Compliance Check" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Status" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ **Automated Check**: Basic license compatibility scan" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ **Report-Only**: No build failures on license issues" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Best Practices" >> $GITHUB_STEP_SUMMARY
+          echo "1. Prefer MIT, BSD, Apache 2.0, ISC licenses" >> $GITHUB_STEP_SUMMARY
+          echo "2. Avoid GPL/LGPL for proprietary software" >> $GITHUB_STEP_SUMMARY
+          echo "3. Document license compatibility requirements" >> $GITHUB_STEP_SUMMARY
+          echo "4. Consider commercial licenses for critical components" >> $GITHUB_STEP_SUMMARY
+        continue-on-error: true

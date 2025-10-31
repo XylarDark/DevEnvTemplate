@@ -1,0 +1,41 @@
+{
+  "budgets": {
+    "performance": {
+      "buildTimeMs": 300000,
+      "testTimeMs": 60000,
+      "bundleSizeKb": 100,
+      "cssSizeKb": 50
+    },
+    "quality": {
+      "testCoveragePercent": 80,
+      "lintErrorsMax": 0,
+      "securityVulnerabilitiesMax": 0
+    },
+    "accessibility": {
+      "contrastRatioMin": 4.5,
+      "keyboardNavigationScoreMin": 95
+    },
+    "seo": {
+      "structuredDataScoreMin": 90,
+      "metaTagsCompletenessMin": 85
+    }
+  },
+  "overrides": {
+    "development": {
+      "performance": {
+        "buildTimeMs": 600000
+      }
+    },
+    "legacy-projects": {
+      "quality": {
+        "testCoveragePercent": 50
+      }
+    }
+  },
+  "reporting": {
+    "format": "table",
+    "output": "console",
+    "failOnBudgetExceeded": false,
+    "showRecommendations": true
+  }
+}

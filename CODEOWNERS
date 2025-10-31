@@ -1,0 +1,36 @@
+# Code Ownership and Review Requirements
+# This file defines who owns which parts of the codebase and who must review changes
+# Format: path pattern @owner1 @owner2
+# Use * for wildcards, ** for recursive matching
+
+# Core governance files - require review from maintainers
+/.projectrules @maintainer
+/docs/rules-changelog.md @maintainer
+
+# CI/CD configurations - require review from DevOps/infrastructure team
+/.github/ @devops
+/.gitlab-ci.yml @devops
+/azure-pipelines.yml @devops
+/scripts/ @devops
+
+# Security-sensitive files
+# Add specific owners for security-critical paths
+# /config/secrets.* @security-team
+# /src/auth/ @security-team
+
+# Documentation
+/docs/ @tech-writers
+README.md @tech-writers
+CONTRIBUTING.md @tech-writers
+
+# Default ownership - all changes require at least one reviewer
+* @reviewer
+
+# Note: Replace @maintainer, @devops, @security-team, @tech-writers, @reviewer
+# with actual GitHub usernames, team names, or email addresses as appropriate
+# for your organization.
+
+# Examples:
+# *.js @javascript-team
+# /src/components/ @frontend-team
+# /api/ @backend-team

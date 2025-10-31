@@ -1,0 +1,24 @@
+# Issue template configuration
+# This file configures GitHub's issue template chooser
+
+blank_issues_enabled: true
+contact_links:
+  - name: 📖 Documentation
+    url: https://github.com/[owner]/[repo]/blob/main/README.md
+    about: Check the documentation for common questions and setup instructions
+
+  - name: 💬 General Discussion
+    url: https://github.com/[owner]/[repo]/discussions
+    about: Start a discussion for questions, ideas, or general topics
+
+  - name: 🆘 Security Vulnerability
+    url: https://github.com/[owner]/[repo]/blob/main/SECURITY.md
+    about: Report security vulnerabilities responsibly (DO NOT create public issues)
+
+  - name: 🤝 Contributing
+    url: https://github.com/[owner]/[repo]/blob/main/CONTRIBUTING.md
+    about: Learn how to contribute to this project
+
+  - name: 🆘 Support
+    url: https://github.com/[owner]/[repo]/blob/main/SUPPORT.md
+    about: Get help with using or deploying this project

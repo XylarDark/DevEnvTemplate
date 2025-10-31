@@ -1,0 +1,145 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+
+jobs:
+  quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          if [ -f package.json ]; then
+            npm ci
+          elif [ -f yarn.lock ]; then
+            yarn install --frozen-lockfile
+          elif [ -f pnpm-lock.yaml ]; then
+            npm install -g pnpm
+            pnpm install --frozen-lockfile
+          fi
+        continue-on-error: true
+
+      # Lint step - adapt based on your stack
+      - name: Run linting
+        run: |
+          if command -v eslint &> /dev/null; then
+            npm run lint 2>/dev/null || eslint . --ext .js,.ts,.jsx,.tsx 2>/dev/null || echo "ESLint not configured"
+          elif command -v tsc &> /dev/null; then
+            npm run type-check 2>/dev/null || echo "TypeScript check not configured"
+          else
+            echo "No linting tools detected"
+          fi
+        continue-on-error: true
+
+      # Test step - adapt based on your stack
+      - name: Run tests
+        run: |
+          if [ -f package.json ] && grep -q '"test"' package.json; then
+            npm test
+          elif [ -d "__tests__" ] || [ -d "tests" ] || [ -d "spec" ]; then
+            echo "Test directory found but no test script configured"
+          else
+            echo "No tests detected"
+          fi
+        continue-on-error: true
+
+      # Build step (optional) - adapt based on your stack
+      - name: Run build
+        run: |
+          if [ -f package.json ] && grep -q '"build"' package.json; then
+            npm run build
+          else
+            echo "No build script detected"
+          fi
+        continue-on-error: true
+
+      - name: Generate test summary
+        run: |
+          echo "## CI Quality Check Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status | Details |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|---------|" >> $GITHUB_STEP_SUMMARY
+
+          # Lint status
+          if command -v eslint &> /dev/null || command -v tsc &> /dev/null; then
+            echo "| Linting | ✅ Configured | Available |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| Linting | ⚠️  Not configured | Consider adding ESLint or similar |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Test status
+          if [ -f package.json ] && grep -q '"test"' package.json; then
+            echo "| Testing | ✅ Configured | npm test available |" >> $GITHUB_STEP_SUMMARY
+          elif [ -d "__tests__" ] || [ -d "tests" ] || [ -d "spec" ]; then
+            echo "| Testing | ⚠️  Scripts needed | Test files found, add npm script |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| Testing | ❌ Not detected | Consider adding unit tests |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Build status
+          if [ -f package.json ] && grep -q '"build"' package.json; then
+            echo "| Build | ✅ Configured | npm run build available |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| Build | ℹ️  Not required | No build step needed |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Next Steps" >> $GITHUB_STEP_SUMMARY
+          echo "1. Configure linting for your technology stack" >> $GITHUB_STEP_SUMMARY
+          echo "2. Add unit tests for core functionality" >> $GITHUB_STEP_SUMMARY
+          echo "3. Set up build process if needed" >> $GITHUB_STEP_SUMMARY
+          echo "4. Customize this workflow for your specific tools" >> $GITHUB_STEP_SUMMARY
+        continue-on-error: true
+
+  # Governance check (runs separately)
+  # Note: governance.yml handles this
+
+  # Optional: Security scanning
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+        continue-on-error: true
+
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+        continue-on-error: true
+
+      - name: Security summary
+        run: |
+          echo "## Security Scan Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Security scanning completed. Review the SARIF results for any vulnerabilities." >> $GITHUB_STEP_SUMMARY
+        continue-on-error: true

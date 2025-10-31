@@ -1,0 +1,228 @@
+#!/bin/bash
+# Governance Compliance Check Script
+# Technology-agnostic, cross-platform governance validation
+# Report-only: exits 0 always, provides actionable feedback
+
+set -euo pipefail
+
+# Colors for output (fallback to no colors on Windows)
+RED=""
+GREEN=""
+YELLOW=""
+BLUE=""
+NC=""
+if [[ -t 1 ]] && [[ "$(uname -s)" != "MINGW"* ]]; then
+    RED='\033[0;31m'
+    GREEN='\033[0;32m'
+    YELLOW='\033[1;33m'
+    BLUE='\033[0;34m'
+    NC='\033[0m'
+fi
+
+# Configuration
+PROJECT_RULES_FILE=".projectrules"
+CHANGELOG_FILE="docs/rules-changelog.md"
+GITHUB_STEP_SUMMARY="${GITHUB_STEP_SUMMARY:-}"
+
+# Initialize arrays for issues and suggestions
+issues=()
+suggestions=()
+
+# Helper functions
+log_info() { echo -e "${BLUE}ℹ️  $1${NC}"; }
+log_warn() { echo -e "${YELLOW}⚠️  $1${NC}"; }
+log_error() { echo -e "${RED}❌ $1${NC}"; }
+log_success() { echo -e "${GREEN}✅ $1${NC}"; }
+
+add_issue() { issues+=("$1"); }
+add_suggestion() { suggestions+=("$1"); }
+
+# Check if file exists and is readable
+check_file() {
+    local file="$1"
+    local description="$2"
+
+    if [[ ! -f "$file" ]]; then
+        add_issue "$description file missing: $file"
+        return 1
+    elif [[ ! -r "$file" ]]; then
+        add_issue "$description file not readable: $file"
+        return 1
+    fi
+    return 0
+}
+
+# Extract version from rules file
+get_rules_version() {
+    local file="$1"
+    grep -E "^# Version:" "$file" | head -1 | sed -E 's/.*Version:\s*([0-9]+\.[0-9]+).*/\1/' || echo ""
+}
+
+# Check if version follows semantic versioning
+is_valid_version() {
+    local version="$1"
+    [[ "$version" =~ ^[0-9]+\.[0-9]+$ ]]
+}
+
+# Check if changelog contains recent entry for version
+changelog_has_version() {
+    local version="$1"
+    local file="$2"
+
+    if [[ ! -f "$file" ]]; then
+        return 1
+    fi
+
+    # Look for version in recent entries (last 10 lines should cover recent changes)
+    tail -10 "$file" | grep -q "$version"
+}
+
+# Get list of changed files (from git or environment)
+get_changed_files() {
+    if [[ -n "${GITHUB_SHA:-}" ]]; then
+        # GitHub Actions: compare with base branch
+        local base_sha=""
+        if [[ -n "${GITHUB_EVENT_PULL_REQUEST_BASE_SHA:-}" ]]; then
+            base_sha="$GITHUB_EVENT_PULL_REQUEST_BASE_SHA"
+        elif [[ -n "${GITHUB_BASE_REF:-}" ]]; then
+            # Fallback for some GitHub Actions setups
+            base_sha="origin/$GITHUB_BASE_REF"
+        fi
+
+        if [[ -n "$base_sha" ]]; then
+            git diff --name-only "$base_sha" || echo ""
+        fi
+    elif git rev-parse --git-dir > /dev/null 2>&1; then
+        # Local git repo: check staged + unstaged changes
+        git diff --name-only && git diff --name-only --staged
+    fi
+}
+
+# Main checks
+main() {
+    log_info "Running governance compliance checks..."
+
+    # Check required files exist
+    if ! check_file "$PROJECT_RULES_FILE" "Project rules"; then
+        log_error "Cannot proceed without $PROJECT_RULES_FILE"
+        return 1
+    fi
+
+    # Extract and validate version
+    local rules_version
+    rules_version=$(get_rules_version "$PROJECT_RULES_FILE")
+
+    if [[ -z "$rules_version" ]]; then
+        add_issue "Could not extract version from $PROJECT_RULES_FILE"
+    elif ! is_valid_version "$rules_version"; then
+        add_issue "Invalid version format in $PROJECT_RULES_FILE: $rules_version (expected: x.y)"
+    else
+        log_success "Rules version: $rules_version"
+    fi
+
+    # Check changelog exists and is current
+    if check_file "$CHANGELOG_FILE" "Rules changelog"; then
+        if [[ -n "$rules_version" ]] && ! changelog_has_version "$rules_version" "$CHANGELOG_FILE"; then
+            add_suggestion "Consider updating $CHANGELOG_FILE with version $rules_version entry"
+        fi
+    fi
+
+    # Analyze changed files for governance triggers
+    local changed_files
+    changed_files=$(get_changed_files)
+
+    if [[ -n "$changed_files" ]]; then
+        log_info "Analyzing changed files for governance triggers..."
+
+        # Check if rules file changed but version wasn't bumped
+        if echo "$changed_files" | grep -q "^$PROJECT_RULES_FILE$"; then
+            log_warn "Rules file modified - ensure version bump if policies changed"
+            add_suggestion "If policies/guardrails changed, bump version in $PROJECT_RULES_FILE header"
+        fi
+
+        # Check if CI configs changed but governance checks are mentioned
+        if echo "$changed_files" | grep -E "\.(github|gitlab-ci|azure-pipelines)\." | grep -v -q "workflows.*governance"; then
+            log_info "CI configuration changed - governance workflow may need updates"
+        fi
+
+        # Check if changelog changed but rules didn't
+        if echo "$changed_files" | grep -q "^$CHANGELOG_FILE$" && ! echo "$changed_files" | grep -q "^$PROJECT_RULES_FILE$"; then
+            log_info "Changelog updated - verify corresponding rules changes"
+        fi
+    fi
+
+    # Check for common patterns that should trigger governance review
+    if [[ -f ".gitignore" ]] && grep -q "secrets\|credentials\|keys" ".gitignore" 2>/dev/null; then
+        log_success "Secrets exclusion detected in .gitignore"
+    else
+        add_suggestion "Consider adding common secrets patterns to .gitignore (secrets, credentials, keys)"
+    fi
+
+    # Generate report
+    local total_issues=${#issues[@]}
+    local total_suggestions=${#suggestions[@]}
+
+    echo
+    log_info "Governance Check Summary"
+    echo "═══════════════════════════════════════"
+
+    if [[ $total_issues -gt 0 ]]; then
+        log_error "Issues found: $total_issues"
+        for issue in "${issues[@]}"; do
+            echo "  • $issue"
+        done
+    else
+        log_success "No critical issues found"
+    fi
+
+    if [[ $total_suggestions -gt 0 ]]; then
+        log_warn "Suggestions: $total_suggestions"
+        for suggestion in "${suggestions[@]}"; do
+            echo "  • $suggestion"
+        done
+    else
+        log_success "No suggestions at this time"
+    fi
+
+    # GitHub Actions summary (if available)
+    if [[ -n "$GITHUB_STEP_SUMMARY" ]]; then
+        {
+            echo "## Governance Check Results"
+            echo
+            if [[ $total_issues -gt 0 ]]; then
+                echo "### Issues ($total_issues)"
+                for issue in "${issues[@]}"; do
+                    echo "- ❌ $issue"
+                done
+                echo
+            fi
+            if [[ $total_suggestions -gt 0 ]]; then
+                echo "### Suggestions ($total_suggestions)"
+                for suggestion in "${suggestions[@]}"; do
+                    echo "- 💡 $suggestion"
+                done
+                echo
+            fi
+            if [[ $total_issues -eq 0 && $total_suggestions -eq 0 ]]; then
+                echo "✅ All governance checks passed!"
+            fi
+        } >> "$GITHUB_STEP_SUMMARY"
+    fi
+
+    # Policy enforcement mode
+    local policy_enforcement="${POLICY_ENFORCEMENT:-report-only}"
+
+    if [[ "$policy_enforcement" == "enforced" ]] && [[ $total_issues -gt 0 ]]; then
+        log_error "Policy enforcement enabled: $total_issues issue(s) found - blocking"
+        return 1
+    elif [[ $total_issues -gt 0 ]]; then
+        log_warn "Issues detected - review suggestions above (report-only mode)"
+    else
+        log_success "Governance checks completed successfully"
+    fi
+
+    return 0
+}
+
+# Run main function
+main "$@"

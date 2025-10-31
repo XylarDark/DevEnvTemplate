@@ -1,0 +1,168 @@
+# General-Purpose Development Governance Rules
+# Version: 1.1 - Git and Shell Reliability Updates
+# Last Updated: 2025-10-31
+# Purpose: Technology-agnostic governance for QA-first, scope-gated development
+#
+# Quick Links:
+# - README: ../README.md
+# - Rules Changelog: docs/rules-changelog.md
+
+project_goals:
+  - Minimal cost: Prefer built-in platform features; free tiers only.
+  - QA-first: Automated testing, linting, CI/CD, and comprehensive documentation.
+  - Accessibility awareness: Keyboard navigation, screen reader support (if user-facing UI).
+  - Performance awareness: Track budgets and regressions (if applicable).
+  - Security baseline: No credentials in repo; dependency updates; basic scanning.
+  - Continuous improvement: Post-cycle reviews and rules evolution.
+
+languages:
+  - agnostic: Rules apply regardless of technology stack.
+  - javascript: ES2020+ vanilla JS, modular assets/, no frameworks (if applicable).
+  - css: Utility-first, responsive design (if applicable).
+  - json: Configuration, locales, and structured data (if applicable).
+
+guardrails:
+  - No server-side code: Client-side or platform-native only; no external runtimes unless approved.
+  - Secrets management: API keys in secure stores only; never commit credentials.
+  - External services: Free tier only; document all service additions in PR descriptions.
+  - Performance budget: Track bundle size, build time, runtime metrics (if applicable); report-only by default.
+  - Testing standard: Unit tests required; integration optional; fast local test loop.
+  - Platform compatibility: Cross-OS scripts (Windows/macOS/Linux); avoid shell-specific tricks; use cross-shell safe commands (e.g., `;` not `&&` for chaining, `$env:VAR` not `VAR=` for environment variables).
+  - localStorage usage (if applicable): Handle quota exceeded errors; no sensitive data storage; limited to non-sensitive state only.
+
+code_style:
+  - Documentation: Keep README and CONTRIBUTING aligned with current practices.
+  - Version control: Conventional commits with scope; semantic versioning for releases.
+  - Error handling: Graceful degradation; user feedback for failures.
+  - State management: URL params for shareable states; secure storage for persistence.
+  - Accessibility (if UI): Keyboard navigation, focus management, ARIA labels, semantic HTML.
+  - Performance: Lazy loading, critical path optimization, resource hints (if applicable).
+
+files:
+  - Core governance: .projectrules, docs/rules-changelog.md - never modify without review.
+  - CI/CD: .github/workflows/ - lint/test/governance stages.
+  - Scripts: scripts/ - governance checks, budget tracking, cross-platform.
+  - Documentation: README.md, CONTRIBUTING.md, docs/rules-changelog.md.
+  - Testing: Unit tests required; integration/schema optional per project.
+
+patterns:
+  - Scope Gate: Required for new features/settings/external domains.
+  - Optional Feature Retention: Remove unused features after 2 release cycles.
+  - Performance Budgets: Define and track budgets; report-only to start.
+  - Cycle Closeout: Post-cycle review checklist for continuous improvement.
+  - Testing Strategy: Unit required; integration/schema optional; fast local loop.
+  - Documentation Standards: Keep README/CONTRIBUTING current; changelog for rules evolution.
+
+development_environment:
+  - CI Node version: Standardize on Node 20.x LTS for all workflows (if applicable).
+  - Error tracking: Document environment-specific errors and add to session reports.
+  - Session reporting: At end of development sessions, include errors and workarounds in PR descriptions.
+  - Platform testing: Test critical commands on target environment before implementation.
+  - Command separation: Use individual terminal commands instead of chained commands.
+  - Windows/PowerShell conventions: Use `;` not `&&` for command chaining; prefer `Get-ChildItem -Force` over `ls -la`; use `$env:VAR='value'` for environment variables.
+  - Git transport: Prefer HTTPS by default for push operations; SSH optional with explicit host key configuration.
+  - Repo-root preflight: Before first commit, run `git rev-parse --show-toplevel` and ensure it equals the project directory; fix before committing if not.
+  - Rules evolution: Update rules after each Plan→Agent cycle with new patterns and best practices.
+  - Session review: After each cycle, complete checklist: summarize changes, log errors/workarounds, document rule deltas, bump version, update changelog, link in PR.
+
+advanced_patterns:
+  - Client-side filtering: URL synchronization for bookmarkable states (if applicable).
+  - Progressive enhancement: Core functionality works without enhancements; enhanced with features.
+  - Defensive programming: Safe fallbacks for missing data; graceful error handling.
+  - Resource hints optimization: Strategic preconnect hints for external domains (if applicable).
+  - Navigation announcements: Screen reader feedback for all navigation changes (if applicable).
+  - JSON-LD testing: Comprehensive validation tests for structured data (if applicable).
+  - Accessibility announcements: Comprehensive screen reader support for all user actions (if applicable).
+
+accessibility:
+  - WCAG AA compliance: 4.5:1 contrast ratio, 3:1 for large text (if user-facing UI).
+  - Keyboard navigation: Tab order logical; Enter/Space activate controls.
+  - Screen readers: ARIA labels, live regions, semantic HTML structure.
+  - Focus management: Visible focus indicators, focus traps for modals.
+  - Motion sensitivity: prefers-reduced-motion support (if applicable).
+  - Color independence: No color-only information conveyance.
+  - Error identification: Clear labels, descriptions, and suggestions.
+
+performance:
+  - Core Web Vitals (if web UI): LCP < 2.5s, CLS < 0.1, FID < 100ms targets.
+  - Resource loading: Preconnect to external domains; preload critical assets.
+  - Bundle optimization: Defer non-critical assets; tree-shake unused code.
+  - Image optimization: Lazy loading, modern formats, proper dimensions (if applicable).
+  - Build performance: Track and optimize build time; cache dependencies.
+  - Critical path: Optimize loading of critical resources.
+
+testing:
+  - Unit tests: Core utilities/modules/components; required for new code.
+  - Integration tests: Critical flows or interfaces; optional per project.
+  - Schema/Contract: Validate structured config/data against schemas (if applicable).
+  - Accessibility: Keyboard navigation, screen reader testing (if UI).
+  - Performance: Track budgets and surface regressions in CI.
+  - Cross-browser: Modern browser support (last 2 versions).
+  - Error states: Network failures, missing data, invalid configurations.
+  - Local development: Fast test loop; clear pass/fail feedback.
+
+review:
+  - Scope Gate compliance: Verify PR template Scope Gate checklist completed for new features/settings/impacts.
+  - Optional Feature Retention: Assess optional features for removal if unused beyond 2 release cycles.
+  - Pre-commit checks: Lint, tests, governance checks; clear pass/fail signal.
+  - Manual testing: Critical user flows tested; screenshots for UI changes.
+  - Feature toggle testing: Verify conditional rendering and auto-hide behaviors.
+  - Performance validation: Budget checks pass; no regressions introduced.
+  - Code review: Follow PR template; test all modified functionality.
+  - Documentation: Update README/CONTRIBUTING for new features/settings; rules changelog for governance changes.
+  - Rules reconciliation: Clean up legacy TODOs; update rules after each cycle.
+  - Error reporting: Include environment-specific errors encountered and solutions implemented.
+  - Session summary: Document problems faced and solutions found for future reference.
+  - Governance update: Review session work and update .projectrules with new patterns/best practices.
+
+contribution:
+  - Scope Gate: Complete PR template Scope Gate checklist for any new features/settings/external domains.
+  - Branch naming: feat/, fix/, refactor/, perf/, docs/, test/, chore/ prefixes.
+  - Commit messages: Conventional commits with scope (e.g., feat(auth): add login, fix(ui): resolve button focus).
+  - PR requirements: Description, testing notes, screenshots for UI changes.
+  - Code ownership: Review required for core governance files and critical functionality.
+  - Breaking changes: Document in PR description and commit footer with migration notes.
+  - Rules changes: Require explicit approval; bump version; update changelog.
+
+commits:
+  - Format: type(scope): description
+  - Types: feat, fix, refactor, perf, docs, test, chore
+  - Scope: feature area (e.g., ui/button, api/auth, docs/readme)
+  - Breaking changes: Add "BREAKING CHANGE:" footer with migration notes
+  - Examples: "feat(auth): add login validation", "fix(ui): resolve button focus trap"
+
+policies:
+  - Scope Gate: Require explicit approval for new features, settings, external domains, or significant impacts.
+  - Optional Feature Retention: Keep optional features only if actively used within 2 release cycles, or when user benefit outweighs maintenance cost.
+  - Performance Budgets: Track bundle sizes, build times, runtime metrics (if applicable); report-only CI (no failures); define budgets in quality-budgets.json.
+  - Budget Governance: Request exceptions in PR description with mitigation plan; remediate within 2 weeks; document budget increases in PRs.
+  - Policy Enforcement: Default to `report-only` mode for governance checks; set `POLICY_ENFORCEMENT=enforced` environment variable to enable blocking failures (use with caution for established teams only).
+  - Testing Standard: Unit tests required for new code; integration/schema optional; maintain fast local test loop.
+  - Security Baseline: No credentials in repo; regular dependency updates; basic security scanning.
+  - Git Transport: Default to HTTPS for push operations; SSH optional only with explicit host key configuration and key management.
+  - Rules Governance: Update .projectrules after each Plan→Agent cycle; maintain changelog; version bumps for policy changes.
+
+version_control:
+  - Rules versioning: Update version number in header for major changes and phase completions.
+  - Change documentation: Document rule modifications in commit messages.
+  - Backwards compatibility: Avoid breaking changes; use deprecation warnings.
+  - Migration guide: Update docs when rules change significantly.
+  - Error integration: Incorporate documented errors into rules for continuous improvement.
+  - Environment updates: Add platform-specific workarounds and compatibility notes.
+  - Pattern documentation: Update patterns section when new architectural patterns emerge.
+  - Session-driven updates: Review each development session and update rules with new optimizations.
+  - Advanced practices: Add advanced_patterns section for complex implementation strategies.
+  - Cycle closeout: Formal post-cycle review process to maintain standards evolution.
+
+cycle_closeout:
+  - Session Review: After each Plan→Agent cycle, complete this checklist before marking PR ready:
+    - [ ] Summarize changes: features added, tests written, CI/docs updated, bugs fixed
+    - [ ] Log errors/workarounds: Any platform/environment errors encountered and solutions
+    - [ ] Rules deltas: What to add/modify/remove in .projectrules (policies, guardrails, patterns)
+    - [ ] Version bump: Increment version in header if policies/guardrails changed
+    - [ ] Changelog entry: Add dated entry to docs/rules-changelog.md with highlights/rationale
+    - [ ] PR template: Fill Session Review section with changes, errors, version bump, changelog link
+    - [ ] Git repo root validated: Confirm `git rev-parse --show-toplevel` equals project directory
+    - [ ] First push method verified: HTTPS by default; SSH only if host key configured
+  - Governance reminders: Report-only CI will remind you if rules/changelog updates are missing
+  - Changelog location: docs/rules-changelog.md (append-only log with date, version, highlights)
