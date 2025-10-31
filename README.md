@@ -4,7 +4,7 @@ A technology-agnostic development environment with QA-first governance, scope-ga
 
 ## Quick Start
 
-1. Copy this template to your new project root
+1. Copy this template to your new project root (recommended: `C:\dev\` on Windows)
 2. Review and customize `.projectrules` for your technology stack
 3. Set up CI/CD workflows (GitHub/GitLab/Azure DevOps)
 4. Configure testing and linting for your stack
