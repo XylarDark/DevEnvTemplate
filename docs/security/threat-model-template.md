@@ -21,11 +21,13 @@
 ## Assets
 
 ### Critical Assets
+
 - [Asset 1]: Description and business value
 - [Asset 2]: Description and business value
 - [Asset 3]: Description and business value
 
 ### Supporting Assets
+
 - [Asset 1]: Description and business value
 - [Asset 2]: Description and business value
 
@@ -44,68 +46,80 @@
 ## Threats (STRIDE Analysis)
 
 ### Spoofing
-| Threat ID | Description | Impact | Likelihood | Mitigation |
-|-----------|-------------|--------|------------|------------|
+
+| Threat ID | Description   | Impact         | Likelihood     | Mitigation            |
+| --------- | ------------- | -------------- | -------------- | --------------------- |
 | SPOOF-001 | [Description] | [High/Med/Low] | [High/Med/Low] | [Mitigation strategy] |
 | SPOOF-002 | [Description] | [High/Med/Low] | [High/Med/Low] | [Mitigation strategy] |
 
 ### Tampering
-| Threat ID | Description | Impact | Likelihood | Mitigation |
-|-----------|-------------|--------|------------|------------|
-| TAMP-001 | [Description] | [High/Med/Low] | [High/Med/Low] | [Mitigation strategy] |
-| TAMP-002 | [Description] | [High/Med/Low] | [High/Med/Low] | [Mitigation strategy] |
+
+| Threat ID | Description   | Impact         | Likelihood     | Mitigation            |
+| --------- | ------------- | -------------- | -------------- | --------------------- |
+| TAMP-001  | [Description] | [High/Med/Low] | [High/Med/Low] | [Mitigation strategy] |
+| TAMP-002  | [Description] | [High/Med/Low] | [High/Med/Low] | [Mitigation strategy] |
 
 ### Repudiation
-| Threat ID | Description | Impact | Likelihood | Mitigation |
-|-----------|-------------|--------|------------|------------|
+
+| Threat ID | Description   | Impact         | Likelihood     | Mitigation            |
+| --------- | ------------- | -------------- | -------------- | --------------------- |
 | REPUD-001 | [Description] | [High/Med/Low] | [High/Med/Low] | [Mitigation strategy] |
 | REPUD-002 | [Description] | [High/Med/Low] | [High/Med/Low] | [Mitigation strategy] |
 
 ### Information Disclosure
-| Threat ID | Description | Impact | Likelihood | Mitigation |
-|-----------|-------------|--------|------------|------------|
-| INFO-001 | [Description] | [High/Med/Low] | [High/Med/Low] | [Mitigation strategy] |
-| INFO-002 | [Description] | [High/Med/Low] | [High/Med/Low] | [Mitigation strategy] |
+
+| Threat ID | Description   | Impact         | Likelihood     | Mitigation            |
+| --------- | ------------- | -------------- | -------------- | --------------------- |
+| INFO-001  | [Description] | [High/Med/Low] | [High/Med/Low] | [Mitigation strategy] |
+| INFO-002  | [Description] | [High/Med/Low] | [High/Med/Low] | [Mitigation strategy] |
 
 ### Denial of Service
-| Threat ID | Description | Impact | Likelihood | Mitigation |
-|-----------|-------------|--------|------------|------------|
-| DOS-001 | [Description] | [High/Med/Low] | [High/Med/Low] | [Mitigation strategy] |
-| DOS-002 | [Description] | [High/Med/Low] | [High/Med/Low] | [Mitigation strategy] |
+
+| Threat ID | Description   | Impact         | Likelihood     | Mitigation            |
+| --------- | ------------- | -------------- | -------------- | --------------------- |
+| DOS-001   | [Description] | [High/Med/Low] | [High/Med/Low] | [Mitigation strategy] |
+| DOS-002   | [Description] | [High/Med/Low] | [High/Med/Low] | [Mitigation strategy] |
 
 ### Elevation of Privilege
-| Threat ID | Description | Impact | Likelihood | Mitigation |
-|-----------|-------------|--------|------------|------------|
-| ELEV-001 | [Description] | [High/Med/Low] | [High/Med/Low] | [Mitigation strategy] |
-| ELEV-002 | [Description] | [High/Med/Low] | [High/Med/Low] | [Mitigation strategy] |
+
+| Threat ID | Description   | Impact         | Likelihood     | Mitigation            |
+| --------- | ------------- | -------------- | -------------- | --------------------- |
+| ELEV-001  | [Description] | [High/Med/Low] | [High/Med/Low] | [Mitigation strategy] |
+| ELEV-002  | [Description] | [High/Med/Low] | [High/Med/Low] | [Mitigation strategy] |
 
 ## Risk Assessment
 
 ### High Risk Threats
+
 1. **[THREAT-ID]**: [Brief description, impact, recommended priority]
 2. **[THREAT-ID]**: [Brief description, impact, recommended priority]
 
 ### Medium Risk Threats
+
 1. **[THREAT-ID]**: [Brief description, impact, recommended priority]
 2. **[THREAT-ID]**: [Brief description, impact, recommended priority]
 
 ### Low Risk Threats
+
 1. **[THREAT-ID]**: [Brief description, impact, recommended priority]
 2. **[THREAT-ID]**: [Brief description, impact, recommended priority]
 
 ## Security Controls
 
 ### Preventive Controls
+
 - [Control 1]: Description and implementation
 - [Control 2]: Description and implementation
 - [Control 3]: Description and implementation
 
 ### Detective Controls
+
 - [Control 1]: Description and implementation
 - [Control 2]: Description and implementation
 - [Control 3]: Description and implementation
 
 ### Responsive Controls
+
 - [Control 1]: Description and implementation
 - [Control 2]: Description and implementation
 - [Control 3]: Description and implementation
@@ -113,14 +127,17 @@
 ## Recommendations
 
 ### Immediate Actions (High Priority)
+
 1. [Action 1]: Timeline and responsible party
 2. [Action 2]: Timeline and responsible party
 
 ### Short-term Actions (Medium Priority)
+
 1. [Action 1]: Timeline and responsible party
 2. [Action 2]: Timeline and responsible party
 
 ### Long-term Actions (Low Priority)
+
 1. [Action 1]: Timeline and responsible party
 2. [Action 2]: Timeline and responsible party
 
@@ -138,4 +155,4 @@
 
 ---
 
-*This threat model follows the STRIDE framework and should be reviewed regularly as the system evolves.*
+_This threat model follows the STRIDE framework and should be reviewed regularly as the system evolves._

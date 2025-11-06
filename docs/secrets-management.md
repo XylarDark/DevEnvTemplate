@@ -98,11 +98,11 @@ SESSION_SECRET=your_session_secret_here
 // Good: Use environment variables
 const apiKey = process.env.API_KEY;
 if (!apiKey) {
-  throw new Error('API_KEY environment variable is required');
+  throw new Error("API_KEY environment variable is required");
 }
 
 // Bad: Hardcoded secrets
-const apiKey = 'sk-1234567890abcdef';
+const apiKey = "sk-1234567890abcdef";
 ```
 
 ## Security Scanning

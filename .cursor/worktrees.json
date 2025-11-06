@@ -1,0 +1,3 @@
+{
+  "setup-worktree": ["npm ci --no-audit --no-fund", "npm run tools:verify"]
+}

@@ -1,0 +1,268 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://devenvtemplate.com/schemas/assumption.schema.json",
+  "title": "Assumption",
+  "description": "Schema for Assumptions that capture uncertainties with ownership, validation plans, and approval workflows.",
+  "type": "object",
+  "required": [
+    "id",
+    "contextContractId",
+    "description",
+    "owner",
+    "created",
+    "confidence",
+    "impact",
+    "status"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for this assumption (UUID format preferred)",
+      "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+    },
+    "contextContractId": {
+      "type": "string",
+      "description": "Reference to the context contract this assumption belongs to",
+      "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+    },
+    "taskSliceId": {
+      "type": "string",
+      "description": "Reference to specific task slice if assumption is task-specific",
+      "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+    },
+    "version": {
+      "type": "string",
+      "description": "Version of this assumption record",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "default": "1.0.0"
+    },
+    "description": {
+      "type": "string",
+      "description": "Clear description of the assumption being made"
+    },
+    "rationale": {
+      "type": "string",
+      "description": "Why this assumption is being made"
+    },
+    "owner": {
+      "type": "object",
+      "description": "Person responsible for this assumption",
+      "required": ["name", "contact"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Person's name"
+        },
+        "contact": {
+          "type": "string",
+          "description": "Contact method (email, slack, etc.)"
+        },
+        "role": {
+          "type": "string",
+          "description": "Their role in the project"
+        }
+      }
+    },
+    "confidence": {
+      "type": "string",
+      "enum": ["high", "medium", "low", "unknown"],
+      "description": "Confidence level in this assumption being correct"
+    },
+    "impact": {
+      "type": "object",
+      "description": "Impact assessment if assumption proves false",
+      "required": ["level", "description"],
+      "properties": {
+        "level": {
+          "type": "string",
+          "enum": ["critical", "high", "medium", "low"],
+          "description": "Severity of impact if false"
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed impact description"
+        },
+        "mitigation": {
+          "type": "string",
+          "description": "How to mitigate if assumption is false"
+        }
+      }
+    },
+    "validationPlan": {
+      "type": "object",
+      "description": "How to validate this assumption",
+      "required": ["method", "timeline"],
+      "properties": {
+        "method": {
+          "type": "string",
+          "description": "How to validate (research, testing, stakeholder input, etc.)"
+        },
+        "timeline": {
+          "type": "string",
+          "description": "When validation should occur"
+        },
+        "resources": {
+          "type": "array",
+          "description": "Resources needed for validation",
+          "items": {
+            "type": "string",
+            "description": "Resource description"
+          }
+        },
+        "criteria": {
+          "type": "string",
+          "description": "Specific criteria for validation success/failure"
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "proposed", "approved", "validated", "invalidated", "expired"],
+      "description": "Current status in the approval workflow"
+    },
+    "validationResults": {
+      "type": "object",
+      "description": "Results of validation attempts",
+      "properties": {
+        "validated": {
+          "type": "boolean",
+          "description": "Whether assumption was validated as true"
+        },
+        "validatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When validation occurred"
+        },
+        "validatedBy": {
+          "type": "string",
+          "description": "Who performed the validation"
+        },
+        "evidence": {
+          "type": "string",
+          "description": "Evidence supporting or refuting the assumption"
+        },
+        "conclusion": {
+          "type": "string",
+          "description": "Final conclusion about the assumption"
+        }
+      }
+    },
+    "approvalWorkflow": {
+      "type": "object",
+      "description": "Approval workflow tracking",
+      "properties": {
+        "requiredApprovers": {
+          "type": "array",
+          "description": "People who must approve this assumption",
+          "items": {
+            "type": "string",
+            "description": "Approver name"
+          }
+        },
+        "approvals": {
+          "type": "array",
+          "description": "Actual approvals received",
+          "items": {
+            "type": "object",
+            "required": ["approver", "approvedAt", "decision"],
+            "properties": {
+              "approver": {
+                "type": "string",
+                "description": "Who approved"
+              },
+              "approvedAt": {
+                "type": "string",
+                "format": "date-time",
+                "description": "When approval occurred"
+              },
+              "decision": {
+                "type": "string",
+                "enum": ["approved", "rejected", "conditional"],
+                "description": "Approval decision"
+              },
+              "comments": {
+                "type": "string",
+                "description": "Approval comments or conditions"
+              }
+            }
+          }
+        },
+        "approvalDeadline": {
+          "type": "string",
+          "format": "date",
+          "description": "Deadline for all approvals"
+        }
+      }
+    },
+    "expiry": {
+      "type": "object",
+      "description": "Expiry and review requirements",
+      "properties": {
+        "expiresAt": {
+          "type": "string",
+          "format": "date",
+          "description": "When this assumption expires and needs revalidation"
+        },
+        "reviewFrequency": {
+          "type": "string",
+          "enum": ["daily", "weekly", "monthly", "quarterly", "never"],
+          "description": "How often to review this assumption"
+        },
+        "lastReviewed": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When this assumption was last reviewed"
+        }
+      }
+    },
+    "tags": {
+      "type": "array",
+      "description": "Categorization tags",
+      "items": {
+        "type": "string",
+        "description": "Tag name"
+      }
+    },
+    "relatedItems": {
+      "type": "array",
+      "description": "Related context contracts, task slices, or other assumptions",
+      "items": {
+        "type": "object",
+        "required": ["type", "id"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["context-contract", "task-slice", "assumption"],
+            "description": "Type of related item"
+          },
+          "id": {
+            "type": "string",
+            "description": "Related item ID"
+          },
+          "relationship": {
+            "type": "string",
+            "description": "Nature of the relationship"
+          }
+        }
+      }
+    },
+    "created": {
+      "type": "string",
+      "description": "ISO 8601 timestamp when this assumption was created",
+      "format": "date-time"
+    },
+    "updated": {
+      "type": "string",
+      "description": "ISO 8601 timestamp when this assumption was last updated",
+      "format": "date-time"
+    },
+    "author": {
+      "type": "string",
+      "description": "Person who created this assumption"
+    },
+    "lastModifiedBy": {
+      "type": "string",
+      "description": "Person who last modified this assumption"
+    }
+  }
+}

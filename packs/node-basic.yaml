@@ -1,0 +1,43 @@
+# Node.js Basic Preset
+# For simple Node.js applications (APIs, CLIs, basic web apps)
+
+name: "Node.js Basic"
+description: "Basic Node.js setup with essential tooling"
+extends: "common"
+
+# Additional rules for Node.js projects
+rules:
+  - id: "node-dependencies"
+    type: "package_prune"
+    description: "Remove template-specific Node.js dependencies"
+    package_manager: "npm"
+    packages:
+      - "@types/node"  # Add back if needed for TypeScript
+      - "typescript"   # Add back if using TypeScript
+      - "prettier"     # Template tooling
+      - "eslint"       # Template tooling
+    condition: "features.includes('node')"
+
+  - id: "node-files"
+    type: "file_glob_delete"
+    description: "Remove Node.js template files not needed for basic apps"
+    patterns:
+      - "tsconfig.json"
+      - "*.ts"
+      - "*.tsx"
+    condition: "!features.includes('typescript')"
+
+# Recommended features for Node.js basic
+recommended_features:
+  - "node"
+  - "api"
+  - "ci"
+  - "docker"
+  - "unit-tests"
+
+# File recommendations (copy these from template)
+recommended_files:
+  - ".eslintrc.js"
+  - ".gitignore"
+  - "package.json"
+  - "README.md"

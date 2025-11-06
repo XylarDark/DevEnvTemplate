@@ -1,0 +1,102 @@
+name: Auto Label PRs
+
+on:
+  pull_request_target:
+    types: [opened, edited, reopened]
+
+jobs:
+  auto-label:
+    name: Auto Label PRs
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+
+    steps:
+      - name: Check PR content for labels
+        id: check-labels
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { title, body } = context.payload.pull_request;
+            const titleLower = title.toLowerCase();
+            const bodyLower = (body || '').toLowerCase();
+
+            const labels = [];
+
+            // Check for plan-only indicators
+            if (titleLower.includes('plan') ||
+                titleLower.includes('planning') ||
+                bodyLower.includes('plan-only') ||
+                bodyLower.includes('implementation plan') ||
+                bodyLower.includes('## 📋 implementation plan') ||
+                bodyLower.includes('plan-only pr')) {
+              labels.push('plan-only');
+            }
+
+            // Check for implementation indicators
+            if (titleLower.includes('feat') ||
+                titleLower.includes('fix') ||
+                titleLower.includes('refactor') ||
+                titleLower.includes('perf') ||
+                titleLower.includes('chore') ||
+                titleLower.includes('docs') ||
+                titleLower.includes('test') ||
+                bodyLower.includes('## ✨ description') ||
+                bodyLower.includes('implementation pr') ||
+                (bodyLower.includes('plan') && !bodyLower.includes('plan-only'))) {
+              labels.push('implementation');
+            }
+
+            // Check for needs-review (new PRs)
+            if (titleLower.includes('needs-review') ||
+                bodyLower.includes('needs-review') ||
+                bodyLower.includes('ready for review')) {
+              labels.push('needs-review');
+            }
+
+            // Check for breaking changes
+            if (titleLower.includes('breaking') ||
+                bodyLower.includes('breaking change') ||
+                bodyLower.includes('breaking-change')) {
+              labels.push('breaking-change');
+            }
+
+            // Check for documentation
+            if (titleLower.includes('docs') ||
+                bodyLower.includes('documentation') ||
+                bodyLower.includes('readme') ||
+                bodyLower.includes('changelog')) {
+              labels.push('documentation');
+            }
+
+            // Check for testing
+            if (titleLower.includes('test') ||
+                bodyLower.includes('testing') ||
+                bodyLower.includes('unit test') ||
+                bodyLower.includes('integration test')) {
+              labels.push('testing');
+            }
+
+            // Output labels as JSON for next step
+            return JSON.stringify(labels);
+
+      - name: Apply labels
+        if: steps.check-labels.outputs.result != '[]'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const labels = JSON.parse('${{ steps.check-labels.outputs.result }}');
+
+            if (labels.length > 0) {
+              console.log(`Adding labels: ${labels.join(', ')}`);
+
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                labels: labels
+              });
+            } else {
+              console.log('No labels to apply');
+            }

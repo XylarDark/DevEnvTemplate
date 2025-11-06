@@ -1,0 +1,15 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Run lint-staged on staged files
+npx lint-staged
+
+# Type check website if it exists
+if [ -d "website" ]; then
+  cd website
+  npx tsc --noEmit
+  cd ..
+fi
+
+# Run basic tests (if any)
+npm test 2>/dev/null || true

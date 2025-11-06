@@ -2,19 +2,20 @@ name: Governance Checks
 
 on:
   pull_request:
-    branches: [ main, master, develop ]
+    branches: [main, master, develop]
     paths:
-      - '.projectrules'
-      - 'docs/rules-changelog.md'
-      - '.github/**'
-      - 'scripts/**'
-      - 'quality-budgets.json'
+      - ".projectrules"
+      - "docs/rules-changelog.md"
+      - ".github/**"
+      - "scripts/**"
+      - "quality-budgets.json"
+      - "config/quality-budgets.json"
 
   push:
-    branches: [ main, master ]
+    branches: [main, master]
     paths:
-      - '.projectrules'
-      - 'docs/rules-changelog.md'
+      - ".projectrules"
+      - "docs/rules-changelog.md"
 
 jobs:
   governance:
@@ -26,13 +27,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Full history for diff comparisons
+          fetch-depth: 0 # Full history for diff comparisons
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
 
       - name: Install dependencies (if package.json exists)
         run: |
@@ -45,7 +46,7 @@ jobs:
         run: |
           chmod +x scripts/check-governance
           ./scripts/check-governance
-        continue-on-error: true  # Report-only, never fail the build
+        continue-on-error: true # Report-only, never fail the build
 
       - name: Comment on PR (if applicable)
         if: github.event_name == 'pull_request'

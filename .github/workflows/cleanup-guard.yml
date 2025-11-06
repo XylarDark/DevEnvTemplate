@@ -1,0 +1,163 @@
+# Template Cleanup Guard
+#
+# This workflow runs the cleanup system in dry-run mode to ensure
+# that no template artifacts are present in the codebase.
+#
+# It runs on:
+# - Pull requests (to prevent introducing template code)
+# - Pushes to the default branch (to catch any regressions)
+#
+# The workflow fails if any template artifacts are found.
+
+name: Template Cleanup Guard
+
+on:
+  pull_request:
+    branches: [main, master, develop]
+  push:
+    branches: [main, master, develop]
+
+jobs:
+  cleanup-guard:
+    name: Check for Template Artifacts
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+        # Note: If cleanup system is removed post-scaffold, this will fail.
+        # In that case, install cleanup dependencies temporarily:
+        # run: npm install --no-save commander glob yaml
+
+      - name: Check for cleanup config
+        id: check-config
+        run: |
+          if [ -f "config/cleanup.config.yaml" ] || [ -f "cleanup.config.yaml" ]; then
+            echo "config_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "config_exists=false" >> $GITHUB_OUTPUT
+            echo "ℹ️ No cleanup.config.yaml found - skipping cleanup check"
+          fi
+
+      - name: Build cleanup arguments
+        if: steps.check-config.outputs.config_exists == 'true'
+        id: build-args
+        run: |
+          ARGS="--dry-run --quiet --report cleanup-report.json --fail-on-actions"
+
+          # Check for manifest and extract features
+          if [ -f "project.manifest.json" ]; then
+            echo "📋 Found project manifest, extracting features..."
+            FEATURES=$(node -e "
+              const manifest = JSON.parse(require('fs').readFileSync('project.manifest.json', 'utf8'));
+              const features = manifest.derived?.features || [];
+              console.log(features.map(f => '--feature ' + f).join(' '));
+            ")
+            if [ -n \"$FEATURES\" ]; then
+              ARGS=\"$ARGS $FEATURES\"
+              echo \"🔧 Using manifest features: $FEATURES\"
+            fi
+          else
+            echo "ℹ️ No manifest found, using default cleanup rules"
+          fi
+
+          echo "cleanup_args=$ARGS" >> $GITHUB_OUTPUT
+
+      - name: Run cleanup dry-run
+        if: steps.check-config.outputs.config_exists == 'true'
+        id: cleanup-check
+        run: |
+          echo "🔍 Running template cleanup check..."
+
+          # Run cleanup with built arguments
+          if node scripts/cleanup/cli.js ${{ steps.build-args.outputs.cleanup_args }}; then
+            echo "✅ No template artifacts found"
+          else
+            echo "❌ Template artifacts detected!"
+            exit 1
+          fi
+
+      - name: Upload cleanup report
+        if: steps.check-config.outputs.config_exists == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: cleanup-report
+          path: cleanup-report.json
+          retention-days: 30
+
+      - name: Comment on PR (if applicable)
+        if: failure() && github.event_name == 'pull_request' && steps.check-config.outputs.config_exists == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            // Read the cleanup report
+            let report = {};
+            try {
+              report = JSON.parse(fs.readFileSync('cleanup-report.json', 'utf8'));
+            } catch (error) {
+              report = { error: 'Could not read cleanup report' };
+            }
+
+            // Create a summary comment
+            let comment = '## ❌ Template Artifacts Detected\n\n';
+            comment += 'This PR contains template artifacts that should be removed. ';
+            comment += 'Please run the cleanup script or remove these items manually.\n\n';
+
+            if (report.summary) {
+              comment += `**Summary:** ${report.summary.totalActions} actions needed\n`;
+              comment += `- Files to delete: ${report.summary.filesDeleted}\n`;
+              comment += `- Lines to remove: ${report.summary.linesRemoved}\n`;
+              comment += `- Blocks to remove: ${report.summary.blocksRemoved}\n\n`;
+            }
+
+            if (report.actions && report.actions.length > 0) {
+              comment += '**Actions needed:**\n';
+              const actionsByType = report.actions.reduce((acc, action) => {
+                acc[action.type] = (acc[action.type] || 0) + 1;
+                return acc;
+              }, {});
+
+              Object.entries(actionsByType).forEach(([type, count]) => {
+                comment += `- ${type}: ${count}\n`;
+              });
+              comment += '\n';
+            }
+
+            comment += '**How to fix:**\n';
+            comment += '1. Run `npm run cleanup:apply` locally\n';
+            comment += '2. Review and commit the changes\n';
+            comment += '3. Push the updated branch\n\n';
+
+            comment += '[View full report](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})';
+
+            // Post the comment
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+      - name: Fail on template artifacts
+        if: failure() && steps.check-config.outputs.config_exists == 'true'
+        run: |
+          echo "❌ PR blocked: Template artifacts found in codebase"
+          echo ""
+          echo "To fix this:"
+          echo "1. Run 'npm run cleanup:apply' locally"
+          echo "2. Review the changes"
+          echo "3. Commit and push"
+          echo ""
+          echo "See the uploaded 'cleanup-report' artifact for details."
+          exit 1

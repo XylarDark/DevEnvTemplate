@@ -67,5 +67,6 @@ We publish security advisories for resolved vulnerabilities on our [GitHub Secur
 ## Contact
 
 For security-related questions or concerns:
+
 - Email: [security@yourcompany.com](mailto:security@yourcompany.com)
 - Response Time: Within 24 hours

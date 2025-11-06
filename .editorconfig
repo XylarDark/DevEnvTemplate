@@ -1,59 +1,30 @@
-# EditorConfig is awesome: https://EditorConfig.org
-
-# top-most EditorConfig file
 root = true
 
-# All files
 [*]
 charset = utf-8
 end_of_line = lf
 insert_final_newline = true
 trim_trailing_whitespace = true
-
-# Indentation
 indent_style = space
 indent_size = 2
 
-# JavaScript/TypeScript
-[*.{js,jsx,ts,tsx}]
-indent_size = 2
-
-# JSON files
-[*.json]
-indent_size = 2
-
-# YAML files
-[*.{yml,yaml}]
-indent_size = 2
-
-# Markdown
 [*.md]
 trim_trailing_whitespace = false
 
-# Shell scripts
-[*.{sh,bash}]
-end_of_line = lf
+[*.{yml,yaml}]
+indent_size = 2
 
-# Windows batch files
-[*.bat]
-end_of_line = crlf
+[*.{js,ts,jsx,tsx}]
+indent_size = 2
 
-# Makefiles
-[Makefile]
-indent_style = tab
+[*.json]
+indent_size = 2
 
-# Python (if applicable)
 [*.py]
 indent_size = 4
 
-# Go (if applicable)
-[*.go]
+[Makefile]
 indent_style = tab
 
-# Rust (if applicable)
-[*.rs]
-indent_size = 4
-
-# Java (if applicable)
-[*.java]
-indent_size = 4
+[*.go]
+indent_style = tab

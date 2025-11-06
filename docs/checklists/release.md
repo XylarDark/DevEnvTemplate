@@ -15,9 +15,11 @@ Use this checklist to ensure releases are prepared and deployed safely.
 - [ ] **Unit Tests**: All tests pass
 - [ ] **Integration Tests**: All integration tests pass (if applicable)
 - [ ] **E2E Tests**: End-to-end tests pass (if applicable)
+- [ ] **Website Smoke Tests**: Guided and Advanced onboarding flows work (basic happy path)
 - [ ] **Performance Tests**: Performance budgets met
 - [ ] **Security Tests**: Security scans pass
 - [ ] **Accessibility Tests**: A11y checks pass (if applicable)
+- [ ] **Playwright Tests**: Website E2E tests pass in CI
 
 ## Documentation
 
@@ -34,14 +36,22 @@ Use this checklist to ensure releases are prepared and deployed safely.
 - [ ] **Security Scan**: No high/critical vulnerabilities
 - [ ] **License Compliance**: All dependencies properly licensed
 - [ ] **Code Review**: All changes reviewed and approved
+- [ ] **SBOM Generated**: CycloneDX SBOM created successfully
+- [ ] **Dead Code Check**: `ts-prune` and `depcheck` clean results
+- [ ] **Quality Gates**: `npm run deploy:prepare` succeeds
 
 ## Build & Packaging
 
 - [ ] **Build Successful**: Clean build with no errors/warnings
+- [ ] **Website Build**: `npm run build` succeeds in `website/` directory
+- [ ] **TypeScript Check**: `tsc --noEmit` passes for website
+- [ ] **Linting**: ESLint passes for website code
 - [ ] **Artifacts Generated**: All required build artifacts created
 - [ ] **Package Integrity**: Package can be installed/tested
 - [ ] **Signatures**: Release artifacts signed (if applicable)
 - [ ] **Size Checks**: Package size within expected limits
+- [ ] **Budget Compliance**: Builds meet `config/quality-budgets.json` limits
+- [ ] **Provider Selection**: Deployment provider documented and configured
 
 ## Deployment
 

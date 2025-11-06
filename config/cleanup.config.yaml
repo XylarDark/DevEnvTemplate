@@ -1,0 +1,253 @@
+# Template Cleanup Configuration
+# Stack-agnostic rules for removing template-only code after scaffolding
+
+version: 1
+
+# Default profile and features
+profile: common
+features: []
+
+# Comment syntax mapping by file extension
+# Used for auto-detecting comment styles in block/line markers
+comment_syntax:
+  # Single line comments
+  ".js": "//"
+  ".ts": "//"
+  ".jsx": "//"
+  ".tsx": "//"
+  ".py": "#"
+  ".rb": "#"
+  ".sh": "#"
+  ".bash": "#"
+  ".zsh": "#"
+  ".ps1": "#"
+  ".go": "//"
+  ".rs": "//"
+  ".java": "//"
+  ".cs": "//"
+  ".cpp": "//"
+  ".c": "//"
+  ".php": "//"
+  ".scala": "//"
+  ".kt": "//"
+  ".swift": "//"
+  ".dart": "//"
+  # Block comments (start/end)
+  ".css": ["/*", "*/"]
+  ".scss": ["/*", "*/"]
+  ".sass": ["/*", "*/"]
+  ".less": ["/*", "*/"]
+  ".html": ["<!--", "-->"]
+  ".xml": ["<!--", "-->"]
+  ".md": ["<!--", "-->"]
+  ".yml": "#"
+  ".yaml": "#"
+  ".json": ["/*", "*/"]
+  ".jsonc": ["/*", "*/"]
+
+# Marker conventions
+markers:
+  template_only:
+    start: "TEMPLATE-ONLY:START"
+    end: "TEMPLATE-ONLY:END"
+  conditional:
+    start: "TEMPLATE-IF:"
+    end: "TEMPLATE-ENDIF"
+  line_tag: "@template-only"
+
+# Profiles define rule sets for different tech stacks
+profiles:
+  # Common rules applicable to most projects
+  common:
+    rules:
+      - id: remove-scaffold-folders
+        type: file_glob_delete
+        description: "Remove scaffolding scripts and documentation"
+        globs:
+          - "scripts/scaffold/**"
+          - "docs/template/**"
+          - ".scaffold/**"
+        exclude:
+          - "**/.gitkeep"
+
+      - id: strip-template-blocks
+        type: block_markers
+        description: "Remove template-only code blocks"
+        markers:
+          start: "TEMPLATE-ONLY:START"
+          end: "TEMPLATE-ONLY:END"
+        exclude_globs:
+          - "**/*.md"
+          - "docs/**"
+          - "**/*.yml"
+          - "**/*.yaml"
+          - "cleanup.config.yaml"
+          - ".github/**"
+          - "scripts/cleanup/**"
+
+      - id: strip-line-tags
+        type: line_tag
+        description: "Remove lines tagged as template-only"
+        tag: "@template-only"
+        exclude_globs:
+          - "**/*.md"
+          - "docs/**"
+          - "**/*.yml"
+          - "**/*.yaml"
+          - "cleanup.config.yaml"
+          - ".github/**"
+          - "scripts/cleanup/**"
+
+      - id: remove-template-files
+        type: file_glob_delete
+        description: "Remove files marked as template-only"
+        globs:
+          - "**/*.template-only"
+          - "**/*.scaffold"
+
+      - id: remove-empty
+        type: prune_empty
+        description: "Remove empty files and directories"
+        remove_empty_files: true
+        remove_empty_dirs: true
+
+  # Node.js/JavaScript/TypeScript projects
+  node:
+    extends: common
+    rules:
+      - id: prune-node-template-deps
+        type: package_prune
+        description: "Remove template-only dependencies from package.json"
+        manager: npm
+        remove_deps:
+          - "@dev/template-only"
+          - "ts-node"
+          - "typescript"
+        remove_dev_deps:
+          - "@types/template-only"
+
+      - id: remove-node-template-files
+        type: file_glob_delete
+        description: "Remove Node.js template files"
+        globs:
+          - "tsconfig.template.json"
+          - ".eslintrc.template.js"
+          - "jest.template.config.js"
+
+  # Python projects
+  python:
+    extends: common
+    rules:
+      - id: prune-python-template-deps
+        type: package_prune
+        description: "Remove template-only dependencies from requirements files"
+        manager: pip
+        remove_deps:
+          - "template-only-package"
+          - "pytest-template"
+
+      - id: remove-python-template-files
+        type: file_glob_delete
+        description: "Remove Python template files"
+        globs:
+          - "requirements.template.txt"
+          - "setup.template.py"
+          - "pytest.template.ini"
+
+  # Go projects
+  go:
+    extends: common
+    rules:
+      - id: prune-go-template-deps
+        type: package_prune
+        description: "Remove template-only Go modules"
+        manager: go
+        remove_deps:
+          - "github.com/example/template-only"
+
+      - id: remove-go-template-files
+        type: file_glob_delete
+        description: "Remove Go template files"
+        globs:
+          - "go.template.mod"
+          - "Makefile.template"
+
+  # .NET/C# projects
+  dotnet:
+    extends: common
+    rules:
+      - id: prune-dotnet-template-deps
+        type: package_prune
+        description: "Remove template-only NuGet packages"
+        manager: nuget
+        remove_deps:
+          - "TemplateOnly.Package"
+          - "Microsoft.Template.Test"
+
+      - id: remove-dotnet-template-files
+        type: file_glob_delete
+        description: "Remove .NET template files"
+        globs:
+          - "*.template.csproj"
+          - "Directory.Build.template.props"
+
+  # Java projects
+  java:
+    extends: common
+    rules:
+      - id: prune-java-template-deps
+        type: package_prune
+        description: "Remove template-only Maven/Gradle dependencies"
+        manager: maven
+        remove_deps:
+          - "com.example:template-only"
+
+      - id: remove-java-template-files
+        type: file_glob_delete
+        description: "Remove Java template files"
+        globs:
+          - "pom.template.xml"
+          - "build.template.gradle"
+          - "settings.template.gradle"
+
+  # Frontend projects (React, Vue, Angular, etc.)
+  frontend:
+    extends: node
+    rules:
+      - id: remove-frontend-template-files
+        type: file_glob_delete
+        description: "Remove frontend template files"
+        globs:
+          - "public/index.template.html"
+          - "src/components/TemplateOnly/**"
+          - "*.template.config.js"
+          - "webpack.template.config.js"
+
+      - id: prune-frontend-template-deps
+        type: package_prune
+        description: "Remove frontend template dependencies"
+        manager: npm
+        remove_dev_deps:
+          - "@types/template-component"
+          - "react-template-library"
+
+# Example conditional rules based on features
+# These would be active when features are enabled via CLI or config
+conditional_rules:
+  docker:
+    - id: remove-docker-when-disabled
+      type: conditional_block
+      condition: "!docker"
+      description: "Remove Docker-related code when Docker is not enabled"
+      markers:
+        start: "TEMPLATE-IF: docker"
+        end: "TEMPLATE-ENDIF"
+
+  ci:
+    - id: remove-ci-when-disabled
+      type: conditional_block
+      condition: "!ci"
+      description: "Remove CI-related code when CI is not enabled"
+      markers:
+        start: "TEMPLATE-IF: ci"
+        end: "TEMPLATE-ENDIF"

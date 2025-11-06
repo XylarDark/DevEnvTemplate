@@ -140,6 +140,7 @@ npm run lint
 ### Good First Issues
 
 Look for issues labeled:
+
 - `good first issue`
 - `help wanted`
 - `beginner friendly`

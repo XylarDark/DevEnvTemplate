@@ -1,0 +1,341 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://devenvtemplate.com/schemas/context-contract.schema.json",
+  "title": "Context Contract",
+  "description": "Schema for Context Contracts that define the complete scope and requirements for a development task before implementation begins.",
+  "type": "object",
+  "required": [
+    "id",
+    "version",
+    "created",
+    "problem",
+    "goals",
+    "constraints",
+    "nonGoals",
+    "acceptanceTests",
+    "assumptions",
+    "unknowns",
+    "stakeholders"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for this context contract (UUID format preferred)",
+      "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+    },
+    "version": {
+      "type": "string",
+      "description": "Semantic version of this contract (incremented on major changes)",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "created": {
+      "type": "string",
+      "description": "ISO 8601 timestamp when this contract was created",
+      "format": "date-time"
+    },
+    "updated": {
+      "type": "string",
+      "description": "ISO 8601 timestamp when this contract was last updated",
+      "format": "date-time"
+    },
+    "author": {
+      "type": "string",
+      "description": "Person who authored this contract"
+    },
+    "problem": {
+      "type": "object",
+      "description": "Clear description of the problem being solved",
+      "required": ["statement", "context", "impact"],
+      "properties": {
+        "statement": {
+          "type": "string",
+          "description": "Clear, concise problem statement"
+        },
+        "context": {
+          "type": "string",
+          "description": "Background context and history"
+        },
+        "impact": {
+          "type": "string",
+          "description": "Business/user impact of solving this problem"
+        },
+        "currentState": {
+          "type": "string",
+          "description": "How things currently work"
+        },
+        "desiredState": {
+          "type": "string",
+          "description": "How things should work after implementation"
+        }
+      }
+    },
+    "goals": {
+      "type": "array",
+      "description": "Specific, measurable goals for this task",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["description", "criteria", "priority"],
+        "properties": {
+          "description": {
+            "type": "string",
+            "description": "What will be achieved"
+          },
+          "criteria": {
+            "type": "string",
+            "description": "How to measure success"
+          },
+          "priority": {
+            "type": "string",
+            "enum": ["critical", "high", "medium", "low"],
+            "description": "Business priority level"
+          }
+        }
+      }
+    },
+    "constraints": {
+      "type": "array",
+      "description": "Technical, business, or operational constraints",
+      "items": {
+        "type": "object",
+        "required": ["type", "description"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["technical", "business", "operational", "legal", "compliance"],
+            "description": "Type of constraint"
+          },
+          "description": {
+            "type": "string",
+            "description": "Constraint description"
+          },
+          "impact": {
+            "type": "string",
+            "description": "How this constraint affects implementation"
+          }
+        }
+      }
+    },
+    "nonGoals": {
+      "type": "array",
+      "description": "What is explicitly NOT being addressed",
+      "items": {
+        "type": "string",
+        "description": "Non-goal description"
+      }
+    },
+    "acceptanceTests": {
+      "type": "array",
+      "description": "Automated or manual tests that must pass",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["description", "type", "priority"],
+        "properties": {
+          "description": {
+            "type": "string",
+            "description": "Test description"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["unit", "integration", "e2e", "manual", "performance", "security"],
+            "description": "Type of test"
+          },
+          "priority": {
+            "type": "string",
+            "enum": ["must", "should", "could", "won't"],
+            "description": "MoSCoW priority"
+          },
+          "criteria": {
+            "type": "string",
+            "description": "Specific pass/fail criteria"
+          }
+        }
+      }
+    },
+    "assumptions": {
+      "type": "array",
+      "description": "Assumptions that could affect implementation",
+      "items": {
+        "type": "object",
+        "required": ["description", "owner", "confidence", "impact"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Reference to assumption in assumptions register"
+          },
+          "description": {
+            "type": "string",
+            "description": "Assumption description"
+          },
+          "owner": {
+            "type": "string",
+            "description": "Person responsible for validating this assumption"
+          },
+          "confidence": {
+            "type": "string",
+            "enum": ["high", "medium", "low", "unknown"],
+            "description": "Confidence level in this assumption"
+          },
+          "impact": {
+            "type": "string",
+            "enum": ["high", "medium", "low"],
+            "description": "Impact if assumption proves false"
+          },
+          "validationPlan": {
+            "type": "string",
+            "description": "How to validate this assumption"
+          }
+        }
+      }
+    },
+    "unknowns": {
+      "type": "array",
+      "description": "Known unknowns that need investigation",
+      "items": {
+        "type": "object",
+        "required": ["description", "impact", "investigationPlan"],
+        "properties": {
+          "description": {
+            "type": "string",
+            "description": "What is unknown"
+          },
+          "impact": {
+            "type": "string",
+            "enum": ["high", "medium", "low"],
+            "description": "Impact if not resolved"
+          },
+          "investigationPlan": {
+            "type": "string",
+            "description": "How to investigate and resolve"
+          },
+          "owner": {
+            "type": "string",
+            "description": "Person responsible for investigation"
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Deadline for resolution"
+          }
+        }
+      }
+    },
+    "stakeholders": {
+      "type": "array",
+      "description": "People and groups affected by or interested in this task",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "role", "interest"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Stakeholder name"
+          },
+          "role": {
+            "type": "string",
+            "description": "Their role/function"
+          },
+          "interest": {
+            "type": "string",
+            "enum": ["implementer", "approver", "user", "maintainer", "reviewer"],
+            "description": "Level of interest/engagement"
+          },
+          "communication": {
+            "type": "string",
+            "description": "Preferred communication method"
+          }
+        }
+      }
+    },
+    "dependencies": {
+      "type": "array",
+      "description": "Other tasks or systems this depends on",
+      "items": {
+        "type": "object",
+        "required": ["description", "type"],
+        "properties": {
+          "description": {
+            "type": "string",
+            "description": "Dependency description"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["task", "system", "external", "infrastructure"],
+            "description": "Type of dependency"
+          },
+          "critical": {
+            "type": "boolean",
+            "description": "Whether this blocks implementation",
+            "default": false
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "in-progress", "completed", "blocked"],
+            "description": "Current status",
+            "default": "pending"
+          }
+        }
+      }
+    },
+    "risks": {
+      "type": "array",
+      "description": "Potential risks and mitigation strategies",
+      "items": {
+        "type": "object",
+        "required": ["description", "probability", "impact", "mitigation"],
+        "properties": {
+          "description": {
+            "type": "string",
+            "description": "Risk description"
+          },
+          "probability": {
+            "type": "string",
+            "enum": ["high", "medium", "low"],
+            "description": "Likelihood of occurrence"
+          },
+          "impact": {
+            "type": "string",
+            "enum": ["high", "medium", "low"],
+            "description": "Impact if risk materializes"
+          },
+          "mitigation": {
+            "type": "string",
+            "description": "How to prevent or respond to this risk"
+          }
+        }
+      }
+    },
+    "metrics": {
+      "type": "array",
+      "description": "Success metrics for this task",
+      "items": {
+        "type": "object",
+        "required": ["name", "description", "target", "baseline"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Metric name"
+          },
+          "description": {
+            "type": "string",
+            "description": "What this metric measures"
+          },
+          "target": {
+            "type": "string",
+            "description": "Target value or range"
+          },
+          "baseline": {
+            "type": "string",
+            "description": "Current baseline value"
+          },
+          "owner": {
+            "type": "string",
+            "description": "Person responsible for tracking this metric"
+          }
+        }
+      }
+    }
+  }
+}

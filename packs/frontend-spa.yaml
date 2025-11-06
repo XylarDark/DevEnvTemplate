@@ -1,0 +1,49 @@
+# Frontend SPA Preset
+# For Single Page Applications (React, Vue, Angular)
+
+name: "Frontend SPA"
+description: "Single Page Application setup"
+extends: "common"
+
+# Additional rules for frontend projects
+rules:
+  - id: "frontend-dependencies"
+    type: "package_prune"
+    description: "Remove template-specific frontend dependencies"
+    package_manager: "npm"
+    packages:
+      - "@typescript-eslint/eslint-plugin"  # Template tooling
+      - "@typescript-eslint/parser"         # Template tooling
+      - "eslint-plugin-react"               # Template tooling
+      - "prettier"                          # Template tooling
+      - "webpack"                           # Template tooling
+      - "babel-loader"                      # Template tooling
+    condition: "features.includes('frontend')"
+
+  - id: "frontend-files"
+    type: "file_glob_delete"
+    description: "Remove frontend template files not needed"
+    patterns:
+      - "webpack.config.js"
+      - "babel.config.js"
+      - ".eslintrc.js"
+      - "tsconfig.json"
+    condition: "!features.includes('webpack') && !features.includes('typescript')"
+
+# Recommended features for frontend SPA
+recommended_features:
+  - "frontend"
+  - "auth"
+  - "api"
+  - "ci"
+  - "unit-tests"
+  - "e2e-tests"
+
+# File recommendations
+recommended_files:
+  - "package.json"
+  - "src/App.js"
+  - "src/index.js"
+  - "public/index.html"
+  - ".gitignore"
+  - "README.md"

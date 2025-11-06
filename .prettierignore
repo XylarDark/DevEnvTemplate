@@ -1,0 +1,48 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+build/
+dist/
+out/
+.next/
+.nuxt/
+
+# Logs
+*.log
+
+# Coverage
+coverage/
+
+# Lock files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Environment files
+.env*
+
+# Generated files
+*.min.js
+*.min.css
+
+# Binary files
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.ico
+*.svg
+*.pdf
+*.zip
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Documentation that should preserve formatting
+CHANGELOG.md

@@ -35,8 +35,8 @@ Each ADR follows the [MADR](https://adr.github.io/madr/) format and includes:
 
 ## ADR List
 
-| ADR | Title | Status | Date |
-|-----|-------|--------|------|
+| ADR                                        | Title                        | Status   | Date       |
+| ------------------------------------------ | ---------------------------- | -------- | ---------- |
 | [ADR-001](adr-001-initial-architecture.md) | Initial Project Architecture | Accepted | YYYY-MM-DD |
 
 ## Creating New ADRs

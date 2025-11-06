@@ -26,7 +26,9 @@ assignees: []
 <!-- Only fill these details after the issue has been properly triaged -->
 
 ### Vulnerability Type
+
 <!-- Select all that apply -->
+
 - [ ] Injection (SQL, XSS, etc.)
 - [ ] Broken Authentication
 - [ ] Sensitive Data Exposure
@@ -40,6 +42,7 @@ assignees: []
 - [ ] Other: [specify]
 
 ### Severity
+
 - [ ] Critical: Immediate threat to data/system security
 - [ ] High: Significant security risk
 - [ ] Medium: Moderate security concern
@@ -47,13 +50,16 @@ assignees: []
 - [ ] Info: Security best practice recommendation
 
 ### CVSS Score
+
 <!-- If applicable -->
+
 CVSS v3.1 Score: [score]/10
 Vector: [CVSS vector string]
 
 ## Impact Assessment
 
 ### Affected Components
+
 - [ ] Frontend/Web Interface
 - [ ] API/Backend Services
 - [ ] Database
@@ -63,6 +69,7 @@ Vector: [CVSS vector string]
 - [ ] Other: [specify]
 
 ### Data Exposure Risk
+
 - [ ] No data exposure
 - [ ] Public data only
 - [ ] Internal/sensitive data
@@ -72,6 +79,7 @@ Vector: [CVSS vector string]
 - [ ] Other sensitive data
 
 ### User Impact
+
 - [ ] No user impact
 - [ ] User inconvenience
 - [ ] Data compromise possible
@@ -81,16 +89,19 @@ Vector: [CVSS vector string]
 ## Remediation
 
 ### Recommended Actions
+
 1. [Immediate action]
 2. [Short-term fix]
 3. [Long-term solution]
 
 ### Timeline
+
 - **Detection**: [When was this discovered?]
 - **Fix Target**: [When should this be fixed?]
 - **Communication**: [When to notify affected parties?]
 
 ### Responsible Parties
+
 - **Security Lead**: [Name]
 - **Developer**: [Name]
 - **Reviewer**: [Name]
@@ -98,11 +109,13 @@ Vector: [CVSS vector string]
 ## Verification
 
 ### Testing Steps
+
 1. [Step to verify the vulnerability exists]
 2. [Step to verify the fix works]
 3. [Regression testing steps]
 
 ### Acceptance Criteria
+
 - [ ] Vulnerability no longer exploitable
 - [ ] Fix doesn't break existing functionality
 - [ ] Security tests added/updated
@@ -111,11 +124,13 @@ Vector: [CVSS vector string]
 ## Communication
 
 ### Internal Notification
+
 - [ ] Security team notified
 - [ ] Development team notified
 - [ ] Management notified
 
 ### External Communication
+
 - [ ] Users notified (if applicable)
 - [ ] Security advisory published
 - [ ] CVE requested (if applicable)

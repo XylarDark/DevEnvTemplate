@@ -70,4 +70,4 @@ Any specific implementation details or follow-up actions:
 
 ---
 
-*This ADR follows the [MADR](https://adr.github.io/madr/) format.*
+_This ADR follows the [MADR](https://adr.github.io/madr/) format._

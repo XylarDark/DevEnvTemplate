@@ -17,6 +17,12 @@ Use this checklist during code review to ensure quality and consistency.
 - [ ] **Performance**: No obvious performance issues or regressions
 - [ ] **Security**: No security vulnerabilities introduced
 - [ ] **Error Handling**: Proper error handling and edge cases covered
+- [ ] **Server/Client Boundaries**: No server-only modules (fs, path) used in "use client" files
+- [ ] **Cross-Shell Safe**: Scripts and docs avoid && chaining; use npm scripts or separate commands
+- [ ] **GitHub Ecosystem**: Documentation links correctly reference `.github/*` paths
+- [ ] **Import Boundaries**: Imports respect `import/no-internal-modules` rules; no internal module access
+- [ ] **Path Resolution**: Uses `scripts/utils/path-resolver.js` instead of hardcoded old paths
+- [ ] **CSP Integrity**: Content Security Policy remains secure; no unsafe directives added
 
 ## Architecture
 
@@ -39,6 +45,8 @@ Use this checklist during code review to ensure quality and consistency.
 - [ ] **Scope Gate**: Appropriate for change scope (see PR template)
 - [ ] **Performance Budget**: No significant budget violations (if applicable)
 - [ ] **Breaking Changes**: Documented if present
+- [ ] **Repository Layout**: Changes maintain clean folder structure (`config/`, `packs/`, `scripts/`, `.github/`)
+- [ ] **Migration Policy**: Dual-path loaders used appropriately; old paths removed after stabilization
 
 ## Security
 
@@ -48,6 +56,13 @@ Use this checklist during code review to ensure quality and consistency.
 - [ ] **Secrets**: No credentials or secrets committed
 - [ ] **Dependencies**: No vulnerable dependencies introduced
 
+## Next.js/Web Development
+
+- [ ] **Schema Sourcing**: Options/data supplied via API routes or build-time copy, not fs in client bundles
+- [ ] **Website Builds**: Website builds cleanly and typechecks without errors
+- [ ] **External Imports**: No imports outside website/ directory unless experimental.externalDir enabled
+- [ ] **Client Boundaries**: Client components properly marked with "use client" directive
+
 ## Accessibility (if UI)
 
 - [ ] **Keyboard Navigation**: All interactive elements keyboard accessible
@@ -55,6 +70,7 @@ Use this checklist during code review to ensure quality and consistency.
 - [ ] **Color Contrast**: Sufficient contrast ratios maintained
 - [ ] **Focus Management**: Logical focus order and visible focus indicators
 - [ ] **Alt Text**: Images have appropriate alternative text
+- [ ] **Labels Required**: All form inputs have associated labels with proper for/id relationships
 
 ## Documentation
 

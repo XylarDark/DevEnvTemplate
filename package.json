@@ -1,0 +1,62 @@
+{
+  "name": "devenv-template",
+  "version": "1.0.0",
+  "description": "Development environment template for Cursor IDE Shopify theme projects",
+  "scripts": {
+    "setup:worktree": "npm ci --no-audit --no-fund && npm run tools:verify",
+    "tools:verify": "node scripts/verify-tools.js",
+    "agent:init": "node scripts/agent/cli.js",
+    "agent:apply": "node scripts/agent/apply.js",
+    "agent:validate": "node scripts/agent/validate.js",
+    "agent:questions": "node scripts/agent/questionnaire.js",
+    "agent:plan": "node scripts/agent/plan-only.js",
+    "agent:context": "node scripts/agent/context-assemble.js",
+    "agent:lint:context": "node scripts/agent/context-lint.js",
+    "agent:impact": "node scripts/agent/impact-analyze.js",
+    "agent:prompt": "node scripts/agent/prompt-build.js",
+    "cleanup": "node scripts/cleanup/cli.js",
+    "cleanup:dry-run": "node scripts/cleanup/cli.js --dry-run",
+    "cleanup:apply": "node scripts/cleanup/cli.js --apply",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "deadcode": "ts-prune --ignore \"test|spec|__tests__|node_modules\"",
+    "depcheck": "depcheck --ignores=\"husky,@commitlint/cli,@commitlint/config-conventional,lint-staged,ts-prune\"",
+    "changeset": "changeset",
+    "release": "changeset publish",
+    "sbom": "cyclonedx-npm --output-file sbom.json",
+    "prepare": "husky install"
+  },
+  "lint-staged": {
+    "*.{js,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{js,ts,tsx,json,md}": [
+      "prettier --write"
+    ]
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "volta": {
+    "node": "20.10.0"
+  },
+  "dependencies": {
+    "ajv": "^8.12.0",
+    "archiver": "^7.0.1",
+    "commander": "^12.0.0",
+    "glob": "^10.3.10",
+    "yaml": "^2.4.0"
+  },
+  "devDependencies": {
+    "prettier": "^3.3.0",
+    "husky": "^8.0.0",
+    "@commitlint/cli": "^17.0.0",
+    "@commitlint/config-conventional": "^17.0.0",
+    "lint-staged": "^15.2.0",
+    "ts-prune": "^0.10.3",
+    "depcheck": "^1.4.7",
+    "@changesets/cli": "^2.27.1",
+    "@cyclonedx/cyclonedx-npm": "^1.16.1"
+  }
+}

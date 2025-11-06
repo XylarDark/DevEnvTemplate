@@ -39,6 +39,7 @@ What other solutions have you considered?
 As a [type of user], I want [some goal] so that [some reason].
 
 Examples:
+
 - As a developer, I want to use TypeScript so that I get better type safety
 - As a user, I want dark mode so that I can use the app comfortably at night
 

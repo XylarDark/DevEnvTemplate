@@ -44,11 +44,13 @@ For commercial support, enterprise features, or custom development:
 ## Response Times
 
 ### Community Support
+
 - **Questions**: Within 48 hours
 - **Bug Reports**: Acknowledgment within 24 hours, triage within 72 hours
 - **Feature Requests**: Acknowledgment within 1 week
 
 ### Commercial Support
+
 - **Priority 1 (Critical)**: Response within 1 hour, resolution within 4 hours
 - **Priority 2 (High)**: Response within 4 hours, resolution within 24 hours
 - **Priority 3 (Normal)**: Response within 24 hours, resolution within 1 week

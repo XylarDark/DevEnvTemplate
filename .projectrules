@@ -1,6 +1,6 @@
 # General-Purpose Development Governance Rules
-# Version: 1.1 - Git and Shell Reliability Updates
-# Last Updated: 2025-10-31
+# Version: 1.3 - Plan/Agent CI Hardening
+# Last Updated: 2025-11-06
 # Purpose: Technology-agnostic governance for QA-first, scope-gated development
 #
 # Quick Links:
@@ -141,6 +141,14 @@ policies:
   - Security Baseline: No credentials in repo; regular dependency updates; basic security scanning.
   - Git Transport: Default to HTTPS for push operations; SSH optional only with explicit host key configuration and key management.
   - Rules Governance: Update .projectrules after each Plan→Agent cycle; maintain changelog; version bumps for policy changes.
+  - Context-First Development: Require Context Contracts for code changes; enforce Question → Plan → Implement workflow.
+  - Plan-Only Gate: Code PRs require approved Plan-only PRs first; use STRICT_PLAN_GUARD=true to enforce.
+  - Impact Guard: Changed files must align with predicted impact; use IMPACT_GUARD=warn|block for enforcement.
+  - Plan/Agent Workflow: All development happens through Cursor Plan Mode; CI artifacts (stack report, gaps, context pack) as primary inputs.
+  - Assumptions Policy: High-risk assumptions must have validation plans and be resolved before implementation merge; CI blocks on unresolved high-risk assumptions.
+  - Zero-Commands Principle: No local CLI scripts required; all tooling happens in CI or Cursor Plan Mode.
+  - CI Artifacts as Truth: Stack reports, gap analysis, and context packs are authoritative sources for planning.
+  - Multi-Ecosystem Support: Governance applies to Node.js, Python, Go, Java, .NET, and other technology stacks.
 
 version_control:
   - Rules versioning: Update version number in header for major changes and phase completions.

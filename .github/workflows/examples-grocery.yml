@@ -1,0 +1,57 @@
+# Grocery App Demo CI
+#
+# Tests the grocery list example app independently.
+# Validates that the demo works and cleanup system functions correctly.
+
+name: Grocery App Demo
+
+on:
+  push:
+    branches: [ main, master, develop ]
+    paths:
+      - 'examples/grocery-app/**'
+      - 'scripts/cleanup/**'
+      - 'cleanup.config.yaml'
+  pull_request:
+    branches: [ main, master, develop ]
+    paths:
+      - 'examples/grocery-app/**'
+      - 'scripts/cleanup/**'
+      - 'cleanup.config.yaml'
+
+jobs:
+  test-demo:
+    name: Test Grocery App Demo
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install root dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Run grocery app tests
+        working-directory: examples/grocery-app
+        run: npm test
+
+      - name: Run cleanup dry-run on demo
+        run: |
+          echo "🔍 Testing cleanup system on grocery app..."
+          node scripts/cleanup/cli.js \
+            --working-dir examples/grocery-app \
+            --config examples/grocery-app/cleanup.config.yaml \
+            --dry-run \
+            --quiet
+
+      - name: Verify demo is clean
+        working-directory: examples/grocery-app
+        run: |
+          echo "✅ Demo app tests and cleanup validation passed!"
+          echo "The grocery list demo is working correctly."

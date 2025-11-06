@@ -1,0 +1,32 @@
+# Shopify Theme Check Configuration
+# https://shopify.dev/docs/themes/tools/cli/theme-check
+#
+# Copy this file to your theme project root and customize as needed.
+# Uncomment and modify settings below for your project requirements.
+
+# # Exclude vendor files and generated assets
+# exclude:
+#   - assets/vendor/**
+#   - assets/__tests__/**
+
+# # Enable all checks except those that might be too strict for development
+# checks:
+#   # Enable all checks by default
+#   enabled: true
+
+#   # Disable noisy checks that may not apply to all themes
+#   MissingRequiredDirectories: false
+#   UnusedSnippet: false
+#   UnusedSection: false
+
+# # Custom check settings
+# check_settings:
+#   # Allow longer lines in JSON files
+#   ParserBlockingJavaScript: false
+
+#   # Be more lenient with asset sizes during development
+#   AssetSizeJavaScript:
+#     enabled: false
+
+#   AssetSizeCSS:
+#     enabled: false

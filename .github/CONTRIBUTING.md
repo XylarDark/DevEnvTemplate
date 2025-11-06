@@ -12,6 +12,55 @@ This project follows a professional and inclusive code of conduct. Be respectful
 2. **Understand Governance**: Review the [rules changelog](docs/rules-changelog.md) for evolution history
 3. **Set Up Development Environment**: Follow setup instructions in README.md
 
+### Node Version Management
+
+This project requires Node.js 20+. We recommend using a version manager:
+
+**Using nvm (recommended):**
+```bash
+# Install and use the correct Node version
+nvm install
+nvm use
+```
+
+**Using Volta (alternative):**
+```bash
+# Volta automatically manages Node versions per project
+volta install node
+```
+
+The project includes `.nvmrc` and `volta.node` configuration for consistent Node versions across the team.
+
+### Website Development Setup
+
+The onboarding website is built with Next.js and TypeScript:
+
+```bash
+# Navigate to website directory
+cd website
+
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Type checking
+npx tsc --noEmit
+
+# Linting
+npm run lint
+```
+
+**Windows/PowerShell Notes**:
+- Avoid `&&` command chaining in scripts/docs - PowerShell doesn't recognize it
+- Use separate commands or npm scripts instead
+- Prefer `cross-env` for environment variables if needed
+- Test scripts on both Windows and Unix-like systems
+
 ## Development Workflow
 
 ### Pre-Development (Plan Mode)
@@ -65,6 +114,7 @@ type(scope): description
 **Types**: `feat`, `fix`, `refactor`, `perf`, `docs`, `test`, `chore`
 
 **Examples**:
+
 - `feat(auth): add user login validation`
 - `fix(ui): resolve button focus trap`
 - `docs(readme): update installation instructions`
@@ -86,6 +136,36 @@ type(scope): description
 - **Fast local test loop** - tests run quickly during development
 - **Schema validation** for structured data (if applicable)
 - **Accessibility testing** for UI components (if applicable)
+- **Website smoke tests** - verify guided/advanced onboarding flows work
+
+### Next.js Development Guidelines
+
+- **Server/Client Boundaries**: Mark client components with `"use client"` directive
+- **No Node APIs in Client**: Don't use `fs`, `path`, etc. in client-side code
+- **API Routes**: Use `/api/` routes for server-side data access
+- **External Imports**: Avoid importing files outside `website/` directory
+- **Accessibility**: All inputs need labels, focus states, and keyboard navigation
+- **Schema Sourcing**: Options come from API routes or build-time imports, not runtime `fs`
+
+### Commit Hooks (Recommended)
+
+Consider setting up Husky for pre-commit quality gates:
+
+```bash
+# Install husky
+npm install --save-dev husky
+
+# Initialize git hooks
+npx husky init
+
+# Add pre-commit hook
+echo '#!/usr/bin/env sh
+npm run lint
+npx tsc --noEmit' > .husky/pre-commit
+
+# Make executable
+chmod +x .husky/pre-commit
+```
 
 ### Code Style
 
@@ -103,6 +183,7 @@ type(scope): description
 ## Quality Gates
 
 ### Required Checks
+
 - ✅ **Unit tests pass**
 - ✅ **Linting passes**
 - ✅ **Governance checks pass** (report-only)
@@ -110,6 +191,7 @@ type(scope): description
 - ✅ **PR template completed** (Scope Gate + Session Review)
 
 ### Optional Checks (Per Project)
+
 - ⏳ **Integration tests** (recommended)
 - ⏳ **Performance budgets** (if user-facing)
 - ⏳ **Accessibility audits** (if UI)
@@ -118,15 +200,18 @@ type(scope): description
 ## Review Process
 
 ### Automated Checks
+
 - CI runs lint, test, and governance validation
 - Governance checks provide actionable feedback (non-blocking)
 
 ### Manual Review
+
 - Code review focuses on architecture, testing, and adherence to `.projectrules`
 - Reviewers check for proper error handling and edge cases
 - Documentation updates verified
 
 ### Approval Requirements
+
 - All automated checks pass
 - At least one approving review
 - Scope Gate checklist completed

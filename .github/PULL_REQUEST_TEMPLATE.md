@@ -1,86 +1,66 @@
 ## Description
 
-Brief description of the changes and what they accomplish.
+Brief description of the changes in this PR.
 
-## Scope Gate ✅
+## Context Contract (Required for Code Changes)
 
-Complete this checklist before requesting review. See `.projectrules` for details.
+**Context Contract ID:** [Link to context contract file or ID]
+**Problem Statement:** [Brief summary of the problem being solved]
+**Goals:** [List the specific goals this change achieves]
 
-- [ ] **New feature or setting?** [yes/no]
-  - If yes, provide feature toggle details below
-- [ ] **External domains/assets added?** [yes/no]
-  - If yes, list domains/assets: [list]
-- [ ] **Significant perf/a11y/SEO/security impact?** [none/low/medium/high]
-  - If medium/high, provide mitigation details below
-- [ ] **Feature toggle implemented?** [yes/no]
-  - Setting ID: [id]
-  - Default: [false]
-  - Rollback plan: [how to disable/revert safely]
+### Assumptions & Validation
+- [ ] All assumptions from context contract have been validated
+- [ ] Unknowns have been investigated and resolved
+- [ ] Dependencies are available and compatible
 
-## Performance Budget 📊
+### Impact Assessment
+- [ ] Files changed align with impact analysis predictions
+- [ ] No unexpected side effects identified
+- [ ] Performance impact assessed and acceptable
 
-Track asset changes and budget compliance (if applicable).
+### Questions & Clarifications
+[If you had questions during implementation, document them and the answers here]
 
-| Asset Type | Before | After | Budget | Status |
-|------------|--------|-------|--------|--------|
-| JS bundle | - | - | <100KB | ✅ |
-| CSS bundle | - | - | <100KB | ✅ |
-| Images | - | - | - | ✅ |
-| Other | - | - | - | ✅ |
+## Type of Change
 
-**Budget Notes:** [Any exceptions or mitigation plans]
+- [ ] 🐛 Bug fix (non-breaking change which fixes an issue)
+- [ ] ✨ New feature (non-breaking change which adds functionality)
+- [ ] 💥 Breaking change (fix or feature that would cause existing functionality to not work as expected)
+- [ ] 📚 Documentation update
+- [ ] 🛠️ Refactoring (no functional changes)
+- [ ] 🧪 Tests (adding or updating tests)
+- [ ] 🔧 Tooling (build, CI, dependencies, etc.)
+- [ ] 📋 Plan-only (implementation plan without code changes)
 
-## Testing 🧪
+## Scope Gate Checklist
 
-- [ ] Unit tests added/updated
-- [ ] Integration tests added/updated (if applicable)
+- [ ] **New feature/setting?** [yes/no] - If yes, describe business justification
+- [ ] **External domains/assets?** [yes/no] - If yes, list them
+- [ ] **Performance/a11y/SEO/security impact?** [none/low/medium/high]
+- [ ] **Rollback plan:** How to disable/revert this change
+- [ ] **Testing:** Unit tests added/updated, integration tests if applicable
+
+## Testing
+
+- [ ] Unit tests pass
+- [ ] Integration tests pass (if applicable)
 - [ ] Manual testing completed
-- [ ] Cross-browser testing (if UI)
-- [ ] Accessibility testing (if UI)
-- [ ] Performance testing (if applicable)
+- [ ] Cross-platform tested (Windows/macOS/Linux if applicable)
 
-**Testing Notes:** [Specific test scenarios, edge cases covered]
+## Screenshots (if UI changes)
 
-## Screenshots/Artifacts 📸
-
-<!-- Add screenshots for UI changes, before/after comparisons -->
-
-## Session Review 🔄
-
-Complete this section after each Plan→Agent development cycle.
-
-### Changes Summary
-- **Features Added:** [list]
-- **Tests Written:** [list]
-- **CI/Docs Updated:** [list]
-- **Bugs Fixed:** [list]
-
-### Errors/Workarounds Logged
-- **Platform/Environment Errors:** [list any encountered]
-- **Solutions Implemented:** [workarounds or fixes applied]
-
-### Rules Deltas
-- **Add/Modify/Remove in `.projectrules`:** [policies/guardrails/patterns]
-- **Version Bump Required:** [yes/no] New version: [x.y]
-- **Rationale:** [why changes are needed]
-
-### Changelog Entry
-- **Entry Added to `docs/rules-changelog.md`:** [yes/no]
-- **Date/Version:** [YYYY-MM-DD - vx.y]
-- **Highlights:** [summary of governance changes]
-
-### Infrastructure Validation
-- [ ] Git repo root validated (`git rev-parse --show-toplevel`)
-- [ ] First push method verified (HTTPS by default; SSH only if configured)
-
-## Breaking Changes 💥
-
-- [ ] Breaking changes included
-- [ ] Migration guide provided
-- [ ] Documentation updated
-
-**Breaking Change Details:** [describe impact and migration path]
+<!-- Add screenshots or recordings of UI changes -->
 
 ## Additional Notes
 
-[Any additional context, dependencies, or follow-up work]
+<!-- Any additional context or considerations -->
+
+## Session Review (Post-Implementation)
+
+After implementing, complete this section:
+
+- [ ] **Changes summary:** What was added/modified/removed
+- [ ] **Errors/workarounds:** Any platform/environment issues encountered
+- [ ] **Rules deltas:** Updates needed to `.projectrules` or governance
+- [ ] **Version bump:** Increment version if governance rules changed
+- [ ] **Changelog:** Updated `docs/rules-changelog.md` if applicable

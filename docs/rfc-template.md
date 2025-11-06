@@ -40,7 +40,7 @@ Technical details of the implementation.
 
 ## Drawbacks
 
-Why should we *not* do this?
+Why should we _not_ do this?
 
 - What are the downsides?
 - What complications does this introduce?
