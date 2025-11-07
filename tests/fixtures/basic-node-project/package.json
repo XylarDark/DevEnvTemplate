@@ -1,0 +1,17 @@
+{
+  "name": "basic-node-project-fixture",
+  "version": "1.0.0",
+  "description": "Test fixture for Node.js cleanup testing",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "test": "echo \"No tests specified\""
+  },
+  "dependencies": {
+    "express": "^4.18.0"
+  },
+  "devDependencies": {
+    "@dev/template-only": "^1.0.0"
+  }
+}
+

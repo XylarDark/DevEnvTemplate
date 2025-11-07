@@ -1,0 +1,27 @@
+{
+  "version": "1.0.0",
+  "generatedAt": "2025-01-01T00:00:00.000Z",
+  "requirements": {
+    "productType": "Web Application",
+    "coreFeatures": ["REST API"],
+    "preferredStack": "Node.js",
+    "deploymentTarget": "Docker Containers",
+    "testingLevel": "Unit tests only",
+    "governanceSensitivity": "Standard (basic security, some compliance)",
+    "needsCI": true,
+    "needsDocker": true,
+    "needsMonitoring": false,
+    "teamSize": "Solo developer"
+  },
+  "derived": {
+    "features": ["api", "node", "ci", "docker", "unit-tests"],
+    "rationale": {
+      "features": "Basic Node.js API with minimal features",
+      "stack": "Node.js for API development",
+      "infrastructure": "Docker for containerization",
+      "governance": "Standard security practices",
+      "testing": "Unit tests for core functionality"
+    }
+  }
+}
+

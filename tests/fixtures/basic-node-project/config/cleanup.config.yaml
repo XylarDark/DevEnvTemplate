@@ -1,0 +1,37 @@
+# Cleanup config for basic-node-project fixture
+version: 1
+
+profile: common
+features: []
+
+comment_syntax:
+  ".js": "//"
+
+markers:
+  template_only:
+    start: "TEMPLATE-ONLY:START"
+    end: "TEMPLATE-ONLY:END"
+  line_tag: "@template-only"
+
+profiles:
+  common:
+    rules:
+      - id: strip-template-blocks
+        type: block_markers
+        description: "Remove template-only code blocks"
+        markers:
+          start: "TEMPLATE-ONLY:START"
+          end: "TEMPLATE-ONLY:END"
+
+      - id: strip-line-tags
+        type: line_tag
+        description: "Remove lines tagged as template-only"
+        tag: "@template-only"
+
+      - id: remove-template-deps
+        type: package_prune
+        description: "Remove template-only dependencies"
+        manager: npm
+        remove_dev_deps:
+          - "@dev/template-only"
+
