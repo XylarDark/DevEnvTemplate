@@ -10,6 +10,9 @@
 const { Command } = require("commander");
 const path = require("path");
 const { executeCleanup } = require("./engine");
+const { createLogger } = require("../utils/logger");
+
+const logger = createLogger({ context: 'cleanup-cli' });
 
 const program = new Command();
 
@@ -36,7 +39,7 @@ program.action(async options => {
   try {
     // Validate mutually exclusive options
     if (options.apply && options.dryRun === false) {
-      console.error("Error: --apply and --dry-run=false cannot be used together");
+      logger.error("--apply and --dry-run=false cannot be used together");
       process.exit(1);
     }
 
@@ -58,13 +61,13 @@ program.action(async options => {
     };
 
     if (!options.quiet) {
-      console.log(`🚀 Starting template cleanup...`);
-      console.log(`   Profile: ${options.profile}`);
-      console.log(`   Mode: ${dryRun ? "DRY RUN" : "APPLY"}`);
+      logger.info(`🚀 Starting template cleanup...`);
+      logger.info(`   Profile: ${options.profile}`);
+      logger.info(`   Mode: ${dryRun ? "DRY RUN" : "APPLY"}`);
       if (engineOptions.features.length > 0) {
-        console.log(`   Features: ${engineOptions.features.join(", ")}`);
+        logger.info(`   Features: ${engineOptions.features.join(", ")}`);
       }
-      console.log("");
+      logger.info("");
     }
 
     // Execute cleanup
@@ -77,7 +80,7 @@ program.action(async options => {
         options.report
       );
       if (!options.quiet) {
-        console.log(`📊 Report exported to: ${reportPath}`);
+        logger.info(`📊 Report exported to: ${reportPath}`);
       }
     }
 
@@ -94,9 +97,9 @@ program.action(async options => {
       process.exit(exitCode);
     }
   } catch (error) {
-    console.error(`❌ Cleanup failed: ${error.message}`);
+    logger.error(`❌ Cleanup failed: ${error.message}`, { stack: error.stack });
     if (options.verbose) {
-      console.error(error.stack);
+      logger.error(error.stack);
     }
     process.exit(1);
   }
@@ -108,25 +111,25 @@ program.action(async options => {
 function displaySummary(report, verbose = false) {
   const { summary, actions, errors } = report;
 
-  console.log("📋 Summary:");
-  console.log(`   Actions taken: ${summary.totalActions}`);
-  console.log(`   Files deleted: ${summary.filesDeleted}`);
-  console.log(`   Lines removed: ${summary.linesRemoved}`);
-  console.log(`   Blocks removed: ${summary.blocksRemoved}`);
+  logger.info("📋 Summary:");
+  logger.info(`   Actions taken: ${summary.totalActions}`);
+  logger.info(`   Files deleted: ${summary.filesDeleted}`);
+  logger.info(`   Lines removed: ${summary.linesRemoved}`);
+  logger.info(`   Blocks removed: ${summary.blocksRemoved}`);
 
   if (errors.length > 0) {
-    console.log(`   Errors: ${errors.length}`);
+    logger.warn(`   Errors: ${errors.length}`);
     if (verbose) {
       errors.forEach((error, i) => {
-        console.log(`     ${i + 1}. ${error.rule}: ${error.error}`);
+        logger.warn(`     ${i + 1}. ${error.rule}: ${error.error}`);
       });
     }
   }
 
-  console.log("");
+  logger.info("");
 
   if (actions.length > 0 && verbose) {
-    console.log("📝 Actions:");
+    logger.info("📝 Actions:");
     actions.forEach((action, i) => {
       const icon =
         action.type === "file_delete"
@@ -136,25 +139,25 @@ function displaySummary(report, verbose = false) {
             : action.type === "block_remove"
               ? "📦"
               : "⚙️";
-      console.log(`   ${icon} ${action.type}: ${action.path || action.description}`);
+      logger.info(`   ${icon} ${action.type}: ${action.path || action.description}`);
       if (action.dryRun) {
-        console.log(`      (dry run - not applied)`);
+        logger.info(`      (dry run - not applied)`);
       }
     });
-    console.log("");
+    logger.info("");
   }
 
   if (report.dryRun) {
-    console.log("✅ Dry run completed. No files were modified.");
-    console.log("💡 To apply changes, run with --apply flag.");
+    logger.info("✅ Dry run completed. No files were modified.");
+    logger.info("💡 To apply changes, run with --apply flag.");
   } else {
-    console.log("✅ Cleanup completed successfully.");
+    logger.info("✅ Cleanup completed successfully.");
   }
 }
 
 // Handle unhandled promise rejections
 process.on("unhandledRejection", (reason, promise) => {
-  console.error("❌ Unhandled Rejection at:", promise, "reason:", reason);
+  logger.error("❌ Unhandled Rejection", { reason, promise });
   process.exit(1);
 });
 

@@ -9,6 +9,9 @@
 
 const fs = require('fs').promises;
 const path = require('path');
+const { createLogger } = require('../../scripts/utils/logger');
+
+const logger = createLogger({ context: 'stack-detector' });
 
 class StackDetector {
   constructor() {
@@ -30,7 +33,7 @@ class StackDetector {
   }
 
   async detect() {
-    console.log('🔍 Analyzing repository stack...');
+    logger.info('🔍 Analyzing repository stack...');
 
     // Detect package managers and frameworks
     await this.detectPackageJson();
@@ -664,9 +667,9 @@ class StackDetector {
 if (require.main === module) {
   const detector = new StackDetector();
   detector.detect().then(result => {
-    console.log(JSON.stringify(result, null, 2));
+    logger.info(JSON.stringify(result, null, 2));
   }).catch(error => {
-    console.error('Stack detection failed:', error.message);
+    logger.error('Stack detection failed:', { error: error.message, stack: error.stack });
     process.exit(1);
   });
 }
