@@ -60,7 +60,7 @@
     "@changesets/cli": "^2.27.1",
     "@commitlint/cli": "^17.0.0",
     "@commitlint/config-conventional": "^17.0.0",
-    "@cyclonedx/cyclonedx-npm": "^1.16.1",
+    "@cyclonedx/cyclonedx-npm": "^4.1.0",
     "@types/node": "^20.10.0",
     "depcheck": "^1.4.7",
     "eslint": "^9.39.1",
