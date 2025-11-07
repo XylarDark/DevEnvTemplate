@@ -15,6 +15,7 @@ import { resolveConfigPath } from '../utils/path-resolver';
 import { getPackageManager } from './package-managers';
 import { CleanupRule, CleanupAction, CleanupReport, CleanupConfig } from '../types/cleanup';
 import { PerformanceTracker } from '../types/performance';
+import { FileCache, ConfigCache } from '../utils/cache';
 
 // Default file extensions for code files (used by block/line marker rules)
 const CODE_EXTENSIONS = [
@@ -58,6 +59,7 @@ interface CleanupEngineOptions {
   keepFiles?: string[];
   report?: string;
   performance?: boolean;
+  cache?: boolean;
 }
 
 interface CommentSyntax {
@@ -103,6 +105,9 @@ export class CleanupEngine {
   private report: CleanupReport;
   private performanceEnabled: boolean;
   private performanceTracker: PerformanceTracker | null;
+  private cacheEnabled: boolean;
+  private fileCache: FileCache | null;
+  private configCache: ConfigCache | null;
 
   constructor(options: CleanupEngineOptions = {}) {
     this.profile = options.profile || "common";
@@ -123,6 +128,11 @@ export class CleanupEngine {
     // Performance tracking
     this.performanceEnabled = options.performance || false;
     this.performanceTracker = this.performanceEnabled ? new PerformanceTracker() : null;
+
+    // Caching
+    this.cacheEnabled = options.cache !== false; // enabled by default
+    this.fileCache = this.cacheEnabled ? new FileCache() : null;
+    this.configCache = this.cacheEnabled ? new ConfigCache() : null;
 
     // Performance optimizations
     this.excludeGlobCache = new Map();
@@ -150,23 +160,51 @@ export class CleanupEngine {
   async loadConfig(): Promise<CleanupConfig> {
     try {
       const configPath = resolveConfigPath(this.configPath, this.workingDir);
+      
+      // Load file content
       const configContent = await fs.readFile(configPath, "utf8");
-      this.config = yaml.parse(configContent) as CleanupConfig;
+      
+      // Try to get from cache first
+      let parsedConfig: CleanupConfig;
+      let configCached = false;
+      
+      if (this.configCache && this.fileCache) {
+        const contentHash = this.fileCache.generateHash(configContent);
+        const cached = this.configCache.get(configPath, contentHash);
+        if (cached) {
+          parsedConfig = cached;
+          configCached = true;
+        } else {
+          // Parse and cache the config
+          parsedConfig = yaml.parse(configContent) as CleanupConfig;
+          this.configCache.set(configPath, parsedConfig, contentHash);
+        }
+      } else {
+        // No caching, just parse
+        parsedConfig = yaml.parse(configContent) as CleanupConfig;
+      }
+
+      // Track cache hit/miss in performance tracker
+      if (this.performanceTracker) {
+        this.performanceTracker.trackFileScanned();
+      }
 
       // Validate config structure
-      if (!this.config.profiles || !this.config.profiles[this.profile]) {
+      if (!parsedConfig.profiles || !parsedConfig.profiles[this.profile]) {
         throw new Error(`Profile '${this.profile}' not found in config`);
       }
 
       // Set defaults
-      this.config.comment_syntax = this.config.comment_syntax || {};
-      this.config.markers = this.config.markers || {};
+      parsedConfig.comment_syntax = parsedConfig.comment_syntax || {};
+      parsedConfig.markers = parsedConfig.markers || {};
 
       // Merge default features
-      if (this.config.features) {
-        this.config.features.forEach(f => this.features.add(f));
+      if (parsedConfig.features) {
+        parsedConfig.features.forEach(f => this.features.add(f));
       }
 
+      // Store the validated config
+      this.config = parsedConfig;
       return this.config;
     } catch (error: any) {
       throw new Error(`Failed to load config from ${this.configPath}: ${error.message}`);

@@ -33,6 +33,8 @@ program
   .option("--apply", "apply changes (overrides --dry-run)")
   .option("--fail-on-actions", "exit with code 2 if any actions are detected (for CI)")
   .option("--performance", "enable performance metrics tracking and reporting")
+  .option("--cache", "enable file and config caching (default: true)")
+  .option("--no-cache", "disable file and config caching")
   .option("--verbose", "enable verbose output")
   .option("--quiet", "suppress non-error output");
 
@@ -60,6 +62,7 @@ program.action(async options => {
       excludeGlobs: options.excludeGlob,
       keepFiles: options.keep,
       performance: options.performance || false,
+      cache: options.cache,
     };
 
     if (!options.quiet) {
