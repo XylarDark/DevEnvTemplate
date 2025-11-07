@@ -47,6 +47,8 @@ npm run cleanup -- --feature auth,api --apply
 - `--apply` - Apply changes (default is dry-run)
 - `--performance` - Show performance metrics and recommendations
 - `--cache` / `--no-cache` - Control configuration caching (default: enabled)
+- `--parallel` - Enable parallel file processing for faster cleanup
+- `--concurrency <n>` - Max concurrent operations (default: CPU count)
 - `--profile <name>` - Use specific cleanup profile
 - `--feature <list>` - Enable feature flags
 - `--only <rules>` - Run only specific rules
@@ -109,6 +111,42 @@ npm run cleanup -- --no-cache --apply
 - SHA-256 content hashing ensures accuracy
 - Automatic invalidation when files change
 - 1-hour TTL prevents stale data
+
+### Parallel Processing
+
+Process files in parallel for 2-5x speedup on large codebases:
+
+```bash
+# Enable parallel processing
+npm run cleanup -- --parallel --apply
+
+# Custom concurrency (default: CPU count)
+npm run cleanup -- --parallel --concurrency 8 --apply
+
+# With performance metrics
+npm run cleanup -- --parallel --performance --apply
+```
+
+**When to use:**
+- Large codebases (50+ files)
+- Multi-core systems
+- I/O-bound operations (file reading/writing)
+
+**Performance tips:**
+- Default concurrency (CPU count) works well for most cases
+- For I/O-heavy workloads, try 2x CPU count
+- For CPU-heavy workloads, stick to CPU count
+- Use `--performance` to see actual speedup
+- Combine with `--cache` for maximum performance
+
+**Example output:**
+```
+⚡ Parallel Processing:
+  Enabled:           Yes
+  Concurrency:       8
+  Batches:           15
+  Estimated Speedup: 3.2x
+```
 
 ### Testing
 

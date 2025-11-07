@@ -1,0 +1,29 @@
+version: 1
+
+comment_syntax:
+  .js: "//"
+  .ts: "//"
+
+markers:
+  template_only:
+    start: "TEMPLATE_ONLY_START"
+    end: "TEMPLATE_ONLY_END"
+  line_tag: "@template-only"
+
+profiles:
+  common:
+    rules:
+      - id: remove-template-blocks
+        type: block_markers
+        description: "Remove template-only code blocks"
+        include_globs:
+          - "**/*.js"
+          - "**/*.ts"
+      
+      - id: remove-template-lines
+        type: line_tag
+        description: "Remove lines tagged with @template-only"
+        include_globs:
+          - "**/*.js"
+          - "**/*.ts"
+

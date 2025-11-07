@@ -1,5 +1,5 @@
 # General-Purpose Development Governance Rules
-# Version: 1.6 - Phase 3c/4a Performance & Caching
+# Version: 1.7 - Phase 4b Parallel Processing
 # Last Updated: 2025-11-07
 # Purpose: Technology-agnostic governance for QA-first, scope-gated development
 #
@@ -68,6 +68,9 @@ patterns:
   - Performance Metrics: Opt-in performance tracking with PerformanceTracker; use --performance flag for detailed reports.
   - Caching Strategy: Enable by default (--cache); content-based invalidation with SHA-256; 1-hour TTL for config cache.
   - Cache Optimization: FileCache for content hashing; ConfigCache for parsed configurations; transparent speedup.
+  - Parallel Processing: Use Promise.all batching with concurrency control for I/O-bound operations; default to CPU count for concurrency.
+  - Concurrency Control: Implement worker pools with max concurrency limits; track batch execution in performance metrics.
+  - Memory Efficiency: Process items in chunks, not all at once; validate memory usage with 1000+ item tests.
 
 development_environment:
   - CI Node version: Standardize on Node 20.x LTS for all workflows (if applicable).
@@ -132,6 +135,8 @@ testing:
   - Format validation: Match test assertions to exact output format including markdown syntax.
   - Performance tests: Validate tracker accuracy, cache efficiency, and metric calculations.
   - Async test patterns: Use async/await in tests for time-based validations.
+  - Parallel testing: Test concurrency limits, error handling, progress callbacks, and memory efficiency.
+  - Large fixtures: Create 100+ file fixtures for performance testing; verify 2-3x speedup with parallel mode.
 
 review:
   - Scope Gate compliance: Verify PR template Scope Gate checklist completed for new features/settings/impacts.

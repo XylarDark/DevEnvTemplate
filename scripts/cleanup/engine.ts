@@ -11,11 +11,13 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { glob } from 'glob';
 import yaml from 'yaml';
+import os from 'os';
 import { resolveConfigPath } from '../utils/path-resolver';
 import { getPackageManager } from './package-managers';
 import { CleanupRule, CleanupAction, CleanupReport, CleanupConfig } from '../types/cleanup';
 import { PerformanceTracker } from '../types/performance';
 import { FileCache, ConfigCache } from '../utils/cache';
+import { parallel, calculateOptimalConcurrency } from '../utils/parallel';
 
 // Default file extensions for code files (used by block/line marker rules)
 const CODE_EXTENSIONS = [
@@ -60,6 +62,8 @@ interface CleanupEngineOptions {
   report?: string;
   performance?: boolean;
   cache?: boolean;
+  parallel?: boolean;
+  concurrency?: number;
 }
 
 interface CommentSyntax {
@@ -108,6 +112,8 @@ export class CleanupEngine {
   private cacheEnabled: boolean;
   private fileCache: FileCache | null;
   private configCache: ConfigCache | null;
+  private parallelEnabled: boolean;
+  private concurrency: number;
 
   constructor(options: CleanupEngineOptions = {}) {
     this.profile = options.profile || "common";
@@ -133,6 +139,11 @@ export class CleanupEngine {
     this.cacheEnabled = options.cache !== false; // enabled by default
     this.fileCache = this.cacheEnabled ? new FileCache() : null;
     this.configCache = this.cacheEnabled ? new ConfigCache() : null;
+
+    // Parallel processing
+    this.parallelEnabled = options.parallel || false;
+    const cpuCount = os.cpus().length;
+    this.concurrency = options.concurrency || cpuCount;
 
     // Performance optimizations
     this.excludeGlobCache = new Map();
@@ -254,6 +265,7 @@ export class CleanupEngine {
     // Start performance tracking
     if (this.performanceTracker) {
       this.performanceTracker.start();
+      this.performanceTracker.setParallelMode(this.parallelEnabled, this.concurrency);
     }
 
     const rules = this.getRules();
@@ -539,24 +551,55 @@ export class CleanupEngine {
         ignore: exclude,
       });
 
-      for (const file of files) {
+      // Filter files first
+      const filesToProcess = files.filter(file => {
         const relativePath = path.relative(this.workingDir, file);
+        return this.shouldProcessFile(relativePath);
+      });
 
-        // Check file filtering
-        if (!this.shouldProcessFile(relativePath)) {
-          continue;
+      if (this.parallelEnabled && filesToProcess.length > 10) {
+        // Use parallel processing for large file sets
+        const result = await parallel(
+          filesToProcess,
+          async (file) => {
+            const relativePath = path.relative(this.workingDir, file);
+            
+            if (!this.dryRun) {
+              await fs.rm(file, { recursive: true, force: true });
+            }
+
+            return {
+              type: "file_delete",
+              rule: rule.id,
+              path: relativePath,
+              dryRun: this.dryRun,
+            } as CleanupAction;
+          },
+          { concurrency: this.concurrency }
+        );
+
+        actions.push(...result.results.filter(r => r !== undefined));
+        
+        // Track batch in performance metrics
+        if (this.performanceTracker) {
+          this.performanceTracker.trackBatch();
         }
+      } else {
+        // Sequential processing for small file sets
+        for (const file of filesToProcess) {
+          const relativePath = path.relative(this.workingDir, file);
 
-        if (!this.dryRun) {
-          await fs.rm(file, { recursive: true, force: true });
+          if (!this.dryRun) {
+            await fs.rm(file, { recursive: true, force: true });
+          }
+
+          actions.push({
+            type: "file_delete",
+            rule: rule.id,
+            path: relativePath,
+            dryRun: this.dryRun,
+          });
         }
-
-        actions.push({
-          type: "file_delete",
-          rule: rule.id,
-          path: relativePath,
-          dryRun: this.dryRun,
-        });
       }
     }
 
@@ -579,48 +622,105 @@ export class CleanupEngine {
         nodir: true,
       });
 
-      for (const file of files) {
+      // Filter files first
+      const filesToProcess = files.filter(file => {
         const relativePath = path.relative(this.workingDir, file);
+        return this.shouldProcessFile(relativePath);
+      });
 
-        // Check file filtering
-        if (!this.shouldProcessFile(relativePath)) {
-          continue;
-        }
-        try {
-          const content = await fs.readFile(file, "utf8");
-          const { blocks } = this.parseFileContent(content, file);
+      if (this.parallelEnabled && filesToProcess.length > 10) {
+        // Use parallel processing for large file sets
+        const result = await parallel(
+          filesToProcess,
+          async (file) => {
+            try {
+              const content = await fs.readFile(file, "utf8");
+              const { blocks } = this.parseFileContent(content, file);
 
-          const templateBlocks = blocks.filter(b => b.type === "template_only");
+              const templateBlocks = blocks.filter(b => b.type === "template_only");
 
-          if (templateBlocks.length > 0) {
-            let newContent = content;
-            const lines = newContent.split("\n");
+              if (templateBlocks.length > 0) {
+                let newContent = content;
+                const lines = newContent.split("\n");
 
-            // Remove blocks in reverse order to maintain line numbers
-            templateBlocks.reverse().forEach(block => {
-              lines.splice(block.start, block.end - block.start + 1);
-            });
+                // Remove blocks in reverse order to maintain line numbers
+                templateBlocks.reverse().forEach(block => {
+                  lines.splice(block.start, block.end - block.start + 1);
+                });
 
-            newContent = lines.join("\n");
+                newContent = lines.join("\n");
 
-            if (!this.dryRun) {
-              await fs.writeFile(file, newContent);
+                if (!this.dryRun) {
+                  await fs.writeFile(file, newContent);
+                }
+
+                return {
+                  type: "block_remove",
+                  rule: rule.id,
+                  path: path.relative(this.workingDir, file),
+                  blocksRemoved: templateBlocks.length,
+                  dryRun: this.dryRun,
+                } as CleanupAction;
+              }
+            } catch (error: any) {
+              this.report.errors.push({
+                rule: rule.id,
+                file: path.relative(this.workingDir, file),
+                error: `Failed to process file: ${error.message}`,
+              });
             }
+            return undefined;
+          },
+          { concurrency: this.concurrency }
+        );
 
-            actions.push({
-              type: "block_remove",
+        actions.push(...result.results.filter(r => r !== undefined));
+        
+        // Track batch in performance metrics
+        if (this.performanceTracker) {
+          this.performanceTracker.trackBatch();
+        }
+      } else {
+        // Sequential processing for small file sets
+        for (const file of filesToProcess) {
+          const relativePath = path.relative(this.workingDir, file);
+
+          try {
+            const content = await fs.readFile(file, "utf8");
+            const { blocks } = this.parseFileContent(content, file);
+
+            const templateBlocks = blocks.filter(b => b.type === "template_only");
+
+            if (templateBlocks.length > 0) {
+              let newContent = content;
+              const lines = newContent.split("\n");
+
+              // Remove blocks in reverse order to maintain line numbers
+              templateBlocks.reverse().forEach(block => {
+                lines.splice(block.start, block.end - block.start + 1);
+              });
+
+              newContent = lines.join("\n");
+
+              if (!this.dryRun) {
+                await fs.writeFile(file, newContent);
+              }
+
+              actions.push({
+                type: "block_remove",
+                rule: rule.id,
+                path: path.relative(this.workingDir, file),
+                blocksRemoved: templateBlocks.length,
+                dryRun: this.dryRun,
+              });
+            }
+          } catch (error: any) {
+            this.report.errors.push({
               rule: rule.id,
-              path: path.relative(this.workingDir, file),
-              blocksRemoved: templateBlocks.length,
-              dryRun: this.dryRun,
+              file: path.relative(this.workingDir, file),
+              error: `Failed to process file: ${error.message}`,
             });
           }
-        } catch (error: any) {
-          this.report.errors.push({
-            rule: rule.id,
-            file: path.relative(this.workingDir, file),
-            error: `Failed to process file: ${error.message}`,
-          });
         }
       }
     }
@@ -644,44 +744,97 @@ export class CleanupEngine {
         nodir: true,
       });
 
-      for (const file of files) {
+      // Filter files first
+      const filesToProcess = files.filter(file => {
         const relativePath = path.relative(this.workingDir, file);
+        return this.shouldProcessFile(relativePath);
+      });
 
-        // Check file filtering
-        if (!this.shouldProcessFile(relativePath)) {
-          continue;
-        }
-        try {
-          const content = await fs.readFile(file, "utf8");
-          const lines = content.split("\n");
-          const { taggedLines } = this.parseFileContent(content, file);
+      if (this.parallelEnabled && filesToProcess.length > 10) {
+        // Use parallel processing for large file sets
+        const result = await parallel(
+          filesToProcess,
+          async (file) => {
+            try {
+              const content = await fs.readFile(file, "utf8");
+              const lines = content.split("\n");
+              const { taggedLines } = this.parseFileContent(content, file);
 
-          if (taggedLines.length > 0) {
-            // Remove tagged lines in reverse order
-            taggedLines.reverse().forEach(lineIndex => {
-              lines.splice(lineIndex, 1);
-            });
+              if (taggedLines.length > 0) {
+                // Remove tagged lines in reverse order
+                taggedLines.reverse().forEach(lineIndex => {
+                  lines.splice(lineIndex, 1);
+                });
 
-            const newContent = lines.join("\n");
+                const newContent = lines.join("\n");
 
-            if (!this.dryRun) {
-              await fs.writeFile(file, newContent);
+                if (!this.dryRun) {
+                  await fs.writeFile(file, newContent);
+                }
+
+                return {
+                  type: "line_remove",
+                  rule: rule.id,
+                  path: path.relative(this.workingDir, file),
+                  linesRemoved: taggedLines.length,
+                  dryRun: this.dryRun,
+                } as CleanupAction;
+              }
+            } catch (error: any) {
+              this.report.errors.push({
+                rule: rule.id,
+                file: path.relative(this.workingDir, file),
+                error: `Failed to process file: ${error.message}`,
+              });
             }
+            return undefined;
+          },
+          { concurrency: this.concurrency }
+        );
 
-            actions.push({
-              type: "line_remove",
+        actions.push(...result.results.filter(r => r !== undefined));
+        
+        // Track batch in performance metrics
+        if (this.performanceTracker) {
+          this.performanceTracker.trackBatch();
+        }
+      } else {
+        // Sequential processing for small file sets
+        for (const file of filesToProcess) {
+          const relativePath = path.relative(this.workingDir, file);
+
+          try {
+            const content = await fs.readFile(file, "utf8");
+            const lines = content.split("\n");
+            const { taggedLines } = this.parseFileContent(content, file);
+
+            if (taggedLines.length > 0) {
+              // Remove tagged lines in reverse order
+              taggedLines.reverse().forEach(lineIndex => {
+                lines.splice(lineIndex, 1);
+              });
+
+              const newContent = lines.join("\n");
+
+              if (!this.dryRun) {
+                await fs.writeFile(file, newContent);
+              }
+
+              actions.push({
+                type: "line_remove",
+                rule: rule.id,
+                path: path.relative(this.workingDir, file),
+                linesRemoved: taggedLines.length,
+                dryRun: this.dryRun,
+              });
+            }
+          } catch (error: any) {
+            this.report.errors.push({
               rule: rule.id,
-              path: path.relative(this.workingDir, file),
-              linesRemoved: taggedLines.length,
-              dryRun: this.dryRun,
+              file: path.relative(this.workingDir, file),
+              error: `Failed to process file: ${error.message}`,
             });
           }
-        } catch (error: any) {
-          this.report.errors.push({
-            rule: rule.id,
-            file: path.relative(this.workingDir, file),
-            error: `Failed to process file: ${error.message}`,
-          });
         }
       }
     }

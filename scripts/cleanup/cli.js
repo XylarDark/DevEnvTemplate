@@ -35,6 +35,8 @@ program
   .option("--performance", "enable performance metrics tracking and reporting")
   .option("--cache", "enable file and config caching (default: true)")
   .option("--no-cache", "disable file and config caching")
+  .option("--parallel", "enable parallel file processing")
+  .option("--concurrency <n>", "max concurrent operations (default: CPU count)", parseInt)
   .option("--verbose", "enable verbose output")
   .option("--quiet", "suppress non-error output");
 
@@ -63,6 +65,8 @@ program.action(async options => {
       keepFiles: options.keep,
       performance: options.performance || false,
       cache: options.cache,
+      parallel: options.parallel || false,
+      concurrency: options.concurrency,
     };
 
     if (!options.quiet) {

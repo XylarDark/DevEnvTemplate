@@ -204,6 +204,84 @@ npm run cleanup -- --no-cache --apply
 - Memory tracking helps identify optimization opportunities
 - Recommendations guide performance improvements
 
+### Parallel Processing Patterns
+
+When implementing parallel processing:
+
+**Code Example:**
+```typescript
+import { parallel } from '../utils/parallel';
+
+// Process items with concurrency control
+const result = await parallel(
+  items,
+  async (item) => {
+    // Worker function
+    return await processItem(item);
+  },
+  {
+    concurrency: os.cpus().length,
+    onProgress: (completed, total) => {
+      console.log(`Progress: ${completed}/${total}`);
+    }
+  }
+);
+
+// Handle results and errors
+const successfulResults = result.results.filter(r => r !== undefined);
+const failedItems = result.errors.map(e => e.item);
+```
+
+**Testing Parallel Code:**
+```javascript
+it('should respect concurrency limit', async () => {
+  let maxConcurrent = 0;
+  let currentConcurrent = 0;
+
+  await parallel(
+    items,
+    async (item) => {
+      currentConcurrent++;
+      maxConcurrent = Math.max(maxConcurrent, currentConcurrent);
+      await doWork(item);
+      currentConcurrent--;
+      return result;
+    },
+    { concurrency: 3 }
+  );
+
+  assert.ok(maxConcurrent <= 3);
+});
+```
+
+**Cross-Platform Considerations:**
+- Use real temp directories (os.tmpdir + fs.mkdtemp) instead of mock-fs
+- Test on Windows to catch path separator issues
+- Verify file permissions work across platforms
+- Use PowerShell-compatible commands in scripts (`;` not `&&`)
+
+**Memory Profiling:**
+```javascript
+it('should be memory efficient with large arrays', async () => {
+  const startMemory = process.memoryUsage().heapUsed;
+  
+  await parallel(largeArray, worker, { concurrency: 10 });
+  
+  const endMemory = process.memoryUsage().heapUsed;
+  const memoryIncrease = endMemory - startMemory;
+  
+  assert.ok(memoryIncrease < 50 * 1024 * 1024); // < 50MB
+});
+```
+
+**Best Practices:**
+- Default to CPU count for concurrency
+- Use 2x CPU count for I/O-heavy workloads
+- Test with 1000+ items to verify memory efficiency
+- Always handle errors gracefully (continue processing)
+- Track batches in performance metrics
+- Add progress callbacks for long-running operations
+
 ## Development Workflow
 
 ### Pre-Development (Plan Mode)

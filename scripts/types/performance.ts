@@ -15,6 +15,9 @@ export interface PerformanceMetrics {
   cacheMisses: number;
   rulesExecuted: number;
   errors: number;
+  parallelEnabled?: boolean;
+  concurrency?: number;
+  batchCount?: number;
   memoryUsage?: {
     heapUsed: number;
     heapTotal: number;
@@ -50,6 +53,12 @@ export interface PerformanceReport {
     averageFileTime: number;
     cacheEfficiency: number; // percentage
   };
+  parallel?: {
+    enabled: boolean;
+    concurrency: number;
+    batchCount: number;
+    speedup?: number; // estimated speedup vs sequential
+  };
   rules: RuleMetrics[];
   slowestFiles: FileMetrics[];
   memoryPeak: {
@@ -75,11 +84,25 @@ export class PerformanceTracker {
       cacheHits: 0,
       cacheMisses: 0,
       rulesExecuted: 0,
-      errors: 0
+      errors: 0,
+      parallelEnabled: false,
+      concurrency: 1,
+      batchCount: 0
     };
     this.ruleMetrics = new Map();
     this.fileMetrics = [];
     this.memoryPeaks = [];
+  }
+
+  public setParallelMode(enabled: boolean, concurrency: number): void {
+    this.metrics.parallelEnabled = enabled;
+    this.metrics.concurrency = concurrency;
+  }
+
+  public trackBatch(): void {
+    if (this.metrics.batchCount !== undefined) {
+      this.metrics.batchCount++;
+    }
   }
 
   public start(): void {
@@ -201,6 +224,21 @@ export class PerformanceTracker {
       recommendations.push('High memory usage detected. Consider processing files in smaller batches.');
     }
 
+    // Parallel processing recommendations
+    if (!this.metrics.parallelEnabled && filesProcessed > 50) {
+      recommendations.push('Consider using --parallel flag for faster processing of large file sets.');
+    }
+
+    // Parallel metrics
+    const parallelInfo = this.metrics.parallelEnabled ? {
+      enabled: true,
+      concurrency: this.metrics.concurrency || 1,
+      batchCount: this.metrics.batchCount || 0,
+      speedup: this.metrics.concurrency && this.metrics.concurrency > 1 
+        ? Math.min(this.metrics.concurrency * 0.7, filesProcessed / Math.max(1, this.metrics.batchCount || 1))
+        : undefined
+    } : undefined;
+
     return {
       summary: {
         totalDuration: duration,
@@ -211,6 +249,7 @@ export class PerformanceTracker {
         averageFileTime,
         cacheEfficiency
       },
+      parallel: parallelInfo,
       rules: sortedRules,
       slowestFiles,
       memoryPeak: {
@@ -237,6 +276,17 @@ export class PerformanceTracker {
     console.log(`  Throughput:        ${report.summary.throughput.toFixed(2)} files/sec`);
     console.log(`  Avg File Time:     ${report.summary.averageFileTime.toFixed(2)}ms`);
     console.log(`  Cache Efficiency:  ${report.summary.cacheEfficiency.toFixed(1)}%\n`);
+    
+    if (report.parallel) {
+      console.log('⚡ Parallel Processing:');
+      console.log(`  Enabled:           ${report.parallel.enabled ? 'Yes' : 'No'}`);
+      console.log(`  Concurrency:       ${report.parallel.concurrency}`);
+      console.log(`  Batches:           ${report.parallel.batchCount}`);
+      if (report.parallel.speedup) {
+        console.log(`  Estimated Speedup: ${report.parallel.speedup.toFixed(1)}x`);
+      }
+      console.log('');
+    }
     
     if (report.rules.length > 0) {
       console.log('⚡ Slowest Rules:');

@@ -100,5 +100,7 @@ export interface CleanupOptions {
   excludeRules?: string[];
   excludeGlobs?: string[];
   keepFiles?: string[];
+  parallel?: boolean;
+  concurrency?: number;
 }
 
