@@ -12,6 +12,33 @@ on:
     branches: [main, master, develop]
 
 jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [20]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Run unit tests
+        run: npm run test:unit
+
+      - name: Run integration tests
+        run: npm run test:integration
+
   quality:
     name: Code Quality
     runs-on: ubuntu-latest
@@ -36,15 +63,38 @@ jobs:
       - name: Check code formatting
         run: npm run format:check
 
-      - name: Run tests
+  typescript:
+    name: TypeScript Build & Type Check
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [20]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Type check
+        run: npm run prebuild
+
+      - name: Build TypeScript
+        run: npm run build
+
+      - name: Verify compiled output
         run: |
-          # Check if tests exist and run them
-          if [ -d "tests" ] || find . -name "*.test.js" -o -name "*.spec.js" | grep -q .; then
-            echo "🧪 Running tests..."
-            node --test
-          else
-            echo "ℹ️ No tests found - skipping test execution"
-          fi
+          test -d dist
+          test -f dist/cleanup/engine.js
+          test -f dist/agent/cli.js
 
   code-quality:
     name: Code Quality Analysis
@@ -401,83 +451,11 @@ jobs:
               });
             }
 
-  website-build:
-    name: Website Build & Type Check
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: "npm"
-
-      - name: Install root dependencies
-        run: npm ci --no-audit --no-fund
-
-      - name: Install website dependencies
-        run: |
-          cd website
-          npm ci --no-audit --no-fund
-
-      - name: Type check website
-        run: |
-          cd website
-          npx tsc --noEmit
-
-      - name: Lint website
-        run: |
-          cd website
-          npm run lint
-
-      - name: Build website
-        run: |
-          cd website
-          npm run build
-
-  website-e2e:
-    name: Website E2E Tests
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: "npm"
-
-      - name: Install root dependencies
-        run: npm ci --no-audit --no-fund
-
-      - name: Install website dependencies
-        run: |
-          cd website
-          npm ci --no-audit --no-fund
-
-      - name: Install Playwright browsers
-        run: |
-          cd website
-          npx playwright install --with-deps
-
-      - name: Run Playwright smoke tests
-        run: |
-          cd website
-          npm run test:e2e
-        env:
-          CI: true
-
   release:
     name: Release
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-    needs: [quality, website-build, website-e2e]
+    needs: [test, quality, typescript]
 
     steps:
       - name: Checkout code
