@@ -14,6 +14,7 @@ import yaml from 'yaml';
 import { resolveConfigPath } from '../utils/path-resolver';
 import { getPackageManager } from './package-managers';
 import { CleanupRule, CleanupAction, CleanupReport, CleanupConfig } from '../types/cleanup';
+import { PerformanceTracker } from '../types/performance';
 
 // Default file extensions for code files (used by block/line marker rules)
 const CODE_EXTENSIONS = [
@@ -56,6 +57,7 @@ interface CleanupEngineOptions {
   excludeGlobs?: string[];
   keepFiles?: string[];
   report?: string;
+  performance?: boolean;
 }
 
 interface CommentSyntax {
@@ -99,6 +101,8 @@ export class CleanupEngine {
   private keepFiles: Set<string> | null;
   private excludeGlobCache: Map<string, string[]>;
   private report: CleanupReport;
+  private performanceEnabled: boolean;
+  private performanceTracker: PerformanceTracker | null;
 
   constructor(options: CleanupEngineOptions = {}) {
     this.profile = options.profile || "common";
@@ -115,6 +119,10 @@ export class CleanupEngine {
     this.keepFiles = options.keepFiles
       ? new Set(options.keepFiles.map(f => path.resolve(this.workingDir, f)))
       : null;
+
+    // Performance tracking
+    this.performanceEnabled = options.performance || false;
+    this.performanceTracker = this.performanceEnabled ? new PerformanceTracker() : null;
 
     // Performance optimizations
     this.excludeGlobCache = new Map();
@@ -205,6 +213,11 @@ export class CleanupEngine {
    * Execute all rules
    */
   async execute(): Promise<CleanupReport> {
+    // Start performance tracking
+    if (this.performanceTracker) {
+      this.performanceTracker.start();
+    }
+
     const rules = this.getRules();
 
     for (const rule of rules) {
@@ -216,11 +229,22 @@ export class CleanupEngine {
           error: error.message,
           stack: error.stack,
         });
+        
+        // Track error in performance metrics
+        if (this.performanceTracker) {
+          this.performanceTracker.trackRuleExecution(rule.id, 0, 0, true);
+        }
       }
     }
 
     // Calculate summary
     this.calculateSummary();
+
+    // End performance tracking and print report
+    if (this.performanceTracker) {
+      this.performanceTracker.end();
+      this.performanceTracker.printReport();
+    }
 
     return this.report;
   }
@@ -305,9 +329,18 @@ export class CleanupEngine {
       throw new Error(`Unknown rule type: ${ruleType}`);
     }
 
+    // Time rule execution
+    const startTime = this.performanceTracker ? Date.now() : 0;
+    
     const actions = await handler(rule);
     if (actions && actions.length > 0) {
       this.report.actions.push(...actions);
+    }
+
+    // Track rule execution time
+    if (this.performanceTracker) {
+      const duration = Date.now() - startTime;
+      this.performanceTracker.trackRuleExecution(rule.id, duration, actions?.length || 0, false);
     }
   }
 

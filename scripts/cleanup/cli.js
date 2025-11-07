@@ -32,6 +32,7 @@ program
   .option("--dry-run", "preview changes without applying them", true)
   .option("--apply", "apply changes (overrides --dry-run)")
   .option("--fail-on-actions", "exit with code 2 if any actions are detected (for CI)")
+  .option("--performance", "enable performance metrics tracking and reporting")
   .option("--verbose", "enable verbose output")
   .option("--quiet", "suppress non-error output");
 
@@ -58,6 +59,7 @@ program.action(async options => {
       excludeRules: options.exclude,
       excludeGlobs: options.excludeGlob,
       keepFiles: options.keep,
+      performance: options.performance || false,
     };
 
     if (!options.quiet) {
