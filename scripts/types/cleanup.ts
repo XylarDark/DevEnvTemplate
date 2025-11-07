@@ -100,7 +100,12 @@ export interface CleanupOptions {
   excludeRules?: string[];
   excludeGlobs?: string[];
   keepFiles?: string[];
+  performance?: boolean;
+  cache?: boolean;
   parallel?: boolean;
   concurrency?: number;
+  progress?: boolean;
+  progressVerbosity?: 'silent' | 'simple' | 'detailed';
+  jsonProgress?: boolean;
 }
 

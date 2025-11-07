@@ -17,6 +17,7 @@ This project follows a professional and inclusive code of conduct. Be respectful
 This project requires Node.js 20+. We recommend using a version manager:
 
 **Using nvm (recommended):**
+
 ```bash
 # Install and use the correct Node version
 nvm install
@@ -24,6 +25,7 @@ nvm use
 ```
 
 **Using Volta (alternative):**
+
 ```bash
 # Volta automatically manages Node versions per project
 volta install node
@@ -56,6 +58,7 @@ npm run lint
 ```
 
 **Windows/PowerShell Notes**:
+
 - Avoid `&&` command chaining in scripts/docs - PowerShell doesn't recognize it
 - Use separate commands or npm scripts instead
 - Prefer `cross-env` for environment variables if needed
@@ -66,6 +69,7 @@ npm run lint
 The codebase uses TypeScript for core modules with strict type checking:
 
 **Build and Type Check:**
+
 ```bash
 # Compile TypeScript to JavaScript
 npm run build
@@ -78,17 +82,20 @@ npm run prebuild
 ```
 
 **Development Workflow:**
+
 - Write TypeScript in `scripts/**/*.ts`
 - TypeScript compiles to `dist/`
 - JavaScript wrappers in `scripts/**/*.js` import from `dist/` for compatibility
 - Run `npm run build` before testing
 
 **Type Definitions:**
+
 - Place interfaces in `scripts/types/*.ts`
 - Use strict typing throughout
 - Enable IDE autocomplete with proper exports
 
 **Testing with TypeScript:**
+
 - Tests import from compiled JavaScript (`dist/`)
 - Run `npm run build` before test suite
 - Type errors caught at compile time, not runtime
@@ -98,39 +105,44 @@ npm run prebuild
 The project tests must work on Windows, macOS, and Linux. Follow these patterns:
 
 **Temporary Directory Handling:**
+
 ```javascript
-const os = require('os');
-const path = require('path');
-const { promises: fs } = require('fs');
+const os = require("os");
+const path = require("path");
+const { promises: fs } = require("fs");
 
 // Create temp directory
-const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'test-prefix-'));
+const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "test-prefix-"));
 
 // Cleanup in afterEach
 await fs.rm(tempDir, { recursive: true, force: true });
 ```
 
 **Emoji Handling in Parsers:**
+
 ```javascript
 // DON'T: Emojis don't work in regex character classes
 const match = line.match(/[🔴🟡🟢]/); // FAILS on multi-byte UTF-8
 
 // DO: Use string methods
-const isHighPriority = line.includes('🔴');
-const title = line.replace(/^### [🔴🟡🟢] /, '');
+const isHighPriority = line.includes("🔴");
+const title = line.replace(/^### [🔴🟡🟢] /, "");
 ```
 
 **Inter-Tool Communication:**
+
 - Use structured markdown fields for machine parsing
 - Document expected output format in TypeScript interfaces
 - Include all fields downstream tools need
 
 **Test Data Generation:**
+
 - Generate test fixtures from actual tool output
 - Run tools manually to verify format before writing tests
 - Match exact output including markdown formatting
 
 **TypeScript Union Types:**
+
 - Keep union types exhaustive (include all runtime values)
 - Add missing values when compilation errors occur
 - Catch type mismatches at compile time, not runtime
@@ -140,46 +152,49 @@ const title = line.replace(/^### [🔴🟡🟢] /, '');
 The project includes performance tracking and caching for optimization:
 
 **Performance Tracking:**
+
 ```bash
 # Enable performance metrics
 npm run cleanup -- --performance --apply
 
 # Outputs:
 # - Rule execution timing
-# - File processing metrics  
+# - File processing metrics
 # - Memory usage (heap, RSS)
 # - Cache efficiency
 # - Optimization recommendations
 ```
 
 **Performance Testing:**
+
 ```javascript
 // Test performance tracker
-const { PerformanceTracker } = require('../../dist/scripts/types/performance');
+const { PerformanceTracker } = require("../../dist/scripts/types/performance");
 
-it('should track rule execution', () => {
+it("should track rule execution", () => {
   const tracker = new PerformanceTracker();
   tracker.start();
-  tracker.trackRuleExecution('test-rule', 100, 5, false);
+  tracker.trackRuleExecution("test-rule", 100, 5, false);
   tracker.end();
-  
+
   const report = tracker.generateReport();
   assert.strictEqual(report.rules.length, 1);
-  assert.strictEqual(report.rules[0].ruleId, 'test-rule');
+  assert.strictEqual(report.rules[0].ruleId, "test-rule");
 });
 ```
 
 **Caching Strategy:**
+
 ```typescript
 // Config caching with content-based invalidation
 if (this.configCache && this.fileCache) {
   const contentHash = this.fileCache.generateHash(configContent);
   const cached = this.configCache.get(configPath, contentHash);
-  
+
   if (cached) {
     return cached; // Cache hit
   }
-  
+
   const parsed = yaml.parse(configContent);
   this.configCache.set(configPath, parsed, contentHash);
   return parsed;
@@ -187,6 +202,7 @@ if (this.configCache && this.fileCache) {
 ```
 
 **Cache Control:**
+
 ```bash
 # Caching enabled by default
 npm run cleanup -- --apply
@@ -198,6 +214,7 @@ npm run cleanup -- --no-cache --apply
 ```
 
 **Best Practices:**
+
 - Performance tracking is opt-in (--performance flag) to avoid overhead
 - Caching uses SHA-256 hashing for integrity
 - Cache TTL prevents stale data (1-hour default)
@@ -209,13 +226,14 @@ npm run cleanup -- --no-cache --apply
 When implementing parallel processing:
 
 **Code Example:**
+
 ```typescript
-import { parallel } from '../utils/parallel';
+import { parallel } from "../utils/parallel";
 
 // Process items with concurrency control
 const result = await parallel(
   items,
-  async (item) => {
+  async item => {
     // Worker function
     return await processItem(item);
   },
@@ -223,7 +241,7 @@ const result = await parallel(
     concurrency: os.cpus().length,
     onProgress: (completed, total) => {
       console.log(`Progress: ${completed}/${total}`);
-    }
+    },
   }
 );
 
@@ -233,14 +251,15 @@ const failedItems = result.errors.map(e => e.item);
 ```
 
 **Testing Parallel Code:**
+
 ```javascript
-it('should respect concurrency limit', async () => {
+it("should respect concurrency limit", async () => {
   let maxConcurrent = 0;
   let currentConcurrent = 0;
 
   await parallel(
     items,
-    async (item) => {
+    async item => {
       currentConcurrent++;
       maxConcurrent = Math.max(maxConcurrent, currentConcurrent);
       await doWork(item);
@@ -255,32 +274,120 @@ it('should respect concurrency limit', async () => {
 ```
 
 **Cross-Platform Considerations:**
+
 - Use real temp directories (os.tmpdir + fs.mkdtemp) instead of mock-fs
 - Test on Windows to catch path separator issues
 - Verify file permissions work across platforms
 - Use PowerShell-compatible commands in scripts (`;` not `&&`)
 
 **Memory Profiling:**
+
 ```javascript
-it('should be memory efficient with large arrays', async () => {
+it("should be memory efficient with large arrays", async () => {
   const startMemory = process.memoryUsage().heapUsed;
-  
+
   await parallel(largeArray, worker, { concurrency: 10 });
-  
+
   const endMemory = process.memoryUsage().heapUsed;
   const memoryIncrease = endMemory - startMemory;
-  
+
   assert.ok(memoryIncrease < 50 * 1024 * 1024); // < 50MB
 });
 ```
 
 **Best Practices:**
+
 - Default to CPU count for concurrency
 - Use 2x CPU count for I/O-heavy workloads
 - Test with 1000+ items to verify memory efficiency
 - Always handle errors gracefully (continue processing)
 - Track batches in performance metrics
 - Add progress callbacks for long-running operations
+
+### Benchmark Testing Patterns
+
+When adding performance-critical features, include benchmarks to track regression:
+
+**Statistical Testing:**
+
+```javascript
+const { BenchmarkRunner } = require("../../dist/benchmark/runner");
+
+it("should calculate statistical metrics correctly", () => {
+  const runner = new BenchmarkRunner();
+  const times = [100, 200, 300, 400, 500];
+
+  const stats = runner["calculateStats"](times);
+
+  assert.strictEqual(stats.mean, 300);
+  assert.strictEqual(stats.median, 300);
+  assert.strictEqual(stats.min, 100);
+  assert.strictEqual(stats.max, 500);
+  // Standard deviation should be ~141.42
+  assert.ok(Math.abs(stats.stdDev - 141.42) < 0.01);
+});
+```
+
+**Regression Detection:**
+
+```javascript
+it("should detect performance regression", async () => {
+  const baseline = {
+    name: "Test",
+    stats: { mean: 100, median: 100, min: 90, max: 110, stdDev: 5 },
+    // ... other fields
+  };
+
+  const current = {
+    name: "Test",
+    stats: { mean: 150, median: 150, min: 140, max: 160, stdDev: 5 },
+    // ... other fields
+  };
+
+  const regression = await runner.detectRegression(current, [baseline], 10);
+
+  assert.strictEqual(regression.hasRegression, true);
+  assert.strictEqual(regression.slowdown, 50); // 50% slower
+});
+```
+
+**Benchmark Suites:**
+
+```typescript
+// scripts/benchmark/suites.ts
+export const BENCHMARK_SUITES: Record<string, BenchmarkConfig[]> = {
+  "my-feature-comparison": [
+    {
+      name: "Baseline",
+      fixture: "tests/fixtures/my-project",
+      iterations: 5,
+      options: { myFeature: false },
+    },
+    {
+      name: "With Feature",
+      fixture: "tests/fixtures/my-project",
+      iterations: 5,
+      options: { myFeature: true },
+    },
+  ],
+};
+```
+
+**Integration with CI:**
+
+- Benchmarks run automatically on PRs via `.github/workflows/benchmark.yml`
+- Results posted as PR comments with comparison tables
+- Regression alerts if performance degrades > threshold
+- Historical data stored in `.devenv/benchmarks/history.json`
+
+**Best Practices:**
+
+- Run 5+ iterations for statistical significance
+- Use realistic fixtures (not toy examples)
+- Set appropriate regression thresholds (10-15%)
+- Test both sequential and parallel modes
+- Measure memory usage alongside execution time
+- Document expected speedup in test descriptions
 
 ## Development Workflow
 

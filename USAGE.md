@@ -5,12 +5,14 @@ Quick reference for DevEnvTemplate commands and features.
 ## Installation & Setup
 
 ### 1. Install Dependencies
+
 ```bash
 npm install
 npm run build  # Compiles TypeScript
 ```
 
 ### 2. Generate Project Manifest
+
 ```bash
 npm run agent:init  # Interactive CLI
 ```
@@ -44,6 +46,7 @@ npm run cleanup -- --feature auth,api --apply
 ```
 
 **Common Flags:**
+
 - `--apply` - Apply changes (default is dry-run)
 - `--performance` - Show performance metrics and recommendations
 - `--cache` / `--no-cache` - Control configuration caching (default: enabled)
@@ -58,21 +61,27 @@ npm run cleanup -- --feature auth,api --apply
 ### CI Tools
 
 #### Stack Detection
+
 ```bash
 node .github/tools/stack-detector.js
 ```
+
 Detects technologies and generates `.devenv/stack-report.json`
 
 #### Gap Analysis
+
 ```bash
 node .github/tools/gap-analyzer.js
 ```
+
 Analyzes project against best practices, generates `.devenv/gaps-report.md`
 
 #### Plan Generation
+
 ```bash
 node .github/tools/plan-generator.js
 ```
+
 Generates actionable plan from gaps, creates `.devenv/hardening-plan.md`
 
 ## Features
@@ -86,6 +95,7 @@ npm run cleanup -- --performance --apply
 ```
 
 **Output includes:**
+
 - Total duration and throughput
 - Files processed and scanned
 - Rule execution timing
@@ -107,6 +117,7 @@ npm run cleanup -- --no-cache --apply
 ```
 
 **How it works:**
+
 - Configuration files are cached after first parse
 - SHA-256 content hashing ensures accuracy
 - Automatic invalidation when files change
@@ -128,11 +139,13 @@ npm run cleanup -- --parallel --performance --apply
 ```
 
 **When to use:**
+
 - Large codebases (50+ files)
 - Multi-core systems
 - I/O-bound operations (file reading/writing)
 
 **Performance tips:**
+
 - Default concurrency (CPU count) works well for most cases
 - For I/O-heavy workloads, try 2x CPU count
 - For CPU-heavy workloads, stick to CPU count
@@ -140,6 +153,7 @@ npm run cleanup -- --parallel --performance --apply
 - Combine with `--cache` for maximum performance
 
 **Example output:**
+
 ```
 ⚡ Parallel Processing:
   Enabled:           Yes
@@ -192,10 +206,12 @@ DevEnvTemplate/
 ## Environment Variables
 
 ### Logging
+
 - `LOG_LEVEL` - Set log level (DEBUG, INFO, WARN, ERROR, SILENT)
 - `LOG_JSON` - Enable JSON output (true/false)
 
 Example:
+
 ```bash
 LOG_LEVEL=DEBUG npm run cleanup -- --apply
 LOG_JSON=true npm run cleanup -- --apply
@@ -204,18 +220,22 @@ LOG_JSON=true npm run cleanup -- --apply
 ## Common Workflows
 
 ### New Project Setup
+
 1. `npm install && npm run build`
 2. `npm run agent:init` (generate manifest)
 3. `npm run cleanup -- --apply` (remove template code)
 4. Start developing!
 
 ### Performance Analysis
+
 1. `npm run cleanup -- --performance --dry-run`
 2. Review recommendations in output
 3. Optimize slow rules or files
 
 ### CI Integration
+
 CI automatically runs:
+
 1. Stack detection → `.devenv/stack-report.json`
 2. Gap analysis → `.devenv/gaps-report.md`
 3. Plan generation → `.devenv/hardening-plan.md` (if gaps found)
@@ -223,6 +243,7 @@ CI automatically runs:
 ## Troubleshooting
 
 ### Build Errors
+
 ```bash
 # Clean and rebuild
 rm -rf dist node_modules
@@ -231,6 +252,7 @@ npm run build
 ```
 
 ### Test Failures
+
 ```bash
 # Rebuild TypeScript first
 npm run build
@@ -238,6 +260,7 @@ npm test
 ```
 
 ### Cache Issues
+
 ```bash
 # Clear cache
 rm -rf .cache
@@ -250,4 +273,3 @@ npm run cleanup -- --no-cache --apply
 - **Contributing**: See `.github/CONTRIBUTING.md` for development patterns
 - **Project Rules**: See `.projectrules` for governance guidelines
 - **Changelog**: See `docs/rules-changelog.md` for evolution history
-

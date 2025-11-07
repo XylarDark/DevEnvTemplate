@@ -18,6 +18,7 @@ import { CleanupRule, CleanupAction, CleanupReport, CleanupConfig } from '../typ
 import { PerformanceTracker } from '../types/performance';
 import { FileCache, ConfigCache } from '../utils/cache';
 import { parallel, calculateOptimalConcurrency } from '../utils/parallel';
+import { ProgressTracker, ProgressVerbosity } from '../utils/progress';
 
 // Default file extensions for code files (used by block/line marker rules)
 const CODE_EXTENSIONS = [
@@ -64,6 +65,9 @@ interface CleanupEngineOptions {
   cache?: boolean;
   parallel?: boolean;
   concurrency?: number;
+  progress?: boolean;
+  progressVerbosity?: 'silent' | 'simple' | 'detailed';
+  jsonProgress?: boolean;
 }
 
 interface CommentSyntax {
@@ -114,6 +118,8 @@ export class CleanupEngine {
   private configCache: ConfigCache | null;
   private parallelEnabled: boolean;
   private concurrency: number;
+  private progressEnabled: boolean;
+  private progressTracker: ProgressTracker | null;
 
   constructor(options: CleanupEngineOptions = {}) {
     this.profile = options.profile || "common";
@@ -144,6 +150,15 @@ export class CleanupEngine {
     this.parallelEnabled = options.parallel || false;
     const cpuCount = os.cpus().length;
     this.concurrency = options.concurrency || cpuCount;
+
+    // Progress tracking
+    this.progressEnabled = options.progress || false;
+    this.progressTracker = this.progressEnabled
+      ? new ProgressTracker(
+          options.progressVerbosity || 'simple',
+          options.jsonProgress || false
+        )
+      : null;
 
     // Performance optimizations
     this.excludeGlobCache = new Map();
@@ -270,9 +285,23 @@ export class CleanupEngine {
 
     const rules = this.getRules();
 
-    for (const rule of rules) {
+    // Create overall progress bar
+    if (this.progressTracker) {
+      this.progressTracker.createBar('overall', {
+        total: rules.length,
+        label: 'Cleanup Progress',
+      });
+    }
+
+    for (let i = 0; i < rules.length; i++) {
+      const rule = rules[i];
       try {
         await this.executeRule(rule);
+        
+        // Update overall progress
+        if (this.progressTracker) {
+          this.progressTracker.updateBar('overall', i + 1);
+        }
       } catch (error: any) {
         this.report.errors.push({
           rule: rule.id,
@@ -289,6 +318,11 @@ export class CleanupEngine {
 
     // Calculate summary
     this.calculateSummary();
+
+    // Finish overall progress bar
+    if (this.progressTracker) {
+      this.progressTracker.finishBar('overall');
+    }
 
     // End performance tracking and print report
     if (this.performanceTracker) {
@@ -558,6 +592,14 @@ export class CleanupEngine {
       });
 
       if (this.parallelEnabled && filesToProcess.length > 10) {
+        // Create per-rule progress bar in detailed mode
+        if (this.progressTracker && this.progressEnabled) {
+          this.progressTracker.createBar(rule.id, {
+            total: filesToProcess.length,
+            label: `${rule.id} (files)`,
+          });
+        }
+
         // Use parallel processing for large file sets
         const result = await parallel(
           filesToProcess,
@@ -575,8 +617,20 @@ export class CleanupEngine {
               dryRun: this.dryRun,
             } as CleanupAction;
           },
-          { concurrency: this.concurrency }
+          { 
+            concurrency: this.concurrency,
+            onProgress: (completed, total) => {
+              if (this.progressTracker) {
+                this.progressTracker.updateBar(rule.id, completed);
+              }
+            }
+          }
         );
+
+        // Finish per-rule progress bar
+        if (this.progressTracker) {
+          this.progressTracker.finishBar(rule.id);
+        }
 
         actions.push(...result.results.filter(r => r !== undefined));
         
@@ -629,6 +683,14 @@ export class CleanupEngine {
       });
 
       if (this.parallelEnabled && filesToProcess.length > 10) {
+        // Create per-rule progress bar in detailed mode
+        if (this.progressTracker && this.progressEnabled) {
+          this.progressTracker.createBar(rule.id, {
+            total: filesToProcess.length,
+            label: `${rule.id} (blocks)`,
+          });
+        }
+
         // Use parallel processing for large file sets
         const result = await parallel(
           filesToProcess,
@@ -671,8 +733,20 @@ export class CleanupEngine {
             }
             return undefined;
           },
-          { concurrency: this.concurrency }
+          { 
+            concurrency: this.concurrency,
+            onProgress: (completed, total) => {
+              if (this.progressTracker) {
+                this.progressTracker.updateBar(rule.id, completed);
+              }
+            }
+          }
         );
+
+        // Finish per-rule progress bar
+        if (this.progressTracker) {
+          this.progressTracker.finishBar(rule.id);
+        }
 
         actions.push(...result.results.filter(r => r !== undefined));
         
@@ -751,6 +825,14 @@ export class CleanupEngine {
       });
 
       if (this.parallelEnabled && filesToProcess.length > 10) {
+        // Create per-rule progress bar in detailed mode
+        if (this.progressTracker && this.progressEnabled) {
+          this.progressTracker.createBar(rule.id, {
+            total: filesToProcess.length,
+            label: `${rule.id} (lines)`,
+          });
+        }
+
         // Use parallel processing for large file sets
         const result = await parallel(
           filesToProcess,
@@ -789,8 +871,20 @@ export class CleanupEngine {
             }
             return undefined;
           },
-          { concurrency: this.concurrency }
+          { 
+            concurrency: this.concurrency,
+            onProgress: (completed, total) => {
+              if (this.progressTracker) {
+                this.progressTracker.updateBar(rule.id, completed);
+              }
+            }
+          }
         );
+
+        // Finish per-rule progress bar
+        if (this.progressTracker) {
+          this.progressTracker.finishBar(rule.id);
+        }
 
         actions.push(...result.results.filter(r => r !== undefined));
         

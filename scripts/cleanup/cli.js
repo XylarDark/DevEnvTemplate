@@ -12,7 +12,7 @@ const path = require("path");
 const { executeCleanup } = require("./engine");
 const { createLogger } = require("../utils/logger");
 
-const logger = createLogger({ context: 'cleanup-cli' });
+const logger = createLogger({ context: "cleanup-cli" });
 
 const program = new Command();
 

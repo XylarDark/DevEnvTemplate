@@ -1,0 +1,106 @@
+name: Performance Benchmarks
+
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build project
+        run: npm run build
+      
+      - name: Run benchmarks
+        run: npm run benchmark:ci
+        continue-on-error: true
+      
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: .devenv/benchmarks/
+          retention-days: 30
+      
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            try {
+              const resultsPath = '.devenv/benchmarks/latest.json';
+              if (!fs.existsSync(resultsPath)) {
+                console.log('No benchmark results found');
+                return;
+              }
+              
+              const results = JSON.parse(fs.readFileSync(resultsPath, 'utf-8'));
+              
+              let comment = '## 📊 Benchmark Results\n\n';
+              comment += '| Benchmark | Mean (ms) | Median (ms) | StdDev (ms) |\n';
+              comment += '|-----------|-----------|-------------|-------------|\n';
+              
+              for (const result of results) {
+                comment += `| ${result.name} `;
+                comment += `| ${result.stats.mean.toFixed(2)} `;
+                comment += `| ${result.stats.median.toFixed(2)} `;
+                comment += `| ${result.stats.stdDev.toFixed(2)} |\n`;
+              }
+              
+              // Check for regression warnings
+              const historyPath = '.devenv/benchmarks/history.json';
+              if (fs.existsSync(historyPath)) {
+                const history = JSON.parse(fs.readFileSync(historyPath, 'utf-8'));
+                const threshold = 10; // 10% regression threshold
+                
+                let hasRegression = false;
+                for (const result of results) {
+                  const baseline = history
+                    .filter(h => JSON.stringify(h.options) === JSON.stringify(result.options))
+                    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0];
+                  
+                  if (baseline) {
+                    const percentChange = ((result.stats.mean - baseline.stats.mean) / baseline.stats.mean) * 100;
+                    if (percentChange > threshold) {
+                      hasRegression = true;
+                      comment += `\n⚠️ **Regression detected in ${result.name}**: +${percentChange.toFixed(2)}% slower than baseline`;
+                    }
+                  }
+                }
+                
+                if (hasRegression) {
+                  comment += '\n\n> ⚠️ Performance regression detected. Please review the changes.';
+                }
+              }
+              
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              });
+            } catch (error) {
+              console.error('Error posting benchmark results:', error);
+            }
+
