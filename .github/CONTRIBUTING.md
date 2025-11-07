@@ -93,6 +93,48 @@ npm run prebuild
 - Run `npm run build` before test suite
 - Type errors caught at compile time, not runtime
 
+### Cross-Platform Testing
+
+The project tests must work on Windows, macOS, and Linux. Follow these patterns:
+
+**Temporary Directory Handling:**
+```javascript
+const os = require('os');
+const path = require('path');
+const { promises: fs } = require('fs');
+
+// Create temp directory
+const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'test-prefix-'));
+
+// Cleanup in afterEach
+await fs.rm(tempDir, { recursive: true, force: true });
+```
+
+**Emoji Handling in Parsers:**
+```javascript
+// DON'T: Emojis don't work in regex character classes
+const match = line.match(/[🔴🟡🟢]/); // FAILS on multi-byte UTF-8
+
+// DO: Use string methods
+const isHighPriority = line.includes('🔴');
+const title = line.replace(/^### [🔴🟡🟢] /, '');
+```
+
+**Inter-Tool Communication:**
+- Use structured markdown fields for machine parsing
+- Document expected output format in TypeScript interfaces
+- Include all fields downstream tools need
+
+**Test Data Generation:**
+- Generate test fixtures from actual tool output
+- Run tools manually to verify format before writing tests
+- Match exact output including markdown formatting
+
+**TypeScript Union Types:**
+- Keep union types exhaustive (include all runtime values)
+- Add missing values when compilation errors occur
+- Catch type mismatches at compile time, not runtime
+
 ## Development Workflow
 
 ### Pre-Development (Plan Mode)

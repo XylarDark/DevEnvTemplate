@@ -1,5 +1,5 @@
 # General-Purpose Development Governance Rules
-# Version: 1.4 - TypeScript Migration & Code Quality Improvements
+# Version: 1.5 - Phase 3 CI Tooling & Cross-Platform Testing
 # Last Updated: 2025-11-07
 # Purpose: Technology-agnostic governance for QA-first, scope-gated development
 #
@@ -42,6 +42,8 @@ code_style:
   - Type definitions: Create comprehensive interfaces in scripts/types/.
   - Backward compatibility: JavaScript wrappers for TypeScript modules during migration.
   - Code duplication: Use base classes and inheritance to eliminate duplicate code.
+  - Union Type Exhaustiveness: Ensure TypeScript union types include all runtime values; add new values when code uses them.
+  - Type-Driven Development: Let compile errors guide missing type definitions rather than runtime failures.
 
 files:
   - Core governance: .projectrules, docs/rules-changelog.md - never modify without review.
@@ -60,6 +62,9 @@ patterns:
   - Structured Logging: Use createLogger() with context, levels (DEBUG/INFO/WARN/ERROR), JSON output for CI.
   - Base Class Pattern: Abstract base classes for shared logic; concrete implementations for specifics.
   - Factory Pattern: Registry pattern for instantiating implementations (e.g., package managers).
+  - Inter-Tool Communication: Use structured markdown fields (**Field:** value) for machine parsing between tools.
+  - Emoji Parsing: Use string.includes() and string.replace() for emoji detection; avoid regex character classes with multi-byte UTF-8.
+  - Output Documentation: Document expected output formats in TypeScript interfaces when tools produce machine-readable reports.
 
 development_environment:
   - CI Node version: Standardize on Node 20.x LTS for all workflows (if applicable).
@@ -75,6 +80,8 @@ development_environment:
   - Build toolchain: npm run build compiles TypeScript; npm run build:watch for development.
   - Type checking: npm run prebuild validates types before building.
   - Log configuration: LOG_LEVEL and LOG_JSON environment variables for structured logging.
+  - Windows test compatibility: Prefer os.tmpdir() over /tmp for temp directories; avoid mock-fs for cross-platform tests.
+  - UTF-8 emoji handling: Use literal emoji strings in code; test emoji parsing with actual characters.
 
 advanced_patterns:
   - Client-side filtering: URL synchronization for bookmarkable states (if applicable).
@@ -113,6 +120,11 @@ testing:
   - Local development: Fast test loop; clear pass/fail feedback.
   - Compilation: Run tsc --noEmit before tests to catch type errors.
   - Test strategy: Import from compiled dist/ for backward compatibility.
+  - Cross-platform test isolation: Use real temp directories (os.tmpdir + fs.mkdtemp) over mock-fs for Windows compatibility.
+  - Test cleanup: Always use fs.rm with recursive:true and force:true in afterEach hooks.
+  - Emoji handling in tests: Test with actual UTF-8 emoji characters, not ASCII approximations.
+  - Test data generation: Generate fixtures from actual tool output, not assumed formats.
+  - Format validation: Match test assertions to exact output format including markdown syntax.
 
 review:
   - Scope Gate compliance: Verify PR template Scope Gate checklist completed for new features/settings/impacts.
