@@ -1,274 +1,188 @@
 # DevEnvTemplate
 
-A zero-commands, drop-in development environment that automatically understands your technology stack and enforces Plan-first development with Cursor.
+**Ship quality code faster.** DevEnvTemplate sets up testing, CI/CD, and best practices in minutes so you can focus on building your product.
 
-## What It Does
+## For Indie Developers & Solo Founders
 
-**Drop DevEnvTemplate into any repository** and it immediately:
+You have a great idea. You want to build it **fast** and build it **right**. But setting up testing, CI/CD, linting, TypeScript, deployment... that's hours of yak-shaving before you write your first feature.
 
-- **Auto-detects** your technology stack (Node.js, React, TypeScript, testing frameworks, etc.)
-- **Analyzes gaps** against development best practices
-- **Generates plan-only PRs** for improvements when gaps are found
-- **Enforces Plan-first workflow** - Cursor Plan mode becomes your primary development interface
-- **Posts CI comments** with stack analysis and validation status
+**DevEnvTemplate fixes this.**
 
-**No local commands required** - everything happens through Cursor Plan mode and CI automation.
+Drop it into your project and get:
+- ✅ **Testing setup** (unit + integration, ready to run)
+- ✅ **CI/CD pipeline** (GitHub Actions, optimized for free tier)
+- ✅ **Quality checks** (linting, type checking, security scanning)
+- ✅ **Documentation templates** (README, contributing guide)
+- ✅ **Best practices baked in** (no decisions, just build)
 
-## Quick Start
+**From idea to deployed in < 10 minutes.** Quality by default, not by overtime.
 
-**New User?** See [USAGE.md](USAGE.md) for a simple command reference.
+## Quick Start (5 Minutes)
 
-### 1. Drop into Your Repository
-
-Copy the `DevEnvTemplate/` folder into your project root:
-
-```bash
-# Your project structure becomes:
-your-project/
-├── DevEnvTemplate/     # ← Drop this entire folder here
-│   ├── .github/
-│   ├── docs/
-│   └── .projectrules
-├── your-code/
-└── package.json
-```
-
-### 2. Install Dependencies and Build
+### 1. Add to Your Project
 
 ```bash
-cd DevEnvTemplate
-npm install
-npm run build  # Compiles TypeScript to JavaScript
+# Clone into your project
+cd your-project
+git clone https://github.com/yourusername/DevEnvTemplate .devenv
+
+# Install and build
+cd .devenv
+npm install && npm run build
 ```
 
-The project uses TypeScript for core modules with automatic compilation.
+### 2. Generate Your Setup
 
-### 3. Generate Your Project Manifest
-
-Run the interactive CLI to define your project requirements:
+Answer 5 simple questions about your project:
 
 ```bash
 npm run agent:init
 ```
 
-This creates `project.manifest.json` based on your selections.
+This creates your configuration and sets up everything automatically.
 
-### 4. Push & Let CI Work
-
-Push your changes. DevEnvTemplate automatically:
-
-- **Stack Analysis**: Detects your technologies and configurations
-- **Gap Analysis**: Identifies areas for improvement
-- **Plan Generation**: Creates plan-only PRs for suggested improvements (optional)
-- **CI Guards**: Enforces Plan-first workflow on future PRs
-
-### 5. Use Cursor Plan Mode
-
-All development now happens through Cursor's Plan mode:
-
-1. **Open Plan Mode**: `Cmd/Ctrl + Shift + P` → "Plan Mode"
-2. **Paste a snippet** from `DevEnvTemplate/docs/snippets/plan-mode/`
-3. **Attach CI artifacts** (stack report, gap analysis) for context
-4. **Generate and execute plans** for all code changes
-
-## Development
-
-### TypeScript Codebase
-
-DevEnvTemplate core modules are written in TypeScript:
-
-- **Source**: `scripts/**/*.ts`
-- **Compiled**: `dist/**/*.js` + `.d.ts` declarations
-- **Build**: `npm run build` or `npm run build:watch`
-
-### Structured Logging
-
-Logging uses contextual levels (DEBUG, INFO, WARN, ERROR):
+### 3. Push and Go
 
 ```bash
-# Enable debug logging
-LOG_LEVEL=debug npm run cleanup:apply
-
-# JSON output for CI
-LOG_JSON=true npm run cleanup:apply
+git add .
+git commit -m "Add DevEnvTemplate"
+git push
 ```
 
-### Architecture
+**That's it.** DevEnvTemplate automatically:
+- ✅ Detects your tech stack (Node.js, React, TypeScript, etc.)
+- ✅ Sets up testing and CI/CD
+- ✅ Runs quality checks on every commit
+- ✅ Gives you a quality audit report
 
-**Base Class Pattern**: Eliminates code duplication through inheritance
-- `BasePackageManager` abstract class
-- 9 concrete package manager implementations
-- 70% code reduction (500 → 150 lines)
+### 4. Build Your Product
 
-**Type Safety**: Full TypeScript with strict mode
-- Compile-time error detection
-- IDE autocomplete and IntelliSense
-- Refactoring support
+Focus on your features. DevEnvTemplate handles:
+- Running tests on every push
+- Type checking and linting
+- Security scans
+- Deployment pipelines (when you're ready)
 
-**Testing**: Comprehensive test suite
-- Unit tests for all core modules
-- Integration tests for workflows
-- Test fixtures for isolated testing
+**See [USAGE.md](USAGE.md) for common commands and workflows.**
+
+## What You Get
+
+### Instant Quality Stack
+- **Testing**: Node.js test runner (no heavy frameworks)
+- **CI/CD**: GitHub Actions (optimized for 2000 free min/month)
+- **Type Safety**: TypeScript support with smart defaults
+- **Linting**: ESLint configured for modern JavaScript/TypeScript
+- **Security**: Automated dependency scanning
+
+### Works With Your Stack
+- **Node.js**: Express, Fastify, NestJS
+- **Frontend**: React, Vue, Svelte, vanilla JS
+- **Full-Stack**: Next.js, Remix, Astro
+- **Python**: Flask, Django, FastAPI (coming soon)
+
+### Free-Tier Friendly
+All recommendations use free tiers:
+- GitHub Actions (2000 min/month)
+- Vercel / Railway / Fly.io deployments
+- GitHub security scanning
+- No paid services required
 
 ## How It Works
 
-### Plan Phase (Cursor Plan Mode)
-- Define problems and requirements in context contracts
-- Generate detailed implementation plans
-- Get stakeholder approval via plan-only PRs
-- CI validates plan completeness and impact analysis
+DevEnvTemplate analyzes your project and sets up quality tooling automatically:
 
-### Agent Phase (Implementation)
-- Execute approved plans using Cursor
-- Changes validated against plan predictions
-- Quality gates ensure code standards
-- Metrics logged for continuous improvement
+1. **Stack Detection**: Scans your project to understand what you're building
+2. **Gap Analysis**: Identifies missing best practices (tests, CI, security, docs)
+3. **Auto-Setup**: Configures testing, linting, and CI/CD based on your stack
+4. **Quality Reports**: Shows you what's working and what needs attention
 
-### CI Automation
-- **Stack Intel**: Auto-detects tech stack and identifies gaps
-- **Plan Guard**: Requires plan-only PR approval for code changes
-- **Impact Guard**: Validates actual changes match plan predictions
-- **PR Comments**: Provides status and guidance
+### On Every Push
+- ✅ **Tests run** automatically
+- ✅ **Code is linted** for consistency
+- ✅ **Security scan** checks dependencies
+- ✅ **Quality report** comments on your PR
 
-## Kick-off Prompt (Cursor Plan Mode)
+You get instant feedback without manual setup.
 
-Use this prompt to start any task. Open Cursor Plan Mode (Cmd/Ctrl + Shift + P → "Plan Mode"), paste this block, and fill in the placeholders. Attach CI artifacts for context.
+## Common Tasks
 
-```
-I need a detailed, step-by-step implementation plan that follows DevEnvTemplate's Plan/Agent workflow.
-
-PROJECT CONTEXT (from CI artifacts):
-- Tech Stack (paste from .devenv/stack-report.json)
-- Current Gaps (paste from .devenv/gaps-report.md)
-- Repository rules: `.projectrules` (assume default unless noted)
-
-TASK
-- What: [clear problem/feature]
-- Why: [business/quality rationale]
-- Scope: [paths/modules]
-
-CONSTRAINTS
-- Follow DevEnvTemplate patterns (see docs/engineering-handbook.md)
-- Plan-first only; no code yet
-- Keep diffs minimal and modular
-- Security, performance, and accessibility considered where relevant
-
-ACCEPTANCE CRITERIA
-- [ ] Addresses the stated goals
-- [ ] Lists exact files to add/modify (paths)
-- [ ] Defines tests (unit/integration/E2E as applicable)
-- [ ] Includes rollback plan and risks
-- [ ] Aligns with CI guards (Plan gate, Impact validation)
-
-REQUEST
-Create a plan with:
-1) Numbered tasks with rationale
-2) Exact file paths and granular edits expected
-3) Test plan per task
-4) Impact prediction: files expected to change
-5) Risks, mitigations, and rollback
-6) Success metrics and verification steps
-
-NOTES
-- If gaps exist in context, ask for the smallest set of clarifying details
-- Reference CI artifacts when proposing impact
+### Run Tests Locally
+```bash
+cd .devenv
+npm test           # Run all tests
+npm run test:unit  # Run unit tests only
 ```
 
-## Repo Upgrade Prompt (Cursor Plan Mode)
-
-Use this prompt to analyze and upgrade any repository to DevEnvTemplate standards. Open Cursor Plan Mode (Cmd/Ctrl + Shift + P → "Plan Mode"), paste this block, and attach CI artifacts.
-
-```
-Goal: Analyze this repository and produce a plan to upgrade it to DevEnvTemplate standards (Plan/Agent-first, zero local commands), then outline the exact code changes required.
-
-PROJECT CONTEXT (attach or paste):
-- Tech Stack: [paste contents of .devenv/stack-report.json]
-- Gaps: [paste relevant sections from .devenv/gaps-report.md]
-- Repository rules: `.projectrules` (assume default unless noted)
-
-CONSTRAINTS
-- Plan-first only; do not write code yet
-- Keep diffs minimal, modular, and reversible
-- Align with CI guards: Plan gate + Impact validation
-- No local CLI usage; CI automation only
-
-SCOPE
-- Upgrade linting/typing/testing/security to baseline
-- Enforce import hygiene and boundaries
-- Add/adjust CI jobs to validate plan-first and impact alignment
-- Remove or archive flows that are not Plan/Agent-first
-
-ACCEPTANCE CRITERIA
-- [ ] Exact files to create/modify/delete listed with paths
-- [ ] Impact prediction: enumerate files expected to change
-- [ ] Tests specified (unit/integration/E2E as applicable)
-- [ ] Risk, mitigations, and rollback per task
-- [ ] CI validation passes with Plan/Agent guard and impact checks
-- [ ] Documentation updated (README, contributing, checklists) where needed
-
-REQUEST
-Produce a detailed, step-by-step implementation plan that includes:
-1) Numbered tasks with rationale and effort
-2) Specific file paths and the granular edits expected
-3) Test strategy per task
-4) Impact prediction (files/modules) for CI comparison
-5) Risks, mitigations, and rollback steps
-6) Success metrics and verification steps
-
-If any critical context is missing, ask up to 3 concise clarifying questions before finalizing the plan.
+### Check Code Quality
+```bash
+npm run cleanup:check  # See what would be cleaned up (dry run)
+npm run cleanup:apply  # Apply cleanup rules
 ```
 
-## Configuration
+### View Your Stack Report
+After pushing, check `.devenv/stack-report.json` to see what DevEnvTemplate detected about your project.
 
-Control enforcement through GitHub repository variables:
+### View Quality Gaps
+Check `.devenv/gaps-report.md` for a detailed analysis of what could be improved (tests, security, docs, etc.).
 
-### Repository Settings → Secrets and Variables → Variables
+## Why Indie Devs Love It
 
-| Variable | Values | Description |
-|----------|--------|-------------|
-| `STRICT_PLAN_GUARD` | `true`/`false` | Require plan-only PRs for code changes |
-| `IMPACT_GUARD` | `warn`/`strict`/`false` | Impact validation level |
+**Fast Setup** → 5 minutes vs 4 hours of configuration  
+**Quality by Default** → Testing, CI, security included  
+**Free Tier** → Everything runs on GitHub's free 2000 min/month  
+**No Lock-In** → Standard tools (Jest, GitHub Actions, ESLint)  
+**Solo-Friendly** → No team jargon, no complex workflows
 
-### Default Behavior
-- **Stack analysis**: Always runs and posts PR comments
-- **Plan guard**: Disabled (set `STRICT_PLAN_GUARD=true` to enable)
-- **Impact guard**: Disabled (set `IMPACT_GUARD=warn` to enable)
+## Use Cases
 
-## CI Artifacts
+**Building a SaaS?**  
+→ Get testing + CI + deployment in one command
 
-DevEnvTemplate generates these artifacts automatically:
+**Side Project?**  
+→ Ship with confidence, no technical debt
 
-- **`.devenv/stack-report.json`** - Detected technologies and configurations
-- **`.devenv/gaps-report.md`** - Areas for improvement with specific recommendations
-- **`plans/*.md`** - Auto-generated hardening plans (when gaps found)
+**Client Work?**  
+→ Professional setup without the setup time
 
-## Development Workflow
+**Learning?**  
+→ See how pros structure projects
 
-### For New Features
-1. **Create Context Contract** (JSON file defining problem, goals, constraints)
-2. **Use Cursor Plan Mode** to generate detailed implementation plan
-3. **Submit Plan-Only PR** for approval (if `STRICT_PLAN_GUARD=true`)
-4. **Implement Code** following approved plan
-5. **CI Validates** changes match plan predictions
+## Advanced Features
 
-### For Improvements
-1. **CI detects gaps** and posts analysis comment
-2. **Plan-only PR created** with improvement tasks (optional)
-3. **Review and approve** the hardening plan
-4. **Use Cursor Plan Mode** to execute improvements
-5. **CI validates** implementation quality
+For power users, DevEnvTemplate includes:
+- **Parallel file processing** (2-5x speedup on large codebases)
+- **Performance tracking** (identify slow build steps)
+- **Cursor Plan Mode integration** (AI-guided development workflow)
+
+See [IMPLEMENTATION_GUIDE.md](IMPLEMENTATION_GUIDE.md) for advanced usage.
 
 ## Benefits
 
-- **Zero Commands**: Drop folder, push, and Cursor handles everything
-- **Plan-First**: Better requirements gathering and stakeholder alignment
-- **Quality Gates**: Automated validation prevents regressions
-- **Continuous Improvement**: Metrics and gap analysis drive better practices
-- **Technology Agnostic**: Works with any stack (Node.js, Python, Go, etc.)
+- **⚡ Fast**: Setup in minutes, not hours
+- **🆓 Free**: Optimized for GitHub free tier
+- **🎯 Focused**: Solo dev-friendly, no enterprise bloat
+- **🔒 Secure**: Automated security scanning
+- **📈 Quality**: Testing and linting by default
+- **🚀 Deploy**: CI/CD ready for Vercel, Railway, Fly.io
 
 ## Documentation
 
-- [Prompt Lifecycle Guide](docs/guides/prompt-lifecycle.md) - 5-phase development process
-- [Cursor Plan Integration](docs/guides/cursor-plan-integration.md) - Using Plan mode effectively
-- [Engineering Handbook](docs/engineering-handbook.md) - Architecture and best practices
-- [Plan Mode Snippets](docs/snippets/plan-mode/) - Ready-to-use Plan mode templates
+- **[USAGE.md](USAGE.md)** - Common commands and workflows
+- **[IMPLEMENTATION_GUIDE.md](IMPLEMENTATION_GUIDE.md)** - Advanced features and customization
+- **[Engineering Handbook](docs/engineering-handbook.md)** - Architecture and patterns
+
+## Contributing
+
+Found a bug? Have a feature idea? PRs welcome!
+
+See [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md) for guidelines.
+
+## License
+
+MIT License - see [LICENSE](LICENSE) for details.
+
+---
+
+**Built for indie developers who want to ship quality code without the setup tax.**
+
+Star ⭐ this repo if DevEnvTemplate saves you time!

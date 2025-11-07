@@ -1,275 +1,446 @@
 # DevEnvTemplate Usage Guide
 
-Quick reference for DevEnvTemplate commands and features.
+**For Indie Developers & Solo Founders**
 
-## Installation & Setup
+Quick reference for common tasks and workflows.
 
-### 1. Install Dependencies
+## Quick Start
+
+### First Time Setup
 
 ```bash
-npm install
-npm run build  # Compiles TypeScript
+cd your-project
+git clone https://github.com/yourusername/DevEnvTemplate .devenv
+cd .devenv
+npm install && npm run build
+npm run agent:init  # Answer 5 questions
 ```
 
-### 2. Generate Project Manifest
+That's it! Push to GitHub and CI will run automatically.
+
+---
+
+## Common Scenarios
+
+### "I want to start a new side project"
 
 ```bash
-npm run agent:init  # Interactive CLI
+# 1. Create your project folder
+mkdir my-saas-app && cd my-saas-app
+
+# 2. Initialize your stack (e.g., Next.js)
+npx create-next-app@latest . 
+
+# 3. Add DevEnvTemplate
+git clone https://github.com/yourusername/DevEnvTemplate .devenv
+cd .devenv && npm install && npm run build
+npm run agent:init
+
+# 4. Push and go
+git add . && git commit -m "Initial setup" && git push
 ```
 
-Creates `project.manifest.json` with your project requirements.
+**Result**: Testing, CI/CD, linting all configured in < 5 minutes.
 
-## Core Commands
+---
 
-### Cleanup Engine
-
-Remove template artifacts after scaffolding:
+### "I want to add DevEnvTemplate to an existing project"
 
 ```bash
-# Preview changes (dry run - default)
+# In your existing project
+git clone https://github.com/yourusername/DevEnvTemplate .devenv
+cd .devenv
+npm install && npm run build
+npm run agent:init  # Detects your existing stack
+
+# Commit and push
+git add . && git commit -m "Add DevEnvTemplate" && git push
+```
+
+**Result**: CI runs, detects your stack, shows quality gaps.
+
+---
+
+### "I want to see what's wrong with my project"
+
+After pushing, check your quality report:
+
+**Stack Report**: `.devenv/stack-report.json`  
+Shows detected technologies and configurations.
+
+**Gap Analysis**: `.devenv/gaps-report.md`  
+Lists what's missing (tests, security, docs, etc.) with recommendations.
+
+**Example gaps:**
+- ❌ No test framework detected
+- ❌ Missing TypeScript configuration  
+- ❌ No CI/CD pipeline
+- ❌ Dependencies not scanned for vulnerabilities
+
+---
+
+### "I want to run tests locally"
+
+```bash
+cd .devenv
+npm test            # Run all tests
+npm run test:unit   # Unit tests only
+npm run test:fast   # Quick test run
+```
+
+**Pro tip**: Tests run automatically on every push via GitHub Actions.
+
+---
+
+### "I want to deploy my app"
+
+DevEnvTemplate includes deployment guides for free tiers:
+
+**Vercel** (recommended for Next.js, React):
+```bash
+# Install Vercel CLI
+npm i -g vercel
+
+# Deploy
+vercel
+```
+
+**Railway** (recommended for Node.js APIs):
+```bash
+# Install Railway CLI
+npm i -g @railway/cli
+
+# Deploy
+railway up
+```
+
+**Fly.io** (recommended for full-stack apps):
+```bash
+# Install Fly CLI
+curl -L https://fly.io/install.sh | sh
+
+# Launch
+fly launch
+```
+
+All deployments work with DevEnvTemplate's CI/CD out of the box.
+
+---
+
+### "I want to fix code quality issues"
+
+Run the cleanup engine to remove common issues:
+
+```bash
+cd .devenv
+
+# See what would be fixed (dry run)
 npm run cleanup
 
-# Apply changes
+# Apply fixes
 npm run cleanup -- --apply
-
-# With performance metrics
-npm run cleanup -- --performance --apply
-
-# Disable caching
-npm run cleanup -- --no-cache --apply
-
-# Specify profile
-npm run cleanup -- --profile minimal --apply
-
-# Feature flags
-npm run cleanup -- --feature auth,api --apply
 ```
 
-**Common Flags:**
+**What it fixes:**
+- Removes unused files
+- Cleans up template code
+- Fixes linting issues
+- Updates dependencies
 
-- `--apply` - Apply changes (default is dry-run)
-- `--performance` - Show performance metrics and recommendations
-- `--cache` / `--no-cache` - Control configuration caching (default: enabled)
-- `--parallel` - Enable parallel file processing for faster cleanup
-- `--concurrency <n>` - Max concurrent operations (default: CPU count)
-- `--profile <name>` - Use specific cleanup profile
-- `--feature <list>` - Enable feature flags
-- `--only <rules>` - Run only specific rules
-- `--exclude <rules>` - Exclude specific rules
-- `--keep <files>` - Preserve files that match removal rules
+---
 
-### CI Tools
+### "I want faster builds"
 
-#### Stack Detection
+Enable parallel processing and caching:
 
 ```bash
-node .github/tools/stack-detector.js
+npm run cleanup -- --parallel --cache --apply
 ```
 
-Detects technologies and generates `.devenv/stack-report.json`
+**Performance gains:**
+- 2-3x faster on large codebases
+- Caches configuration parsing
+- Parallel file processing
 
-#### Gap Analysis
+---
+
+## Use Case Examples
+
+### Side Project / SaaS
+
+**Scenario**: Building a SaaS product nights/weekends  
+**Time budget**: 10-15 hours/week  
+**Goal**: Launch MVP in 3 months
+
+**DevEnvTemplate setup:**
+```bash
+npm run agent:init
+# Select: "Full-stack web app"
+# Stack: Next.js
+# Features: Auth, API, Database
+```
+
+**Result**: Testing, CI, deployment ready in 5 minutes.
+
+---
+
+### Client Work / Freelance
+
+**Scenario**: Building website for client  
+**Budget**: 40 hours total  
+**Goal**: Professional quality, fast delivery
+
+**DevEnvTemplate setup:**
+```bash
+npm run agent:init
+# Select: "Static website" or "Web application"  
+# Stack: React / Vue / vanilla JS
+# Features: Minimal (keep it simple)
+```
+
+**Result**: Client sees professional setup (tests, CI, docs).
+
+---
+
+### Technical Founder / Startup
+
+**Scenario**: Pre-seed startup building MVP  
+**Goal**: Prove product-market fit, raise funding  
+**Concern**: VCs will review code quality
+
+**DevEnvTemplate setup:**
+```bash
+npm run agent:init
+# Select: "Full-stack web app"
+# Stack: Your choice
+# Features: All recommended (tests, CI, security, docs)
+```
+
+**Result**: Investor-grade codebase from day one.
+
+---
+
+## CLI Reference
+
+### Project Setup
 
 ```bash
-node .github/tools/gap-analyzer.js
+npm run agent:init       # Generate project manifest (interactive)
 ```
 
-Analyzes project against best practices, generates `.devenv/gaps-report.md`
+**Questions asked:**
+1. What type of project? (Web app, API, library, etc.)
+2. What's your primary language? (JavaScript, TypeScript, Python, etc.)
+3. What framework? (React, Express, Next.js, etc.)
+4. What features? (Auth, API, Database, etc.)
+5. What's your package manager? (npm, pnpm, yarn)
 
-#### Plan Generation
+---
+
+### Cleanup Commands
 
 ```bash
-node .github/tools/plan-generator.js
+npm run cleanup          # Preview changes (dry run)
+npm run cleanup:apply    # Apply changes
+npm run cleanup:check    # Alias for dry run
 ```
 
-Generates actionable plan from gaps, creates `.devenv/hardening-plan.md`
-
-## Features
-
-### Performance Tracking
-
-Track cleanup performance with detailed metrics:
-
+**Common flags:**
 ```bash
-npm run cleanup -- --performance --apply
+--apply              # Apply changes (default: dry run)
+--profile <name>     # Use specific profile (minimal, standard, strict)
+--feature <list>     # Enable features (auth,api,db)
+--parallel           # Faster processing on large projects
+--performance        # Show detailed metrics
 ```
 
-**Output includes:**
-
-- Total duration and throughput
-- Files processed and scanned
-- Rule execution timing
-- Memory usage (heap, RSS)
-- Cache efficiency
-- Slowest rules and files
-- Optimization recommendations
-
-### Caching
-
-Config caching is enabled by default for 2-3x speedup:
-
-```bash
-# Uses cache (default)
-npm run cleanup -- --apply
-
-# Disable cache
-npm run cleanup -- --no-cache --apply
-```
-
-**How it works:**
-
-- Configuration files are cached after first parse
-- SHA-256 content hashing ensures accuracy
-- Automatic invalidation when files change
-- 1-hour TTL prevents stale data
-
-### Parallel Processing
-
-Process files in parallel for 2-5x speedup on large codebases:
-
-```bash
-# Enable parallel processing
-npm run cleanup -- --parallel --apply
-
-# Custom concurrency (default: CPU count)
-npm run cleanup -- --parallel --concurrency 8 --apply
-
-# With performance metrics
-npm run cleanup -- --parallel --performance --apply
-```
-
-**When to use:**
-
-- Large codebases (50+ files)
-- Multi-core systems
-- I/O-bound operations (file reading/writing)
-
-**Performance tips:**
-
-- Default concurrency (CPU count) works well for most cases
-- For I/O-heavy workloads, try 2x CPU count
-- For CPU-heavy workloads, stick to CPU count
-- Use `--performance` to see actual speedup
-- Combine with `--cache` for maximum performance
-
-**Example output:**
-
-```
-⚡ Parallel Processing:
-  Enabled:           Yes
-  Concurrency:       8
-  Batches:           15
-  Estimated Speedup: 3.2x
-```
+---
 
 ### Testing
 
 ```bash
-# Run all tests
-npm test
-
-# Unit tests only
-npm run test:unit
-
-# Integration tests only
-npm run test:integration
-
-# Watch mode
-npm run test:watch
+npm test             # Run all tests
+npm run test:unit    # Unit tests only
+npm run test:fast    # Quick unit tests
+npm run test:slow    # Integration tests
+npm run test:watch   # Watch mode
 ```
 
-## Project Structure
+---
 
-```
-DevEnvTemplate/
-├── .github/
-│   ├── tools/              # CI tools (stack detector, gap analyzer, plan generator)
-│   ├── types/              # TypeScript type definitions for CI tools
-│   └── workflows/          # GitHub Actions CI/CD
-├── scripts/
-│   ├── cleanup/            # Cleanup engine
-│   ├── agent/              # Agent CLI for manifest generation
-│   ├── types/              # TypeScript type definitions
-│   └── utils/              # Utilities (logger, cache, path resolver)
-├── tests/
-│   ├── unit/               # Unit tests
-│   ├── integration/        # Integration tests
-│   └── fixtures/           # Test fixtures
-├── docs/                   # Documentation
-├── dist/                   # Compiled TypeScript (generated)
-├── .cache/                 # Cache directory (generated)
-├── .devenv/                # CI artifacts (generated)
-├── .projectrules           # Governance rules
-└── project.manifest.json   # Project configuration
-```
-
-## Environment Variables
-
-### Logging
-
-- `LOG_LEVEL` - Set log level (DEBUG, INFO, WARN, ERROR, SILENT)
-- `LOG_JSON` - Enable JSON output (true/false)
-
-Example:
+### CI Tools (Advanced)
 
 ```bash
-LOG_LEVEL=DEBUG npm run cleanup -- --apply
-LOG_JSON=true npm run cleanup -- --apply
+# Stack detection
+node .github/tools/stack-detector.js
+
+# Gap analysis
+node .github/tools/gap-analyzer.js
+
+# Plan generation
+node .github/tools/plan-generator.js
 ```
 
-## Common Workflows
+**Note**: These run automatically in CI. You usually don't need to run them locally.
 
-### New Project Setup
+---
 
-1. `npm install && npm run build`
-2. `npm run agent:init` (generate manifest)
-3. `npm run cleanup -- --apply` (remove template code)
-4. Start developing!
+## Configuration
 
-### Performance Analysis
+### Project Manifest
 
-1. `npm run cleanup -- --performance --dry-run`
-2. Review recommendations in output
-3. Optimize slow rules or files
+Located at `project.manifest.json` (auto-generated by `npm run agent:init`)
 
-### CI Integration
+**Example:**
+```json
+{
+  "name": "my-saas-app",
+  "productType": "web-application",
+  "technologies": ["react", "node", "typescript"],
+  "features": ["auth", "api", "database"],
+  "packageManager": "npm"
+}
+```
 
-CI automatically runs:
+Edit this file to adjust detected stack or features.
 
-1. Stack detection → `.devenv/stack-report.json`
-2. Gap analysis → `.devenv/gaps-report.md`
-3. Plan generation → `.devenv/hardening-plan.md` (if gaps found)
+---
+
+### Cleanup Profiles
+
+Three built-in profiles:
+
+**Minimal** - Fast, conservative cleanup  
+**Standard** - Balanced (recommended)  
+**Strict** - Aggressive cleanup
+
+```bash
+npm run cleanup -- --profile strict --apply
+```
+
+---
 
 ## Troubleshooting
 
-### Build Errors
+### "Tests are failing"
 
 ```bash
-# Clean and rebuild
-rm -rf dist node_modules
-npm install
-npm run build
-```
-
-### Test Failures
-
-```bash
-# Rebuild TypeScript first
-npm run build
+# Run tests locally to debug
+cd .devenv
 npm test
+
+# Check test logs
+# Fix issues, commit, push
 ```
 
-### Cache Issues
+### "CI is taking too long"
 
-```bash
-# Clear cache
-rm -rf .cache
-npm run cleanup -- --no-cache --apply
-```
+Check GitHub Actions usage:
+- Free tier: 2000 minutes/month
+- Enable caching: Speeds up installs
+- Use `--parallel` for large projects
 
-## Getting Help
+### "Gap analyzer shows too many issues"
 
-- **Implementation Guide**: See `IMPLEMENTATION_GUIDE.md` for technical details
-- **Contributing**: See `.github/CONTRIBUTING.md` for development patterns
-- **Project Rules**: See `.projectrules` for governance guidelines
-- **Changelog**: See `docs/rules-changelog.md` for evolution history
+Start with high-priority gaps first:
+1. Critical security issues
+2. Missing tests
+3. Missing CI/CD
+4. Documentation
+
+Low-priority gaps can wait.
+
+### "Deployment failed"
+
+Check deployment platform docs:
+- **Vercel**: [vercel.com/docs](https://vercel.com/docs)
+- **Railway**: [docs.railway.app](https://docs.railway.app)
+- **Fly.io**: [fly.io/docs](https://fly.io/docs)
+
+Most issues: Missing environment variables.
+
+---
+
+## Best Practices
+
+### For Solo Developers
+
+✅ **Do:**
+- Push often (CI runs automatically)
+- Fix broken tests immediately
+- Keep dependencies updated
+- Document user-facing changes
+
+❌ **Don't:**
+- Skip tests (they're fast)
+- Commit secrets (use `.env`)
+- Ignore security warnings
+- Over-engineer (keep it simple)
+
+### For Side Projects
+
+✅ **Do:**
+- Use free tiers (GitHub Actions, Vercel, etc.)
+- Focus on shipping features
+- Let CI handle quality checks
+- Deploy early, deploy often
+
+❌ **Don't:**
+- Spend hours on tooling setup (DevEnvTemplate handles it)
+- Skip CI (it's free and automatic)
+- Deploy without tests
+- Forget to git push
+
+### For Client Work
+
+✅ **Do:**
+- Show clients the quality setup (builds trust)
+- Use consistent setup across projects
+- Document everything clearly
+- Keep projects professional
+
+❌ **Don't:**
+- Skip documentation
+- Cut corners on testing
+- Ignore security scans
+- Deliver without CI
+
+---
+
+## Next Steps
+
+**Just Starting?**
+- Run `npm run agent:init`
+- Push to GitHub
+- Check `.devenv/gaps-report.md`
+- Fix high-priority gaps
+
+**Ready to Deploy?**
+- Tests passing? ✅
+- No secrets committed? ✅
+- Docs updated? ✅
+- Deploy! 🚀
+
+**Need Help?**
+- See [IMPLEMENTATION_GUIDE.md](IMPLEMENTATION_GUIDE.md) for advanced features
+- Check [docs/](docs/) for detailed guides
+- Open an issue on GitHub
+
+---
+
+## Advanced Features
+
+For power users, DevEnvTemplate includes:
+
+- **Parallel Processing**: 2-5x speedup on large codebases
+- **Performance Tracking**: Detailed metrics and recommendations
+- **Custom Rules**: Define your own cleanup rules
+- **Cursor Integration**: AI-guided development workflow
+
+See [IMPLEMENTATION_GUIDE.md](IMPLEMENTATION_GUIDE.md) for details.
+
+---
+
+**That's it!** You're ready to ship quality code faster.
+
+Questions? Open an issue on GitHub.

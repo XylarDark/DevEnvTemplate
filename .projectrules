@@ -1,19 +1,20 @@
-# General-Purpose Development Governance Rules
-# Version: 1.7 - Phase 4b Parallel Processing
+# Development Best Practices for Indie Developers
+# Version: 2.0 - Solo Developer Focus
 # Last Updated: 2025-11-07
-# Purpose: Technology-agnostic governance for QA-first, scope-gated development
+# Purpose: Quality-first development for indie devs, solo founders, and small teams
 #
 # Quick Links:
 # - README: ../README.md
+# - Market Positioning: docs/market-positioning.md
 # - Rules Changelog: docs/rules-changelog.md
 
 project_goals:
-  - Minimal cost: Prefer built-in platform features; free tiers only.
-  - QA-first: Automated testing, linting, CI/CD, and comprehensive documentation.
-  - Accessibility awareness: Keyboard navigation, screen reader support (if user-facing UI).
-  - Performance awareness: Track budgets and regressions (if applicable).
-  - Security baseline: No credentials in repo; dependency updates; basic scanning.
-  - Continuous improvement: Post-cycle reviews and rules evolution.
+  - Ship fast: Optimize for quick iteration and deployment.
+  - Quality by default: Automated testing, linting, CI/CD without manual setup.
+  - Free-tier first: Optimize for GitHub free tier (2000 min/month Actions).
+  - Solo-friendly: No team workflows, no approval gates, no complex processes.
+  - Security baseline: No credentials in repo; dependency scanning included.
+  - Keep it simple: If it slows you down, it's not worth it.
 
 languages:
   - agnostic: Rules apply regardless of technology stack.
@@ -23,13 +24,12 @@ languages:
   - json: Configuration, locales, and structured data (if applicable).
 
 guardrails:
-  - No server-side code: Client-side or platform-native only; no external runtimes unless approved.
-  - Secrets management: API keys in secure stores only; never commit credentials.
-  - External services: Free tier only; document all service additions in PR descriptions.
-  - Performance budget: Track bundle size, build time, runtime metrics (if applicable); report-only by default.
-  - Testing standard: Unit tests required; integration optional; fast local test loop.
-  - Platform compatibility: Cross-OS scripts (Windows/macOS/Linux); avoid shell-specific tricks; use cross-shell safe commands (e.g., `;` not `&&` for chaining, `$env:VAR` not `VAR=` for environment variables).
-  - localStorage usage (if applicable): Handle quota exceeded errors; no sensitive data storage; limited to non-sensitive state only.
+  - Secrets management: Never commit API keys, tokens, or credentials; use environment variables or secret stores.
+  - Free-tier focus: Prefer free services (GitHub Actions, Vercel, Railway); document paid services if needed.
+  - Testing standard: Unit tests for new features; keep tests fast; fix broken tests immediately.
+  - Platform compatibility: Scripts should work on Windows/macOS/Linux; test on your target platform.
+  - Security first: Automated dependency scanning; fail builds on critical vulnerabilities; keep dependencies updated.
+  - Performance awareness: Don't ship obviously slow code; profile if users report issues.
 
 code_style:
   - Documentation: Keep README and CONTRIBUTING aligned with current practices.
@@ -90,6 +90,19 @@ development_environment:
   - UTF-8 emoji handling: Use literal emoji strings in code; test emoji parsing with actual characters.
   - Performance tracking: Use --performance flag for rule timing, memory usage, and optimization recommendations.
   - Caching enabled: Config parsing cached by default; use --no-cache to disable; 2-3x speedup on repeated runs.
+  - Terminal command timeouts: Always monitor terminal execution time; cancel stalled commands based on expected operation duration (see terminal_timeout_guidelines).
+
+terminal_timeout_guidelines:
+  - Quick operations (< 5 seconds): git status, git add, ls, cd, echo, simple file reads
+  - Fast operations (5-15 seconds): npm install (with cache), git commit, git push (small changes), tsc --noEmit, linting
+  - Medium operations (15-60 seconds): npm test (unit tests), npm run build, git clone (small repos)
+  - Slow operations (1-3 minutes): npm test (integration tests), npm install (no cache), git push (large changes)
+  - Very slow operations (3-10 minutes): npm test (full suite with E2E), large builds, CI workflows
+  - Timeout policy: If command exceeds 2x expected duration, cancel and investigate; never wait indefinitely
+  - Stall detection: If no output for 30 seconds on expected-fast operations, assume stall and cancel
+  - Test execution: Unit tests should complete in < 10 seconds; integration tests < 60 seconds; cancel if exceeded
+  - User notification: When canceling stalled commands, explain expected vs actual duration and next steps
+  - Remediation: After timeout, identify root cause (slow tests, infinite loops, blocking I/O) and fix before retrying
 
 advanced_patterns:
   - Client-side filtering: URL synchronization for bookmarkable states (if applicable).
@@ -137,29 +150,25 @@ testing:
   - Async test patterns: Use async/await in tests for time-based validations.
   - Parallel testing: Test concurrency limits, error handling, progress callbacks, and memory efficiency.
   - Large fixtures: Create 100+ file fixtures for performance testing; verify 2-3x speedup with parallel mode.
+  - Test timeouts: All tests must have explicit timeouts; unit tests default 5s, integration 60s; use { timeout: ms } option.
+  - Timeout enforcement: Remove or fix tests that consistently exceed timeouts; never increase timeouts to mask slow tests.
+  - Test isolation: Each test should be independently runnable; avoid shared state that causes cascading failures.
+  - Slow test remediation: Profile slow tests, cache expensive operations (schema compilation, fixture setup), or split into faster units.
 
 review:
-  - Scope Gate compliance: Verify PR template Scope Gate checklist completed for new features/settings/impacts.
-  - Optional Feature Retention: Assess optional features for removal if unused beyond 2 release cycles.
-  - Pre-commit checks: Lint, tests, governance checks; clear pass/fail signal.
-  - Manual testing: Critical user flows tested; screenshots for UI changes.
-  - Feature toggle testing: Verify conditional rendering and auto-hide behaviors.
-  - Performance validation: Budget checks pass; no regressions introduced.
-  - Code review: Follow PR template; test all modified functionality.
-  - Documentation: Update README/CONTRIBUTING for new features/settings; rules changelog for governance changes.
-  - Rules reconciliation: Clean up legacy TODOs; update rules after each cycle.
-  - Error reporting: Include environment-specific errors encountered and solutions implemented.
-  - Session summary: Document problems faced and solutions found for future reference.
-  - Governance update: Review session work and update .projectrules with new patterns/best practices.
+  - Pre-commit checks: Lint, tests pass; clear pass/fail signal.
+  - Manual testing: Critical flows tested; screenshots for UI changes (if applicable).
+  - Performance check: No significant regressions introduced.
+  - Documentation: Update README for user-facing changes.
+  - Test coverage: New features have tests; existing tests still pass.
+  - Quick validation: Does it work? Is it tested? Is it documented?
 
 contribution:
-  - Scope Gate: Complete PR template Scope Gate checklist for any new features/settings/external domains.
   - Branch naming: feat/, fix/, refactor/, perf/, docs/, test/, chore/ prefixes.
   - Commit messages: Conventional commits with scope (e.g., feat(auth): add login, fix(ui): resolve button focus).
-  - PR requirements: Description, testing notes, screenshots for UI changes.
-  - Code ownership: Review required for core governance files and critical functionality.
-  - Breaking changes: Document in PR description and commit footer with migration notes.
-  - Rules changes: Require explicit approval; bump version; update changelog.
+  - PR requirements: Description, testing notes, screenshots for UI changes (if applicable).
+  - Breaking changes: Document in commit message with migration notes.
+  - Open source friendly: Clear descriptions, helpful for future contributors.
 
 commits:
   - Format: type(scope): description
@@ -169,23 +178,15 @@ commits:
   - Examples: "feat(auth): add login validation", "fix(ui): resolve button focus trap"
 
 policies:
-  - Scope Gate: Require explicit approval for new features, settings, external domains, or significant impacts.
-  - Optional Feature Retention: Keep optional features only if actively used within 2 release cycles, or when user benefit outweighs maintenance cost.
-  - Performance Budgets: Track bundle sizes, build times, runtime metrics (if applicable); report-only CI (no failures); define budgets in quality-budgets.json.
-  - Budget Governance: Request exceptions in PR description with mitigation plan; remediate within 2 weeks; document budget increases in PRs.
-  - Policy Enforcement: Default to `report-only` mode for governance checks; set `POLICY_ENFORCEMENT=enforced` environment variable to enable blocking failures (use with caution for established teams only).
-  - Testing Standard: Unit tests required for new code; integration/schema optional; maintain fast local test loop.
-  - Security Baseline: No credentials in repo; regular dependency updates; basic security scanning.
-  - Git Transport: Default to HTTPS for push operations; SSH optional only with explicit host key configuration and key management.
-  - Rules Governance: Update .projectrules after each Plan→Agent cycle; maintain changelog; version bumps for policy changes.
-  - Context-First Development: Require Context Contracts for code changes; enforce Question → Plan → Implement workflow.
-  - Plan-Only Gate: Code PRs require approved Plan-only PRs first; use STRICT_PLAN_GUARD=true to enforce.
-  - Impact Guard: Changed files must align with predicted impact; use IMPACT_GUARD=warn|block for enforcement.
-  - Plan/Agent Workflow: All development happens through Cursor Plan Mode; CI artifacts (stack report, gaps, context pack) as primary inputs.
-  - Assumptions Policy: High-risk assumptions must have validation plans and be resolved before implementation merge; CI blocks on unresolved high-risk assumptions.
-  - Zero-Commands Principle: No local CLI scripts required; all tooling happens in CI or Cursor Plan Mode.
-  - CI Artifacts as Truth: Stack reports, gap analysis, and context packs are authoritative sources for planning.
-  - Multi-Ecosystem Support: Governance applies to Node.js, Python, Go, Java, .NET, and other technology stacks.
+  - Testing Standard: Unit tests for new features; integration tests optional; keep tests fast (< 5s unit, < 60s integration).
+  - Security Baseline: No credentials in repo; automated dependency scanning; fail builds on critical vulnerabilities.
+  - Free-Tier First: Optimize CI for GitHub Actions free tier (< 2000 min/month); cache dependencies; parallel where beneficial.
+  - Performance Awareness: Track build times; report slow tests; optimize bottlenecks as they appear.
+  - Git Best Practices: Conventional commits (feat/fix/docs); HTTPS for push; clear commit messages.
+  - Quality Checks: Automated linting, type checking, and testing on every push; fix before merge.
+  - Keep It Working: Main branch should always be deployable; fix broken builds immediately.
+  - Documentation: Update README for user-facing changes; keep docs simple and actionable.
+  - Dependency Management: Review deps before adding; prefer standard library; keep dependencies minimal and updated.
 
 version_control:
   - Rules versioning: Update version number in header for major changes and phase completions.
@@ -200,14 +201,10 @@ version_control:
   - Cycle closeout: Formal post-cycle review process to maintain standards evolution.
 
 cycle_closeout:
-  - Session Review: After each Plan→Agent cycle, complete this checklist before marking PR ready:
-    - [ ] Summarize changes: features added, tests written, CI/docs updated, bugs fixed
-    - [ ] Log errors/workarounds: Any platform/environment errors encountered and solutions
-    - [ ] Rules deltas: What to add/modify/remove in .projectrules (policies, guardrails, patterns)
-    - [ ] Version bump: Increment version in header if policies/guardrails changed
-    - [ ] Changelog entry: Add dated entry to docs/rules-changelog.md with highlights/rationale
-    - [ ] PR template: Fill Session Review section with changes, errors, version bump, changelog link
-    - [ ] Git repo root validated: Confirm `git rev-parse --show-toplevel` equals project directory
-    - [ ] First push method verified: HTTPS by default; SSH only if host key configured
-  - Governance reminders: Report-only CI will remind you if rules/changelog updates are missing
-  - Changelog location: docs/rules-changelog.md (append-only log with date, version, highlights)
+  - Quick Review: Before merging, verify:
+    - [ ] Changes work as expected
+    - [ ] Tests pass
+    - [ ] Docs updated (if user-facing change)
+    - [ ] No secrets committed
+    - [ ] Build/deploy still works
+  - That's it! Keep it simple.

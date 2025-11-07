@@ -12,6 +12,104 @@ This document tracks the evolution of `.projectrules` - the central governance f
 
 ---
 
+## 2025-11-07 - v2.0 - Solo Developer Focus & Market Pivot
+
+### Highlights
+
+- **Major Pivot**: Target indie developers & solo founders (not enterprise teams)
+- **Simplified Policies**: Removed approval gates, team workflows, complex governance
+- **Free-Tier First**: Optimize for GitHub Actions free tier (2000 min/month)
+- **Solo-Friendly Language**: No "stakeholders", "approvals", "code ownership"
+- **Keep It Simple**: If it slows you down, it's not worth it
+
+### Changes
+
+- Renamed from "General-Purpose Development Governance Rules" to "Development Best Practices for Indie Developers"
+- Replaced project_goals with solo-dev focus: ship fast, quality by default, free-tier first
+- Removed policies: Scope Gate, Plan-Only Gate, Impact Guard, Context-First Development, Multi-Ecosystem Support
+- Simplified policies to 9 core rules (from 17): Testing, Security, Free-Tier, Performance, Git, Quality, Keep It Working, Documentation, Dependencies
+- Simplified guardrails from 7 to 6: focus on secrets, free-tier, testing, compatibility, security, performance
+- Removed contribution requirements: Scope Gate, code ownership, explicit approvals
+- Simplified review checklist from 12 items to 6: pre-commit, manual testing, performance, docs, test coverage, quick validation
+- Simplified cycle_closeout from 8-item checklist to 5-item quick review
+
+### Rationale
+
+During Phase 2 market analysis, identified that indie developers & solo founders are the most underserved market segment for development environment automation. Existing solution focused on enterprise/team workflows (plan-only PRs, approval gates, impact validation) which create friction for solo developers.
+
+The new focus eliminates approval gates, simplifies policies, and optimizes for speed. Solo developers want to ship fast with quality by default - they don't need governance frameworks, they need practical best practices that don't slow them down.
+
+### Problems Solved
+
+1. **Over-engineered for target market**: Enterprise features (plan gates, impact guards) added friction for solo devs
+2. **Team-focused language**: "Stakeholders", "approvals", "code ownership" alienated indie developers
+3. **Complex workflows**: Plan-first development, context contracts, multi-phase cycles too heavyweight
+4. **Budget misalignment**: No optimization for free-tier constraints (GitHub Actions 2000 min/month)
+5. **Unclear target audience**: "Technology-agnostic governance" appealed to no one specifically
+
+### New Approach
+
+1. **Solo-first**: No team workflows, no approval processes, no complex coordination
+2. **Speed focused**: Ship fast, iterate quickly, don't slow down for unnecessary process
+3. **Quality by default**: Automated testing, linting, CI/CD without manual setup
+4. **Free-tier optimized**: Conscious of GitHub free tier limits, cache dependencies, parallel where beneficial
+5. **Keep it simple**: 6 guardrails, 9 policies, 6 review items (down from dozens)
+
+### Impacted Files
+
+- `.projectrules`: Complete rewrite for solo developer focus (v2.0)
+- `README.md`: Repositioned for indie developers & solo founders
+- `docs/market-positioning.md`: Created comprehensive market analysis and personas
+- `docs/rules-changelog.md`: This entry
+- `plans/PHASE-2-MARKET-PIVOT.md`: Strategic pivot plan
+
+---
+
+## 2025-11-07 - v1.8 - Terminal Timeout Management & Test Optimization
+
+### Highlights
+
+- **Terminal Timeout Guidelines**: Comprehensive timeout expectations for all terminal operations
+- **Stall Detection**: 30-second no-output threshold for fast operations; 2x expected duration for all commands
+- **Test Timeout Enforcement**: Explicit timeouts required for all tests (5s unit, 60s integration)
+- **Slow Test Remediation**: Profile and fix slow tests; never mask with increased timeouts
+- **Test Isolation**: Independent test execution; avoid shared state causing cascading failures
+
+### Changes
+
+- Added `terminal_timeout_guidelines` section with operation categories (quick, fast, medium, slow, very slow)
+- Enhanced `development_environment` with terminal command timeout monitoring requirement
+- Updated `testing` section with timeout enforcement, isolation, and remediation patterns
+- Version bumped to 1.8 in header
+
+### Rationale
+
+During Phase 1 implementation, multiple tests stalled indefinitely, blocking development workflow. The agent workflow integration test and agent CLI unit test both exceeded reasonable execution times without clear timeout boundaries. This created a poor developer experience and wasted significant time waiting for stalled operations.
+
+The new guidelines establish clear expectations for operation durations and require proactive timeout management. This ensures the development workflow remains responsive and problems are identified quickly rather than waiting indefinitely.
+
+### Problems Solved
+
+1. **Indefinite test hangs**: Tests now have explicit timeouts; stalled tests are canceled and investigated
+2. **Unclear operation expectations**: Clear duration categories for all terminal commands
+3. **Slow test accumulation**: Timeout enforcement prevents slow tests from being committed
+4. **Poor developer experience**: Stall detection (30s no-output) provides fast feedback
+5. **Workflow blockage**: 2x timeout policy ensures commands never wait indefinitely
+
+### Optimizations Implemented
+
+1. **Proactive stall detection**: Cancel operations with no output for 30s on expected-fast operations
+2. **Test timeout defaults**: 5s for unit tests, 60s for integration tests
+3. **Remediation workflow**: Profile → cache expensive operations → split into faster units
+4. **Test isolation**: Independent execution prevents cascading failures from shared state
+
+### Impacted Files
+
+- `.projectrules`: Added terminal_timeout_guidelines section, updated development_environment and testing sections
+- `docs/rules-changelog.md`: This entry
+
+---
+
 ## 2025-11-07 - v1.7 - Phase 4b Parallel Processing
 
 ### Highlights
