@@ -15,22 +15,7 @@
 
 ## Quick Start: 10 Minutes to Professional Setup
 
-### Option 1: Website Flow (Recommended for Beginners)
-
-1. **Open the website**: Visit [your-devenv-template-site.com](https://your-devenv-template-site.com)
-2. **Choose your path**:
-   - **Guided Flow**: Step-by-step wizard for beginners (recommended)
-   - **Advanced Flow**: Full control with detailed options
-3. **Describe your project**:
-   - What type of app? (Web app, API, mobile, desktop, etc.)
-   - What features do you need? (Authentication, database, API, etc.)
-   - What technology stack? (React, Node.js, Python, Go, etc.)
-   - Where will it run? (Cloud, Docker, self-hosted, etc.)
-4. **Download your config**: Get `project.manifest.json` - your project's DNA
-5. **Copy template files**: Add DevEnvTemplate to your project
-6. **Run setup**: Execute the generated configuration
-
-### Option 2: CLI Flow (For Power Users)
+### CLI Setup
 
 ```bash
 # 1. Copy DevEnvTemplate to your new project
@@ -215,19 +200,15 @@ Please optimize by:
 
 ### Step 1: Define Your Project (Manifest Creation)
 
-**Using the Website (Easiest):**
-1. Go to the DevEnvTemplate website
-2. Choose Guided or Advanced flow
-3. Answer questions about your project
-4. Download `project.manifest.json`
-
-**Using CLI (Advanced):**
+**Using CLI:**
 ```bash
 npm run agent:init
 # Follow interactive prompts
 ```
 
-**Manual Creation (Expert):**
+This interactive CLI will guide you through defining your project requirements and generate a `project.manifest.json` file.
+
+**Manual Creation (Advanced):**
 Create `project.manifest.json` following the schema in `docs/specs/project-definition-schema-v1.md`
 
 ### Step 2: Set Up Your Repository

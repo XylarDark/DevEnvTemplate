@@ -4,6 +4,8 @@ The DevEnvTemplate includes an interactive agent CLI that guides users through d
 
 ## Quick Start
 
+Use the CLI-based workflow to define your project:
+
 ```bash
 # Initialize project requirements
 npm run agent:init
@@ -11,6 +13,8 @@ npm run agent:init
 # Apply configuration to cleanup and CI
 npm run agent:apply
 ```
+
+The interactive CLI will ask you questions about your project type, features, technology stack, deployment target, and more. It then generates a manifest file that drives the entire DevEnvTemplate system.
 
 ## How It Works
 

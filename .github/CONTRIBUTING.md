@@ -61,6 +61,38 @@ npm run lint
 - Prefer `cross-env` for environment variables if needed
 - Test scripts on both Windows and Unix-like systems
 
+### TypeScript Development
+
+The codebase uses TypeScript for core modules with strict type checking:
+
+**Build and Type Check:**
+```bash
+# Compile TypeScript to JavaScript
+npm run build
+
+# Watch mode for development
+npm run build:watch
+
+# Type check only (no output)
+npm run prebuild
+```
+
+**Development Workflow:**
+- Write TypeScript in `scripts/**/*.ts`
+- TypeScript compiles to `dist/`
+- JavaScript wrappers in `scripts/**/*.js` import from `dist/` for compatibility
+- Run `npm run build` before testing
+
+**Type Definitions:**
+- Place interfaces in `scripts/types/*.ts`
+- Use strict typing throughout
+- Enable IDE autocomplete with proper exports
+
+**Testing with TypeScript:**
+- Tests import from compiled JavaScript (`dist/`)
+- Run `npm run build` before test suite
+- Type errors caught at compile time, not runtime
+
 ## Development Workflow
 
 ### Pre-Development (Plan Mode)
@@ -137,6 +169,8 @@ type(scope): description
 - **Schema validation** for structured data (if applicable)
 - **Accessibility testing** for UI components (if applicable)
 - **Website smoke tests** - verify guided/advanced onboarding flows work
+- **TypeScript compilation** before tests to catch type errors early
+- **Structured logging** with LOG_LEVEL=debug for test debugging
 
 ### Next.js Development Guidelines
 

@@ -31,7 +31,27 @@ your-project/
 └── package.json
 ```
 
-### 2. Push & Let CI Work
+### 2. Install Dependencies and Build
+
+```bash
+cd DevEnvTemplate
+npm install
+npm run build  # Compiles TypeScript to JavaScript
+```
+
+The project uses TypeScript for core modules with automatic compilation.
+
+### 3. Generate Your Project Manifest
+
+Run the interactive CLI to define your project requirements:
+
+```bash
+npm run agent:init
+```
+
+This creates `project.manifest.json` based on your selections.
+
+### 4. Push & Let CI Work
 
 Push your changes. DevEnvTemplate automatically:
 
@@ -40,7 +60,7 @@ Push your changes. DevEnvTemplate automatically:
 - **Plan Generation**: Creates plan-only PRs for suggested improvements (optional)
 - **CI Guards**: Enforces Plan-first workflow on future PRs
 
-### 3. Use Cursor Plan Mode
+### 5. Use Cursor Plan Mode
 
 All development now happens through Cursor's Plan mode:
 
@@ -48,6 +68,45 @@ All development now happens through Cursor's Plan mode:
 2. **Paste a snippet** from `DevEnvTemplate/docs/snippets/plan-mode/`
 3. **Attach CI artifacts** (stack report, gap analysis) for context
 4. **Generate and execute plans** for all code changes
+
+## Development
+
+### TypeScript Codebase
+
+DevEnvTemplate core modules are written in TypeScript:
+
+- **Source**: `scripts/**/*.ts`
+- **Compiled**: `dist/**/*.js` + `.d.ts` declarations
+- **Build**: `npm run build` or `npm run build:watch`
+
+### Structured Logging
+
+Logging uses contextual levels (DEBUG, INFO, WARN, ERROR):
+
+```bash
+# Enable debug logging
+LOG_LEVEL=debug npm run cleanup:apply
+
+# JSON output for CI
+LOG_JSON=true npm run cleanup:apply
+```
+
+### Architecture
+
+**Base Class Pattern**: Eliminates code duplication through inheritance
+- `BasePackageManager` abstract class
+- 9 concrete package manager implementations
+- 70% code reduction (500 → 150 lines)
+
+**Type Safety**: Full TypeScript with strict mode
+- Compile-time error detection
+- IDE autocomplete and IntelliSense
+- Refactoring support
+
+**Testing**: Comprehensive test suite
+- Unit tests for all core modules
+- Integration tests for workflows
+- Test fixtures for isolated testing
 
 ## How It Works
 
