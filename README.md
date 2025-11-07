@@ -16,6 +16,8 @@ A zero-commands, drop-in development environment that automatically understands 
 
 ## Quick Start
 
+**New User?** See [USAGE.md](USAGE.md) for a simple command reference.
+
 ### 1. Drop into Your Repository
 
 Copy the `DevEnvTemplate/` folder into your project root:

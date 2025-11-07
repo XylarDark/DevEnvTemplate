@@ -135,6 +135,75 @@ const title = line.replace(/^### [🔴🟡🟢] /, '');
 - Add missing values when compilation errors occur
 - Catch type mismatches at compile time, not runtime
 
+### Performance & Caching Patterns
+
+The project includes performance tracking and caching for optimization:
+
+**Performance Tracking:**
+```bash
+# Enable performance metrics
+npm run cleanup -- --performance --apply
+
+# Outputs:
+# - Rule execution timing
+# - File processing metrics  
+# - Memory usage (heap, RSS)
+# - Cache efficiency
+# - Optimization recommendations
+```
+
+**Performance Testing:**
+```javascript
+// Test performance tracker
+const { PerformanceTracker } = require('../../dist/scripts/types/performance');
+
+it('should track rule execution', () => {
+  const tracker = new PerformanceTracker();
+  tracker.start();
+  tracker.trackRuleExecution('test-rule', 100, 5, false);
+  tracker.end();
+  
+  const report = tracker.generateReport();
+  assert.strictEqual(report.rules.length, 1);
+  assert.strictEqual(report.rules[0].ruleId, 'test-rule');
+});
+```
+
+**Caching Strategy:**
+```typescript
+// Config caching with content-based invalidation
+if (this.configCache && this.fileCache) {
+  const contentHash = this.fileCache.generateHash(configContent);
+  const cached = this.configCache.get(configPath, contentHash);
+  
+  if (cached) {
+    return cached; // Cache hit
+  }
+  
+  const parsed = yaml.parse(configContent);
+  this.configCache.set(configPath, parsed, contentHash);
+  return parsed;
+}
+```
+
+**Cache Control:**
+```bash
+# Caching enabled by default
+npm run cleanup -- --apply
+
+# Disable caching explicitly
+npm run cleanup -- --no-cache --apply
+
+# Cache invalidation is automatic when files change
+```
+
+**Best Practices:**
+- Performance tracking is opt-in (--performance flag) to avoid overhead
+- Caching uses SHA-256 hashing for integrity
+- Cache TTL prevents stale data (1-hour default)
+- Memory tracking helps identify optimization opportunities
+- Recommendations guide performance improvements
+
 ## Development Workflow
 
 ### Pre-Development (Plan Mode)
