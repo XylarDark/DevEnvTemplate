@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "outDir": "./dist",
-    "rootDir": "./scripts",
+    "rootDir": "./",
     "module": "commonjs",
     "target": "ES2020",
     "strict": true,
@@ -16,7 +16,8 @@
     "allowSyntheticDefaultImports": true
   },
   "include": [
-    "scripts/**/*.ts"
+    "scripts/**/*.ts",
+    ".github/**/*.ts"
   ],
   "exclude": [
     "node_modules",
