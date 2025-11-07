@@ -47,7 +47,8 @@ export type GapCategory =
   | 'accessibility'
   | 'docker'
   | 'environment'
-  | 'git-hooks';
+  | 'git-hooks'
+  | 'git';
 
 export interface Gap {
   category: GapCategory;

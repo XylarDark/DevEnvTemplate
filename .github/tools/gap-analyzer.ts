@@ -585,6 +585,7 @@ echo "npm run lint && npm run format:check" > .husky/pre-commit`
       gaps.forEach(gap => {
         const severityIcon = gap.severity === 'high' ? '🔴' : gap.severity === 'medium' ? '🟡' : '🟢';
         report += `### ${severityIcon} ${gap.title}\n\n`;
+        report += `**Category:** ${gap.category}\n\n`;
         report += `${gap.description}\n\n`;
         report += `**Impact:** ${gap.impact}\n\n`;
         report += `**Recommendation:** ${gap.recommendation}\n\n`;
