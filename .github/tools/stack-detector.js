@@ -661,13 +661,22 @@ class StackDetector {
       }
     }
   }
+
+  async saveReport(report) {
+    const devenvDir = path.join(this.rootDir, '.devenv');
+    await fs.mkdir(devenvDir, { recursive: true });
+    const reportPath = path.join(devenvDir, 'stack-report.json');
+    await fs.writeFile(reportPath, JSON.stringify(report, null, 2), 'utf8');
+    logger.info(`Stack report saved to ${reportPath}`);
+  }
 }
 
 // Run the detector
 if (require.main === module) {
   const detector = new StackDetector();
-  detector.detect().then(result => {
+  detector.detect().then(async (result) => {
     logger.info(JSON.stringify(result, null, 2));
+    await detector.saveReport(result);
   }).catch(error => {
     logger.error('Stack detection failed:', { error: error.message, stack: error.stack });
     process.exit(1);
