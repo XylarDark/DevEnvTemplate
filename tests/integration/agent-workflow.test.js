@@ -7,7 +7,7 @@
  * - End-to-end agent flow
  */
 
-const { describe, test } = require('node:test');
+const { describe, test, before } = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs').promises;
 const path = require('path');
@@ -15,9 +15,21 @@ const AgentCLI = require('../../scripts/agent/cli');
 const Ajv = require('ajv');
 const addFormats = require('ajv-formats');
 
+// Cache schema compilation at module level for performance
+let validateManifest;
+
 describe('Agent Workflow Integration', () => {
+  // Load and compile schema once before all tests
+  before(async () => {
+    const schemaPath = path.join(__dirname, '../../schemas/project.manifest.schema.json');
+    const schema = JSON.parse(await fs.readFile(schemaPath, 'utf8'));
+    const ajv = new Ajv({ allErrors: true, strict: false });
+    addFormats(ajv);
+    validateManifest = ajv.compile(schema);
+  });
+
   describe('End-to-End Manifest Generation', () => {
-    test('should generate and validate manifest through full workflow', async () => {
+    test('should generate and validate manifest through full workflow', { timeout: 5000 }, async () => {
       const cli = new AgentCLI();
       
       // Simulate user requirements
@@ -37,19 +49,11 @@ describe('Agent Workflow Integration', () => {
       // Generate manifest
       const manifest = cli.generateManifest(requirements);
       
-      // Load schema
-      const schemaPath = path.join(__dirname, '../../schemas/project.manifest.schema.json');
-      const schema = JSON.parse(await fs.readFile(schemaPath, 'utf8'));
-      
-      // Validate manifest
-      const ajv = new Ajv({ allErrors: true, strict: false });
-      addFormats(ajv);
-      const validate = ajv.compile(schema);
-      
-      const isValid = validate(manifest);
+      // Validate manifest using cached validator
+      const isValid = validateManifest(manifest);
       
       if (!isValid) {
-        console.log('Validation errors:', validate.errors);
+        console.log('Validation errors:', validateManifest.errors);
       }
       
       assert.ok(isValid, 'Generated manifest should be valid');
@@ -60,7 +64,7 @@ describe('Agent Workflow Integration', () => {
       assert.ok(manifest.derived.features.length > 0, 'Should have derived features');
     });
 
-    test('should generate manifest with all features correctly mapped', async () => {
+    test('should generate manifest with all features correctly mapped', { timeout: 5000 }, async () => {
       const cli = new AgentCLI();
       
       const requirements = {
@@ -101,7 +105,7 @@ describe('Agent Workflow Integration', () => {
       assert.ok(features.includes('compliance'), 'Should have compliance feature');
     });
 
-    test('should generate different manifests for different stacks', async () => {
+    test('should generate different manifests for different stacks', { timeout: 5000 }, async () => {
       const cli = new AgentCLI();
       
       const baseRequirements = {
@@ -147,7 +151,7 @@ describe('Agent Workflow Integration', () => {
   });
 
   describe('Manifest File Operations', () => {
-    test('should save manifest to file', async () => {
+    test('should save manifest to file', { timeout: 5000 }, async () => {
       const cli = new AgentCLI();
       
       const requirements = {
@@ -181,7 +185,7 @@ describe('Agent Workflow Integration', () => {
   });
 
   describe('Rationale Generation', () => {
-    test('should generate meaningful rationale for all sections', async () => {
+    test('should generate meaningful rationale for all sections', { timeout: 5000 }, async () => {
       const cli = new AgentCLI();
       
       const requirements = {
@@ -216,7 +220,7 @@ describe('Agent Workflow Integration', () => {
   });
 
   describe('Edge Cases', () => {
-    test('should handle minimal requirements', async () => {
+    test('should handle minimal requirements', { timeout: 5000 }, async () => {
       const cli = new AgentCLI();
       
       const requirements = {
@@ -234,23 +238,15 @@ describe('Agent Workflow Integration', () => {
       
       const manifest = cli.generateManifest(requirements);
       
-      // Load schema
-      const schemaPath = path.join(__dirname, '../../schemas/project.manifest.schema.json');
-      const schema = JSON.parse(await fs.readFile(schemaPath, 'utf8'));
-      
-      // Validate manifest
-      const ajv = new Ajv({ allErrors: true, strict: false });
-      addFormats(ajv);
-      const validate = ajv.compile(schema);
-      
-      const isValid = validate(manifest);
+      // Validate manifest using cached validator
+      const isValid = validateManifest(manifest);
       assert.ok(isValid, 'Minimal manifest should still be valid');
       
       // Should still have basic features
       assert.ok(manifest.derived.features.includes('go'), 'Should have go feature');
     });
 
-    test('should handle maximal requirements', async () => {
+    test('should handle maximal requirements', { timeout: 5000 }, async () => {
       const cli = new AgentCLI();
       
       const requirements = {
@@ -283,16 +279,8 @@ describe('Agent Workflow Integration', () => {
       
       const manifest = cli.generateManifest(requirements);
       
-      // Load schema
-      const schemaPath = path.join(__dirname, '../../schemas/project.manifest.schema.json');
-      const schema = JSON.parse(await fs.readFile(schemaPath, 'utf8'));
-      
-      // Validate manifest
-      const ajv = new Ajv({ allErrors: true, strict: false });
-      addFormats(ajv);
-      const validate = ajv.compile(schema);
-      
-      const isValid = validate(manifest);
+      // Validate manifest using cached validator
+      const isValid = validateManifest(manifest);
       assert.ok(isValid, 'Maximal manifest should be valid');
       
       // Should have many features
