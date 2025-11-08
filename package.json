@@ -45,7 +45,7 @@
     "ajv": "^8.12.0",
     "ajv-formats": "^2.1.1",
     "commander": "^12.0.0",
-    "glob": "^10.3.10",
+    "glob": "^11.0.3",
     "yaml": "^2.4.0"
   },
   "devDependencies": {
