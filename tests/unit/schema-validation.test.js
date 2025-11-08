@@ -3,9 +3,11 @@
  * 
  * Tests JSON schema validation for:
  * - Project manifest schema
- * - Context contract schema
- * - Task slice schema
  * - Invalid input rejection
+ * 
+ * Note: Context contract, task slice, and assumption schemas removed as part of
+ * enterprise bloat cleanup (Phase 1.5). These were enterprise features not needed
+ * for indie developers.
  */
 
 const { describe, test } = require('node:test');
@@ -173,46 +175,12 @@ describe('Schema Validation', () => {
     });
   });
 
-  describe('Context Contract Schema', () => {
-    test('should load context contract schema', () => {
-      const schemaPath = path.join(__dirname, '../../schemas/context-contract.schema.json');
-      const schemaContent = fs.readFileSync(schemaPath, 'utf8');
-      const schema = JSON.parse(schemaContent);
-      
-      assert.ok(schema, 'Schema should load');
-      assert.ok(schema.properties, 'Schema should have properties');
-    });
-  });
-
-  describe('Task Slice Schema', () => {
-    test('should load task slice schema', () => {
-      const schemaPath = path.join(__dirname, '../../schemas/task-slice.schema.json');
-      const schemaContent = fs.readFileSync(schemaPath, 'utf8');
-      const schema = JSON.parse(schemaContent);
-      
-      assert.ok(schema, 'Schema should load');
-      assert.ok(schema.properties, 'Schema should have properties');
-    });
-  });
-
-  describe('Assumption Schema', () => {
-    test('should load assumption schema', () => {
-      const schemaPath = path.join(__dirname, '../../schemas/assumption.schema.json');
-      const schemaContent = fs.readFileSync(schemaPath, 'utf8');
-      const schema = JSON.parse(schemaContent);
-      
-      assert.ok(schema, 'Schema should load');
-      assert.ok(schema.properties, 'Schema should have properties');
-    });
-  });
-
+  // Schema Structure test - only for remaining schemas
   describe('Schema Structure', () => {
     test('all schemas should have required metadata', () => {
       const schemaFiles = [
         'project.manifest.schema.json',
-        'context-contract.schema.json',
-        'task-slice.schema.json',
-        'assumption.schema.json'
+        // context-contract, task-slice, assumption schemas removed (enterprise bloat)
       ];
       
       schemaFiles.forEach(schemaFile => {
