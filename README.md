@@ -4,70 +4,71 @@
 [![Version](https://img.shields.io/github/package-json/v/XylarDark/DevEnvTemplate)](https://github.com/XylarDark/DevEnvTemplate)
 [![License](https://img.shields.io/github/license/XylarDark/DevEnvTemplate)](LICENSE)
 
-**Ship quality code faster.** DevEnvTemplate sets up testing, CI/CD, and best practices in minutes so you can focus on building your product.
+**Your AI coding companion's health checker.** DevEnvTemplate acts as a doctor for your development environment - diagnosing issues, prescribing solutions, and keeping your codebase healthy while you code with LLMs.
 
 ## For Indie Developers & Solo Founders
 
-You have a great idea. You want to build it **fast** and build it **right**. But setting up testing, CI/CD, linting, TypeScript, deployment... that's hours of yak-shaving before you write your first feature.
+Building with AI assistants like Cursor, GitHub Copilot, or ChatGPT? Your dev environment needs to be **rock solid** so the AI can focus on features, not fighting broken tooling.
 
-**DevEnvTemplate fixes this.**
+**DevEnvTemplate is your dev environment doctor:**
 
-Drop it into your project and get:
-- ✅ **Testing setup** (unit + integration, ready to run)
-- ✅ **CI/CD pipeline** (GitHub Actions, optimized for free tier)
-- ✅ **Quality checks** (linting, type checking, security scanning)
-- ✅ **Documentation templates** (README, contributing guide)
-- ✅ **Best practices baked in** (no decisions, just build)
+- **Diagnose** → Scans your project stack and quality setup
+- **Prescribe** → Identifies gaps (missing tests, CI, security)
+- **Cure** → Auto-fixes common issues in seconds
+- **Monitor** → Continuous health checks on every push
 
-**From idea to deployed in < 10 minutes.** Quality by default, not by overtime.
+**From diagnosis to deployment in < 10 minutes.** Quality by default, not by overtime.
 
-## Quick Start (5 Minutes)
+## Quick Start (2 Minutes)
 
-### 1. Add to Your Project
+### Install & Diagnose
 
 ```bash
-# Clone into your project
-cd your-project
-git clone https://github.com/yourusername/DevEnvTemplate .devenv
+# Install
+npm init -y  # if needed
+npx devenv-init
 
-# Install and build
-cd .devenv
-npm install && npm run build
+# Run health check
+npm run doctor
 ```
 
-### 2. Generate Your Setup
+**Output:**
+```
+🏥 DevEnvTemplate Health Check
 
-Answer 5 simple questions about your project:
+🟢 Project Health: 75/100
+
+📊 Health Breakdown:
+   Security:      🟢 ██████████ 85/100
+   Code Quality:  🟡 ███████░░░ 70/100
+   Testing:       🔴 ████░░░░░░ 40/100
+   CI/CD:         🟢 ████████░░ 80/100
+   Documentation: 🟡 ███████░░░ 70/100
+
+🔴 Critical Issues (2):
+   - No testing framework detected
+   - Missing .env.example (secrets at risk)
+
+💡 Quick Wins (can fix in < 10 min):
+   1. Add .env.example → 2 min
+   2. Enable TypeScript strict → 1 min
+   3. Add ESLint config → 5 min
+
+📋 Full Report: .devenv/health-report.json
+```
+
+### Auto-Fix Issues
 
 ```bash
-npm run agent:init
+# Apply automatic fixes
+npm run doctor:fix
 ```
 
-This creates your configuration and sets up everything automatically.
-
-### 3. Push and Go
-
-```bash
-git add .
-git commit -m "Add DevEnvTemplate"
-git push
-```
-
-**That's it.** DevEnvTemplate automatically:
-- ✅ Detects your tech stack (Node.js, React, TypeScript, etc.)
-- ✅ Sets up testing and CI/CD
-- ✅ Runs quality checks on every commit
-- ✅ Gives you a quality audit report
-
-### 4. Build Your Product
-
-Focus on your features. DevEnvTemplate handles:
-- Running tests on every push
-- Type checking and linting
-- Security scans
-- Deployment pipelines (when you're ready)
-
-**See [USAGE.md](USAGE.md) for common commands and workflows.**
+Auto-fixes:
+- ✅ Creates `.env.example`
+- ✅ Adds `.env` to `.gitignore`
+- ✅ Enables TypeScript strict mode
+- ✅ And more...
 
 ## What You Get
 
@@ -91,43 +92,77 @@ All recommendations use free tiers:
 - GitHub security scanning
 - No paid services required
 
-## How It Works
+## How It Works: The Doctor Workflow
 
-DevEnvTemplate analyzes your project and sets up quality tooling automatically:
+DevEnvTemplate follows a medical diagnostic approach:
 
-1. **Stack Detection**: Scans your project to understand what you're building
-2. **Gap Analysis**: Identifies missing best practices (tests, CI, security, docs)
-3. **Auto-Setup**: Configures testing, linting, and CI/CD based on your stack
-4. **Quality Reports**: Shows you what's working and what needs attention
+### 1. Diagnose (Stack Detection)
+Scans your project to understand your tech stack:
+```bash
+node .github/tools/stack-detector.js
+```
+- Detects frameworks (React, Next.js, Express, etc.)
+- Identifies tooling (TypeScript, ESLint, testing frameworks)
+- Finds configurations and quality setup
 
-### On Every Push
-- ✅ **Tests run** automatically
-- ✅ **Code is linted** for consistency
-- ✅ **Security scan** checks dependencies
-- ✅ **Quality report** comments on your PR
+### 2. Prescribe (Gap Analysis)
+Identifies what's missing or misconfigured:
+```bash
+node .github/tools/gap-analyzer.js
+```
+- Security gaps (exposed secrets, vulnerable dependencies)
+- Quality gaps (missing tests, no linting, weak TypeScript)
+- CI/CD gaps (no pipeline, missing quality gates)
+- Documentation gaps (incomplete README, no contribution guide)
 
-You get instant feedback without manual setup.
+### 3. Cure (Auto-Fix + Cleanup)
+Applies fixes automatically:
+```bash
+npm run doctor:fix      # Auto-fix simple issues
+npm run cleanup:apply   # Remove template boilerplate
+```
+- Creates missing config files
+- Enables strict mode
+- Removes template-only code
+- Sets up CI/CD
+
+### 4. Monitor (Continuous Health)
+On every push, CI runs health checks:
+- ✅ Tests run automatically
+- ✅ Code is linted for consistency
+- ✅ Security scan checks dependencies
+- ✅ Health score tracked over time
+
+**See [USAGE.md](USAGE.md) for detailed commands and workflows.**
 
 ## Common Tasks
 
+### Check Project Health
+```bash
+npm run doctor           # Full health check
+npm run doctor:fix       # Apply auto-fixes
+npm run doctor -- --json # JSON output
+```
+
 ### Run Tests Locally
 ```bash
-cd .devenv
-npm test           # Run all tests
-npm run test:unit  # Run unit tests only
+npm test              # Run all tests
+npm run test:fast     # Run unit tests only (< 5sec)
+npm run test:slow     # Run integration tests
 ```
 
 ### Check Code Quality
 ```bash
-npm run cleanup:check  # See what would be cleaned up (dry run)
-npm run cleanup:apply  # Apply cleanup rules
+npm run cleanup       # See what would be cleaned (dry run)
+npm run cleanup:apply # Apply cleanup rules
 ```
 
-### View Your Stack Report
-After pushing, check `.devenv/stack-report.json` to see what DevEnvTemplate detected about your project.
-
-### View Quality Gaps
-Check `.devenv/gaps-report.md` for a detailed analysis of what could be improved (tests, security, docs, etc.).
+### View Reports
+After running doctor or pushing to GitHub:
+- `.devenv/health-report.json` - Overall health scores
+- `.devenv/stack-report.json` - Detected technologies  
+- `.devenv/gaps-report.md` - Detailed gap analysis
+- `plans/hardening-plan.md` - Generated action plan
 
 ## Why Indie Devs Love It
 

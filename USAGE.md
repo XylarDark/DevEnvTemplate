@@ -2,21 +2,83 @@
 
 **For Indie Developers & Solo Founders**
 
-Quick reference for common tasks and workflows.
+Quick reference for the doctor workflow and common tasks.
+
+## Doctor Mode (Primary Workflow)
+
+### Check Your Project Health
+
+```bash
+npm run doctor
+```
+
+This runs a comprehensive health check:
+- **Diagnoses** your stack (technologies, frameworks, tooling)
+- **Identifies** gaps (missing tests, CI, security issues)
+- **Calculates** health score (0-100) across 5 categories
+- **Suggests** quick wins (< 10 min fixes)
+
+**Example Output:**
+```
+🏥 DevEnvTemplate Health Check
+
+🟢 Project Health: 75/100
+
+📊 Health Breakdown:
+   Security:      🟢 ██████████ 85/100
+   Code Quality:  🟡 ███████░░░ 70/100
+   Testing:       🔴 ████░░░░░░ 40/100
+
+🔴 Critical Issues (2):
+   - No testing framework detected
+   - Missing .env.example
+
+💡 Quick Wins (3):
+   1. Add .env.example → 2 min
+   2. Enable TypeScript strict → 1 min
+   3. Add ESLint config → 5 min
+```
+
+### Auto-Fix Issues
+
+```bash
+npm run doctor:fix
+```
+
+Automatically fixes simple issues:
+- Creates `.env.example`
+- Adds `.env` to `.gitignore`
+- Enables TypeScript strict mode
+
+### Get JSON Output
+
+```bash
+npm run doctor -- --json > health-report.json
+```
+
+Useful for CI integration or programmatic access.
+
+---
 
 ## Quick Start
 
 ### First Time Setup
 
 ```bash
-cd your-project
-git clone https://github.com/yourusername/DevEnvTemplate .devenv
-cd .devenv
-npm install && npm run build
-npm run agent:init  # Answer 5 questions
+# Install in your project
+npx devenv-init
+
+# Check health
+npm run doctor
+
+# Fix issues
+npm run doctor:fix
+
+# Push and monitor
+git push  # CI runs automatically
 ```
 
-That's it! Push to GitHub and CI will run automatically.
+That's it! Your project is now monitored for quality issues.
 
 ---
 
