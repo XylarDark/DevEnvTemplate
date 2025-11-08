@@ -1,5 +1,9 @@
 # DevEnvTemplate
 
+[![CI](https://github.com/XylarDark/DevEnvTemplate/actions/workflows/indie-ci.yml/badge.svg)](https://github.com/XylarDark/DevEnvTemplate/actions/workflows/indie-ci.yml)
+[![Version](https://img.shields.io/github/package-json/v/XylarDark/DevEnvTemplate)](https://github.com/XylarDark/DevEnvTemplate)
+[![License](https://img.shields.io/github/license/XylarDark/DevEnvTemplate)](LICENSE)
+
 **Ship quality code faster.** DevEnvTemplate sets up testing, CI/CD, and best practices in minutes so you can focus on building your product.
 
 ## For Indie Developers & Solo Founders

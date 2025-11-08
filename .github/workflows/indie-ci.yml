@@ -1,0 +1,205 @@
+# Indie Developer CI - Simple & Fast
+#
+# Optimized for GitHub Actions free tier (2000 min/month)
+# - Fast feedback (< 3 minutes)
+# - Essential checks only
+# - Caching enabled
+# - Parallel jobs
+
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+# Cancel in-progress runs for same PR
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Quick checks (< 1 minute)
+  quick-checks:
+    name: Quick Checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      
+      - name: Check formatting
+        run: npm run format:check
+      
+      - name: Type check
+        run: npm run prebuild
+
+  # Tests (< 2 minutes)
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      
+      - name: Build
+        run: npm run build
+      
+      - name: Run tests
+        run: npm test
+
+  # Security scan (only on PR, < 1 minute)
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Run npm audit
+        run: npm audit --audit-level=high
+        continue-on-error: true
+      
+      - name: Check for secrets
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Stack analysis (only on PR to main/master)
+  stack-analysis:
+    name: Stack Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      
+      - name: Detect stack & analyze gaps
+        run: |
+          mkdir -p .devenv
+          node .github/tools/stack-detector.js > .devenv/stack-report.json || echo "{}" > .devenv/stack-report.json
+          node .github/tools/gap-analyzer.js > .devenv/gaps-report.md || echo "No gaps found" > .devenv/gaps-report.md
+      
+      - name: Upload analysis
+        uses: actions/upload-artifact@v4
+        with:
+          name: devenv-analysis
+          path: .devenv/
+      
+      - name: Comment on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            let comment = '## 🚀 DevEnvTemplate Analysis\n\n';
+            
+            try {
+              const stackReport = JSON.parse(fs.readFileSync('.devenv/stack-report.json', 'utf8'));
+              if (stackReport.technologies && stackReport.technologies.length > 0) {
+                comment += '### 📊 Detected Stack\n\n';
+                stackReport.technologies.slice(0, 5).forEach(tech => {
+                  comment += `- ${tech.name} ${tech.version || ''}\n`;
+                });
+                comment += '\n';
+              }
+            } catch (e) {
+              comment += '### 📊 Stack Detection\n\nUnable to detect stack.\n\n';
+            }
+            
+            try {
+              const gapsReport = fs.readFileSync('.devenv/gaps-report.md', 'utf8');
+              const gapCount = (gapsReport.match(/^## /gm) || []).length;
+              
+              if (gapCount > 0) {
+                comment += `### 🎯 Quality Gaps: ${gapCount} found\n\n`;
+                comment += 'Download the analysis artifact to see recommendations.\n\n';
+              } else {
+                comment += '### ✅ No quality gaps found!\n\n';
+              }
+            } catch (e) {
+              comment += '### 🎯 Gap Analysis\n\nUnable to analyze gaps.\n\n';
+            }
+            
+            comment += '---\n*Analysis by DevEnvTemplate*';
+            
+            // Find existing comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+            
+            const existingComment = comments.find(c => 
+              c.user.login === 'github-actions[bot]' && 
+              c.body.includes('DevEnvTemplate Analysis')
+            );
+            
+            if (existingComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existingComment.id,
+                body: comment
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: comment
+              });
+            }
+
+  # All checks passed
+  all-checks:
+    name: All Checks Passed
+    runs-on: ubuntu-latest
+    needs: [quick-checks, test]
+    if: always()
+    
+    steps:
+      - name: Check status
+        run: |
+          if [ "${{ needs.quick-checks.result }}" != "success" ] || [ "${{ needs.test.result }}" != "success" ]; then
+            echo "❌ Some checks failed"
+            exit 1
+          fi
+          echo "✅ All checks passed!"
+

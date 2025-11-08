@@ -1,0 +1,56 @@
+# Deploy to Fly.io (Free Tier)
+#
+# Recommended for: Full-stack apps, Docker containers
+# Free tier: 3 shared-cpu VMs, 3GB storage
+#
+# Setup:
+# 1. Install Fly CLI: https://fly.io/docs/hands-on/install-flyctl/
+# 2. Run: fly auth login
+# 3. Run: fly launch (creates fly.toml)
+# 4. Get your token: fly auth token
+# 5. Add FLY_API_TOKEN to GitHub Secrets
+# 6. Rename this file to deploy-flyio.yml
+
+name: Deploy to Fly.io
+
+on:
+  push:
+    branches: [main, master]
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Fly CLI
+        uses: superfly/flyctl-actions/setup-flyctl@master
+      
+      - name: Deploy to Fly.io
+        run: flyctl deploy --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      
+      - name: Get deployment info
+        id: fly-info
+        run: |
+          APP_NAME=$(flyctl status --json | jq -r '.Name')
+          echo "app_name=$APP_NAME" >> $GITHUB_OUTPUT
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      
+      - name: Deployment summary
+        run: |
+          echo "## 🚀 Fly.io Deployment" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** Deployed successfully" >> $GITHUB_STEP_SUMMARY
+          echo "**App:** ${{ steps.fly-info.outputs.app_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**URL:** https://${{ steps.fly-info.outputs.app_name }}.fly.dev" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "*Deployed by Fly.io*" >> $GITHUB_STEP_SUMMARY
+
