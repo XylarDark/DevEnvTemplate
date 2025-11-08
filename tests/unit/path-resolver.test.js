@@ -11,7 +11,7 @@ const { describe, test } = require('node:test');
 const assert = require('node:assert');
 const path = require('path');
 const fs = require('fs');
-const { resolveConfigPath } = require('../../scripts/utils/path-resolver');
+const { resolveConfigPath } = require('../../dist/utils/path-resolver');
 
 describe('PathResolver', () => {
   describe('resolveConfigPath', () => {

@@ -1,4 +1,4 @@
-// .github/types/plan.ts
+// scripts/types/plan.ts
 
 import { Gap } from './gaps';
 

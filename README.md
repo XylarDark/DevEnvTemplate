@@ -133,7 +133,7 @@ On every push, CI runs health checks:
 - ✅ Security scan checks dependencies
 - ✅ Health score tracked over time
 
-**See [USAGE.md](USAGE.md) for detailed commands and workflows.**
+**See [docs/USAGE.md](docs/USAGE.md) for detailed commands and workflows.**
 
 ## Common Tasks
 
@@ -206,7 +206,10 @@ See [IMPLEMENTATION_GUIDE.md](IMPLEMENTATION_GUIDE.md) for advanced usage.
 
 ## Documentation
 
-- **[USAGE.md](USAGE.md)** - Common commands and workflows
+- **[docs/USAGE.md](docs/USAGE.md)** - Common commands and workflows
+- **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** - Project structure and design principles
+- **[docs/LLM-CONTEXT-GUIDE.md](docs/LLM-CONTEXT-GUIDE.md)** - Context guide for AI assistants
+- **[docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)** - Troubleshooting guide
 - **[IMPLEMENTATION_GUIDE.md](IMPLEMENTATION_GUIDE.md)** - Advanced features and customization
 - **[Engineering Handbook](docs/engineering-handbook.md)** - Architecture and patterns
 

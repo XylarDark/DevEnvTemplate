@@ -10,7 +10,7 @@
 
 const { describe, test } = require('node:test');
 const assert = require('node:assert');
-const StackDetector = require('../../.github/tools/stack-detector');
+const StackDetector = require('../../scripts/tools/stack-detector');
 
 describe('StackDetector', () => {
   describe('Initialization', () => {

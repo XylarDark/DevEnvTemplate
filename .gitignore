@@ -114,3 +114,6 @@ playwright-report/
 
 # Cleanup reports
 cleanup-report.json
+
+# Development environment
+.devenv/

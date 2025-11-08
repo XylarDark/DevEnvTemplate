@@ -19,11 +19,30 @@ class StackDetector {
     this.stack = {
       technologies: [],
       configurations: [],
+      frameworks: {
+        type: 'vanilla',
+        version: null,
+        dirs: []
+      },
+      tooling: {
+        testing: { present: false, frameworks: [] },
+        linting: { present: false, configs: [] },
+        formatting: { present: false, configs: [] }
+      },
+      scripts: {
+        detected: [],
+        missing: []
+      },
+      files: {
+        configs: [],
+        key_patterns: []
+      },
       quality: {
         linting: false,
         testing: false,
         typescript: false,
-        security: false
+        security: false,
+        formatting: false
       },
       ci: {
         present: false,
@@ -37,10 +56,15 @@ class StackDetector {
 
     // Detect package managers and frameworks
     await this.detectPackageJson();
+    await this.detectScripts();
     await this.detectTypeScript();
     await this.detectFrameworks();
+    await this.detectExpress();
+    await this.detectPrisma();
+    await this.detectTailwind();
     await this.detectTesting();
     await this.detectLinting();
+    await this.detectFormatting();
     await this.detectCI();
     await this.detectSecurity();
 
@@ -96,6 +120,56 @@ class StackDetector {
         this.stack.technologies.push({
           name: 'Vite',
           version: deps.vite,
+          confidence: 'high',
+          source: 'dependency'
+        });
+      }
+
+      // Express
+      if (deps.express) {
+        this.stack.technologies.push({
+          name: 'Express',
+          version: deps.express,
+          confidence: 'high',
+          source: 'dependency'
+        });
+      }
+
+      // Prisma
+      if (deps.prisma || deps['@prisma/client']) {
+        this.stack.technologies.push({
+          name: 'Prisma',
+          version: deps.prisma || deps['@prisma/client'],
+          confidence: 'high',
+          source: 'dependency'
+        });
+      }
+
+      // Tailwind CSS
+      if (deps.tailwindcss) {
+        this.stack.technologies.push({
+          name: 'Tailwind CSS',
+          version: deps.tailwindcss,
+          confidence: 'high',
+          source: 'dependency'
+        });
+      }
+
+      // Vitest
+      if (deps.vitest) {
+        this.stack.technologies.push({
+          name: 'Vitest',
+          version: deps.vitest,
+          confidence: 'high',
+          source: 'dependency'
+        });
+      }
+
+      // Prettier
+      if (deps.prettier) {
+        this.stack.technologies.push({
+          name: 'Prettier',
+          version: deps.prettier,
           confidence: 'high',
           source: 'dependency'
         });
@@ -518,52 +592,184 @@ class StackDetector {
   }
 
   async detectFrameworks() {
-    // Check for Next.js config
-    try {
-      await fs.access(path.join(this.rootDir, 'next.config.js'));
-      this.stack.configurations.push({
-        type: 'nextjs',
-        configFile: 'next.config.js'
-      });
-    } catch (error) {
-      // No Next.js config
+    // Check for Next.js - config files and directories
+    const nextConfigFiles = ['next.config.js', 'next.config.mjs', 'next.config.ts'];
+    for (const configFile of nextConfigFiles) {
+      try {
+        await fs.access(path.join(this.rootDir, configFile));
+        this.stack.configurations.push({
+          type: 'nextjs',
+          configFile
+        });
+        this.stack.files.configs.push(configFile);
+        
+        // Detect Next.js type (app dir vs pages dir)
+        const dirs = [];
+        try {
+          await fs.access(path.join(this.rootDir, 'app'));
+          dirs.push('app');
+          this.stack.files.key_patterns.push('app/ (Next.js app directory)');
+        } catch {}
+        try {
+          await fs.access(path.join(this.rootDir, 'pages'));
+          dirs.push('pages');
+          this.stack.files.key_patterns.push('pages/ (Next.js pages directory)');
+        } catch {}
+        
+        const nextVersion = this.stack.technologies.find(t => t.name === 'Next.js')?.version;
+        this.stack.frameworks = {
+          type: 'nextjs',
+          version: nextVersion || 'detected',
+          dirs
+        };
+        break;
+      } catch (error) {
+        // Continue checking
+      }
     }
 
     // Check for Vite config
-    try {
-      await fs.access(path.join(this.rootDir, 'vite.config.ts'));
-      this.stack.configurations.push({
-        type: 'vite',
-        configFile: 'vite.config.ts'
-      });
-    } catch (error) {
+    const viteConfigFiles = ['vite.config.ts', 'vite.config.js', 'vite.config.mjs'];
+    for (const configFile of viteConfigFiles) {
       try {
-        await fs.access(path.join(this.rootDir, 'vite.config.js'));
+        await fs.access(path.join(this.rootDir, configFile));
         this.stack.configurations.push({
           type: 'vite',
-          configFile: 'vite.config.js'
+          configFile
         });
+        this.stack.files.configs.push(configFile);
+        
+        const viteVersion = this.stack.technologies.find(t => t.name === 'Vite')?.version;
+        this.stack.frameworks = {
+          type: 'vite',
+          version: viteVersion || 'detected',
+          dirs: ['src']
+        };
+        break;
       } catch (error) {
-        // No Vite config
+        // Continue checking
+      }
+    }
+  }
+
+  async detectScripts() {
+    try {
+      const packageJson = JSON.parse(await fs.readFile(path.join(this.rootDir, 'package.json'), 'utf8'));
+      const scripts = packageJson.scripts || {};
+      
+      // Essential scripts we look for
+      const essentialScripts = ['dev', 'build', 'test', 'lint', 'format', 'typecheck'];
+      const detected = [];
+      const missing = [];
+      
+      for (const scriptName of essentialScripts) {
+        if (scripts[scriptName]) {
+          detected.push({ name: scriptName, command: scripts[scriptName] });
+        } else {
+          missing.push(scriptName);
+        }
+      }
+      
+      this.stack.scripts = { detected, missing };
+    } catch (error) {
+      // No package.json
+    }
+  }
+
+  async detectExpress() {
+    // Check for Express patterns
+    const expressFiles = ['server.js', 'server.ts', 'app.js', 'app.ts', 'index.js', 'index.ts'];
+    
+    for (const file of expressFiles) {
+      try {
+        const filePath = path.join(this.rootDir, file);
+        const content = await fs.readFile(filePath, 'utf8');
+        
+        // Look for express patterns
+        if (content.includes('express()') || content.includes('require(\'express\')') || content.includes('from \'express\'')) {
+          this.stack.files.key_patterns.push(`${file} (Express server)`);
+          
+          // Only set framework if not already set to Next.js or Vite
+          if (this.stack.frameworks.type === 'vanilla') {
+            const expressVersion = this.stack.technologies.find(t => t.name === 'Express')?.version;
+            this.stack.frameworks = {
+              type: 'express',
+              version: expressVersion || 'detected',
+              dirs: [path.dirname(file) || '.']
+            };
+          }
+          break;
+        }
+      } catch (error) {
+        // File doesn't exist or can't be read
+      }
+    }
+  }
+
+  async detectPrisma() {
+    try {
+      await fs.access(path.join(this.rootDir, 'prisma', 'schema.prisma'));
+      this.stack.files.configs.push('prisma/schema.prisma');
+      this.stack.files.key_patterns.push('prisma/schema.prisma (Prisma ORM)');
+      this.stack.configurations.push({
+        type: 'prisma',
+        configFile: 'prisma/schema.prisma'
+      });
+    } catch (error) {
+      // Also check root level
+      try {
+        await fs.access(path.join(this.rootDir, 'schema.prisma'));
+        this.stack.files.configs.push('schema.prisma');
+        this.stack.files.key_patterns.push('schema.prisma (Prisma ORM)');
+        this.stack.configurations.push({
+          type: 'prisma',
+          configFile: 'schema.prisma'
+        });
+      } catch (error2) {
+        // No Prisma schema
+      }
+    }
+  }
+
+  async detectTailwind() {
+    const tailwindConfigs = ['tailwind.config.js', 'tailwind.config.ts', 'tailwind.config.cjs', 'tailwind.config.mjs'];
+    
+    for (const configFile of tailwindConfigs) {
+      try {
+        await fs.access(path.join(this.rootDir, configFile));
+        this.stack.files.configs.push(configFile);
+        this.stack.files.key_patterns.push(`${configFile} (Tailwind CSS)`);
+        this.stack.configurations.push({
+          type: 'tailwind',
+          configFile
+        });
+        break;
+      } catch (error) {
+        // Continue checking
       }
     }
   }
 
   async detectTesting() {
+    const testingFrameworks = [];
+    
     // Check for test directories
     try {
       await fs.access(path.join(this.rootDir, 'tests'));
       this.stack.quality.testing = true;
+      this.stack.files.key_patterns.push('tests/ (test directory)');
     } catch (error) {
       try {
         await fs.access(path.join(this.rootDir, '__tests__'));
         this.stack.quality.testing = true;
+        this.stack.files.key_patterns.push('__tests__/ (test directory)');
       } catch (error) {
         // Check for test files in src
         try {
           const files = await fs.readdir(path.join(this.rootDir, 'src'));
           if (files.some(f => f.includes('.test.') || f.includes('.spec.'))) {
             this.stack.quality.testing = true;
+            this.stack.files.key_patterns.push('src/**/*.test.* (test files)');
           }
         } catch (error) {
           // No tests detected
@@ -571,29 +777,77 @@ class StackDetector {
       }
     }
 
-    // Check for Playwright config
-    try {
-      await fs.access(path.join(this.rootDir, 'playwright.config.ts'));
-      this.stack.configurations.push({
-        type: 'playwright',
-        configFile: 'playwright.config.ts'
-      });
-    } catch (error) {
+    // Check for Jest config
+    const jestConfigs = ['jest.config.js', 'jest.config.ts', 'jest.config.json'];
+    for (const configFile of jestConfigs) {
       try {
-        await fs.access(path.join(this.rootDir, 'playwright.config.js'));
+        await fs.access(path.join(this.rootDir, configFile));
         this.stack.configurations.push({
-          type: 'playwright',
-          configFile: 'playwright.config.js'
+          type: 'jest',
+          configFile
         });
+        this.stack.files.configs.push(configFile);
+        testingFrameworks.push({ name: 'Jest', config: configFile });
+        break;
       } catch (error) {
-        // No Playwright config
+        // Continue checking
       }
     }
+
+    // Check for Vitest config
+    const vitestConfigs = ['vitest.config.ts', 'vitest.config.js'];
+    for (const configFile of vitestConfigs) {
+      try {
+        await fs.access(path.join(this.rootDir, configFile));
+        this.stack.configurations.push({
+          type: 'vitest',
+          configFile
+        });
+        this.stack.files.configs.push(configFile);
+        testingFrameworks.push({ name: 'Vitest', config: configFile });
+        break;
+      } catch (error) {
+        // Continue checking
+      }
+    }
+
+    // Check for Playwright config
+    const playwrightConfigs = ['playwright.config.ts', 'playwright.config.js'];
+    for (const configFile of playwrightConfigs) {
+      try {
+        await fs.access(path.join(this.rootDir, configFile));
+        this.stack.configurations.push({
+          type: 'playwright',
+          configFile
+        });
+        this.stack.files.configs.push(configFile);
+        testingFrameworks.push({ name: 'Playwright', config: configFile });
+        break;
+      } catch (error) {
+        // Continue checking
+      }
+    }
+
+    this.stack.tooling.testing = {
+      present: this.stack.quality.testing || testingFrameworks.length > 0,
+      frameworks: testingFrameworks
+    };
   }
 
   async detectLinting() {
-    // Check for ESLint config
-    const eslintFiles = ['.eslintrc.js', '.eslintrc.json', '.eslintrc.ts', '.eslintrc.yml', '.eslintrc.yaml'];
+    const lintConfigs = [];
+    
+    // Check for ESLint config (various formats)
+    const eslintFiles = [
+      'eslint.config.js',
+      'eslint.config.mjs',
+      '.eslintrc.js',
+      '.eslintrc.cjs', 
+      '.eslintrc.json',
+      '.eslintrc.ts',
+      '.eslintrc.yml',
+      '.eslintrc.yaml'
+    ];
 
     for (const file of eslintFiles) {
       try {
@@ -603,11 +857,87 @@ class StackDetector {
           type: 'eslint',
           configFile: file
         });
+        this.stack.files.configs.push(file);
+        lintConfigs.push(file);
         break;
       } catch (error) {
         // Continue checking
       }
     }
+
+    // Check for package.json eslintConfig
+    try {
+      const packageJson = JSON.parse(await fs.readFile(path.join(this.rootDir, 'package.json'), 'utf8'));
+      if (packageJson.eslintConfig) {
+        this.stack.quality.linting = true;
+        this.stack.configurations.push({
+          type: 'eslint',
+          configFile: 'package.json'
+        });
+        lintConfigs.push('package.json (eslintConfig)');
+      }
+    } catch (error) {
+      // No package.json or no eslintConfig
+    }
+
+    this.stack.tooling.linting = {
+      present: this.stack.quality.linting,
+      configs: lintConfigs
+    };
+  }
+
+  async detectFormatting() {
+    const formatConfigs = [];
+    
+    // Check for Prettier config
+    const prettierFiles = [
+      '.prettierrc',
+      '.prettierrc.json',
+      '.prettierrc.js',
+      '.prettierrc.cjs',
+      '.prettierrc.mjs',
+      '.prettierrc.yml',
+      '.prettierrc.yaml',
+      'prettier.config.js',
+      'prettier.config.cjs',
+      'prettier.config.mjs'
+    ];
+
+    for (const file of prettierFiles) {
+      try {
+        await fs.access(path.join(this.rootDir, file));
+        this.stack.quality.formatting = true;
+        this.stack.configurations.push({
+          type: 'prettier',
+          configFile: file
+        });
+        this.stack.files.configs.push(file);
+        formatConfigs.push(file);
+        break;
+      } catch (error) {
+        // Continue checking
+      }
+    }
+
+    // Check for package.json prettier config
+    try {
+      const packageJson = JSON.parse(await fs.readFile(path.join(this.rootDir, 'package.json'), 'utf8'));
+      if (packageJson.prettier) {
+        this.stack.quality.formatting = true;
+        this.stack.configurations.push({
+          type: 'prettier',
+          configFile: 'package.json'
+        });
+        formatConfigs.push('package.json (prettier)');
+      }
+    } catch (error) {
+      // No package.json or no prettier config
+    }
+
+    this.stack.tooling.formatting = {
+      present: this.stack.quality.formatting,
+      configs: formatConfigs
+    };
   }
 
   async detectCI() {

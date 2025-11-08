@@ -3,7 +3,7 @@ const { describe, it, beforeEach, afterEach } = require('node:test');
 const path = require('path');
 const { promises: fs } = require('fs');
 const os = require('os');
-const { PlanGenerator } = require('../../dist/.github/tools/plan-generator');
+const { PlanGenerator } = require('../../scripts/tools/plan-generator');
 
 describe('Plan Generator', () => {
   let rootDir;

@@ -8,9 +8,33 @@ This project follows a professional and inclusive code of conduct. Be respectful
 
 ## Getting Started
 
-1. **Read the Documentation**: Start with [`README.md`](README.md) and [`.projectrules`](.projectrules)
-2. **Understand Governance**: Review the [rules changelog](docs/rules-changelog.md) for evolution history
-3. **Set Up Development Environment**: Follow setup instructions in README.md
+1. **Read the Documentation**: Start with [`README.md`](../README.md) and [`.projectrules`](../.projectrules)
+2. **Understand Governance**: Review the [rules changelog](../docs/rules-changelog.md) for evolution history
+3. **Understand Architecture**: Review [ARCHITECTURE.md](../docs/ARCHITECTURE.md) for project structure
+4. **Set Up Development Environment**: Follow setup instructions in README.md
+
+## Project Structure
+
+The project follows a clear directory organization:
+
+- **`scripts/`** - All source code (TypeScript)
+  - `agent/` - Project initialization
+  - `cleanup/` - Template cleanup
+  - `doctor/` - Health checking & auto-fixes
+  - `tools/` - Analysis utilities (stack detection, gap analysis)
+  - `types/` - TypeScript type definitions
+  - `utils/` - Shared utilities
+- **`docs/`** - Documentation
+  - `archive/` - Historical documentation
+  - `guides/` - Integration guides
+- **`config/`** - Configuration files
+  - `schemas/` - JSON schemas
+- **`tests/`** - Test suite
+  - `fixtures/` - Test data
+  - `unit/` - Unit tests
+  - `integration/` - Integration tests
+
+See [ARCHITECTURE.md](../docs/ARCHITECTURE.md) for detailed information.
 
 ### Node Version Management
 

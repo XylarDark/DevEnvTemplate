@@ -29,7 +29,7 @@ describe('Schema Validation', () => {
 
   describe('Project Manifest Schema', () => {
     test('should load project manifest schema', () => {
-      const schemaPath = path.join(__dirname, '../../schemas/project.manifest.schema.json');
+      const schemaPath = path.join(__dirname, '../../config/schemas/project.manifest.schema.json');
       const schemaContent = fs.readFileSync(schemaPath, 'utf8');
       const schema = JSON.parse(schemaContent);
       
@@ -40,7 +40,7 @@ describe('Schema Validation', () => {
 
     test('should validate valid manifest', () => {
       ajv = setupAjv();
-      const schemaPath = path.join(__dirname, '../../schemas/project.manifest.schema.json');
+      const schemaPath = path.join(__dirname, '../../config/schemas/project.manifest.schema.json');
       const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
       
       const validate = ajv.compile(schema);
@@ -78,7 +78,7 @@ describe('Schema Validation', () => {
 
     test('should reject manifest without required fields', () => {
       ajv = setupAjv();
-      const schemaPath = path.join(__dirname, '../../schemas/project.manifest.schema.json');
+      const schemaPath = path.join(__dirname, '../../config/schemas/project.manifest.schema.json');
       const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
       
       const validate = ajv.compile(schema);
@@ -95,7 +95,7 @@ describe('Schema Validation', () => {
 
     test('should reject manifest with invalid productType', () => {
       ajv = setupAjv();
-      const schemaPath = path.join(__dirname, '../../schemas/project.manifest.schema.json');
+      const schemaPath = path.join(__dirname, '../../config/schemas/project.manifest.schema.json');
       const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
       
       const validate = ajv.compile(schema);
@@ -127,7 +127,7 @@ describe('Schema Validation', () => {
 
     test('should reject manifest with invalid feature', () => {
       ajv = setupAjv();
-      const schemaPath = path.join(__dirname, '../../schemas/project.manifest.schema.json');
+      const schemaPath = path.join(__dirname, '../../config/schemas/project.manifest.schema.json');
       const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
       
       const validate = ajv.compile(schema);
@@ -159,7 +159,7 @@ describe('Schema Validation', () => {
 
     test('should validate manifest from fixture', () => {
       ajv = setupAjv();
-      const schemaPath = path.join(__dirname, '../../schemas/project.manifest.schema.json');
+      const schemaPath = path.join(__dirname, '../../config/schemas/project.manifest.schema.json');
       const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
       
       const validate = ajv.compile(schema);
@@ -184,7 +184,7 @@ describe('Schema Validation', () => {
       ];
       
       schemaFiles.forEach(schemaFile => {
-        const schemaPath = path.join(__dirname, '../../schemas', schemaFile);
+        const schemaPath = path.join(__dirname, '../../config/schemas', schemaFile);
         const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
         
         assert.ok(schema.$schema, `${schemaFile} should have $schema`);

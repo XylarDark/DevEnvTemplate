@@ -13,7 +13,7 @@ const { describe, test, after } = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs').promises;
 const path = require('path');
-const { executeCleanup } = require('../../scripts/cleanup/engine');
+const { executeCleanup } = require('../../dist/cleanup/engine');
 const { createTempFixture, cleanupTempFixture, fileExists, readFile } = require('../utils/fixture-helper');
 
 describe('Cleanup Workflow Integration', () => {

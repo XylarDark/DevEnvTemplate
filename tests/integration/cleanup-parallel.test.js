@@ -3,7 +3,7 @@ const { describe, it, beforeEach, afterEach } = require('node:test');
 const path = require('path');
 const { promises: fs } = require('fs');
 const os = require('os');
-const { CleanupEngine } = require('../../dist/scripts/cleanup/engine');
+const { CleanupEngine } = require('../../dist/cleanup/engine');
 
 describe('Cleanup Engine Parallel Processing', () => {
   let tempDir;

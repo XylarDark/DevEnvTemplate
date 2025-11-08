@@ -13,7 +13,7 @@
 const { describe, test, before, after } = require('node:test');
 const assert = require('node:assert');
 const path = require('path');
-const { CleanupEngine, executeCleanup } = require('../../scripts/cleanup/engine');
+const { CleanupEngine, executeCleanup } = require('../../dist/cleanup/engine');
 const { createTempFixture, cleanupTempFixture } = require('../utils/fixture-helper');
 
 describe('CleanupEngine', () => {

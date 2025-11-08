@@ -39,11 +39,22 @@ interface DoctorReport {
   quickWins: Issue[];
 }
 
+interface CliOptions {
+  fix?: boolean;
+  noInstall?: boolean;
+  preset?: 'nextjs' | 'vite' | 'express' | 'vanilla';
+  dryRun?: boolean;
+  strict?: boolean;
+  json?: boolean;
+}
+
 /**
  * Main doctor command
  */
-async function runDoctor(options: { fix?: boolean; json?: boolean } = {}) {
-  console.log('🏥 DevEnvTemplate Health Check\n');
+async function runDoctor(options: CliOptions = {}) {
+  if (!options.json) {
+    console.log('🏥 DevEnvTemplate Health Check\n');
+  }
 
   const workingDir = process.cwd();
   const reportDir = path.join(workingDir, '.devenv');
@@ -51,9 +62,14 @@ async function runDoctor(options: { fix?: boolean; json?: boolean } = {}) {
   // Ensure .devenv directory exists
   await fs.mkdir(reportDir, { recursive: true });
 
+  // Apply preset override if specified
+  if (options.preset && !options.json) {
+    console.log(`🎯 Using preset: ${options.preset}\n`);
+  }
+
   // Step 1: Run stack detector
   console.log('🔍 Analyzing project stack...');
-  const stackDetectorPath = path.join(__dirname, '../../.github/tools/stack-detector.js');
+  const stackDetectorPath = path.join(__dirname, '../tools/stack-detector.js');
   let stackData: any;
   
   try {
@@ -70,7 +86,7 @@ async function runDoctor(options: { fix?: boolean; json?: boolean } = {}) {
 
   // Step 2: Run gap analyzer
   console.log('🔬 Identifying gaps and issues...');
-  const gapAnalyzerPath = path.join(__dirname, '../../.github/tools/gap-analyzer.js');
+  const gapAnalyzerPath = path.join(__dirname, '../tools/gap-analyzer.js');
   let gapsReport: string;
   
   try {
@@ -107,12 +123,18 @@ async function runDoctor(options: { fix?: boolean; json?: boolean } = {}) {
 
   // Step 6: Auto-fix if requested
   if (options.fix) {
+    if (options.dryRun) {
+      console.log('\n🔍 DRY RUN - No changes will be applied\n');
+    }
     console.log('\n🔧 Applying automatic fixes...');
-    await applyQuickFixes(report.quickWins);
+    await applyQuickFixes(report.quickWins, options);
   }
 
-  // Exit with error code if critical issues found
-  if (report.critical.length > 0) {
+  // Exit with error code if issues found (in strict mode)
+  if (options.strict && (report.critical.length > 0 || report.warnings.length > 0)) {
+    console.log('\n❌ Exiting with error code due to --strict flag');
+    process.exit(1);
+  } else if (report.critical.length > 0) {
     process.exit(1);
   }
 }
@@ -187,47 +209,78 @@ function parseGapsReport(markdown: string): DoctorReport {
 }
 
 /**
- * Calculate health scores
+ * Calculate health scores with indie-focused priorities
+ * Testing: 25%, CI/CD: 20%, Type Safety: 20%, Env Hygiene: 15%, Lint/Format: 20%
  */
 function calculateHealthScore(
   critical: Issue[],
   warnings: Issue[],
   info: Issue[]
 ): HealthScore {
-  // Start with perfect score
-  let overall = 100;
-
-  // Deduct for issues
-  overall -= critical.length * 15; // Critical: -15 each
-  overall -= warnings.length * 5;  // Warning: -5 each
-  overall -= info.length * 1;      // Info: -1 each
-
-  // Floor at 0
-  overall = Math.max(0, overall);
-
-  // Calculate category scores (simplified)
-  const categorize = (issues: Issue[], category: string) =>
+  // Categorize issues by type
+  const categorize = (issues: Issue[], keywords: string[]) =>
     issues.filter(i => 
-      i.category.toLowerCase().includes(category) ||
-      i.message.toLowerCase().includes(category)
+      keywords.some(kw => 
+        i.category.toLowerCase().includes(kw) ||
+        i.message.toLowerCase().includes(kw)
+      )
     ).length;
 
-  const securityIssues = categorize([...critical, ...warnings], 'security');
-  const qualityIssues = categorize([...critical, ...warnings], 'linting') + 
-                        categorize([...critical, ...warnings], 'typescript');
-  const testingIssues = categorize([...critical, ...warnings], 'test');
-  const ciIssues = categorize([...critical, ...warnings], 'ci') +
-                   categorize([...critical, ...warnings], 'pipeline');
-  const docIssues = categorize([...critical, ...warnings], 'readme') +
-                    categorize([...critical, ...warnings], 'documentation');
+  // Count issues by category
+  const testingIssues = categorize([...critical, ...warnings], ['test', 'testing', 'jest', 'vitest', 'playwright']);
+  const ciIssues = categorize([...critical, ...warnings], ['ci', 'pipeline', 'workflow', 'github actions']);
+  const typeSafetyIssues = categorize([...critical, ...warnings], ['typescript', 'strict', 'type', '@types']);
+  const envIssues = categorize([...critical, ...warnings], ['env', 'environment', 'secret', 'gitignore']);
+  const lintFormatIssues = categorize([...critical, ...warnings], ['eslint', 'prettier', 'lint', 'format']);
+
+  // Calculate category scores (start at 100, deduct for issues)
+  // Critical issues: -20 points, Warning issues: -10 points
+  const calcCategoryScore = (criticalCount: number, warningCount: number) => {
+    return Math.max(0, 100 - (criticalCount * 20) - (warningCount * 10));
+  };
+
+  const testing = calcCategoryScore(
+    categorize(critical, ['test', 'testing', 'jest', 'vitest', 'playwright']),
+    categorize(warnings, ['test', 'testing', 'jest', 'vitest', 'playwright'])
+  );
+
+  const ci = calcCategoryScore(
+    categorize(critical, ['ci', 'pipeline', 'workflow', 'github actions']),
+    categorize(warnings, ['ci', 'pipeline', 'workflow', 'github actions'])
+  );
+
+  const typeSafety = calcCategoryScore(
+    categorize(critical, ['typescript', 'strict', 'type', '@types']),
+    categorize(warnings, ['typescript', 'strict', 'type', '@types'])
+  );
+
+  const envHygiene = calcCategoryScore(
+    categorize(critical, ['env', 'environment', 'secret', 'gitignore']),
+    categorize(warnings, ['env', 'environment', 'secret', 'gitignore'])
+  );
+
+  const lintFormat = calcCategoryScore(
+    categorize(critical, ['eslint', 'prettier', 'lint', 'format']),
+    categorize(warnings, ['eslint', 'prettier', 'lint', 'format'])
+  );
+
+  // Calculate weighted overall score
+  // Testing: 25%, CI: 20%, Type Safety: 20%, Env: 15%, Lint/Format: 20%
+  const overall = Math.round(
+    testing * 0.25 +
+    ci * 0.20 +
+    typeSafety * 0.20 +
+    envHygiene * 0.15 +
+    lintFormat * 0.20
+  );
 
   return {
     overall,
-    security: Math.max(0, 100 - securityIssues * 20),
-    quality: Math.max(0, 100 - qualityIssues * 15),
-    testing: Math.max(0, 100 - testingIssues * 20),
-    ci: Math.max(0, 100 - ciIssues * 25),
-    documentation: Math.max(0, 100 - docIssues * 15)
+    security: envHygiene, // Map to legacy 'security' field
+    quality: lintFormat,
+    testing,
+    ci,
+    documentation: Math.max(0, 100 - categorize([...critical, ...warnings], ['readme', 'documentation', 'docs']) * 15)
   };
 }
 
@@ -304,7 +357,7 @@ function displayReport(report: DoctorReport) {
     console.log('   2. Apply quick wins with: npm run doctor --fix');
   }
   console.log('   3. View full report: .devenv/health-report.json');
-  console.log('   4. Generate action plan: node .github/tools/plan-generator.js');
+  console.log('   4. Generate action plan: node scripts/tools/plan-generator.js');
 }
 
 /**
@@ -362,11 +415,16 @@ function isQuickWin(message: string): boolean {
 /**
  * Apply automatic fixes for quick wins
  */
-async function applyQuickFixes(quickWins: Issue[]): Promise<void> {
+async function applyQuickFixes(quickWins: Issue[], options: CliOptions): Promise<void> {
   let fixedCount = 0;
 
   for (const issue of quickWins) {
     const lower = issue.message.toLowerCase();
+
+    if (options.dryRun) {
+      console.log(`   [DRY RUN] Would fix: ${issue.message}`);
+      continue;
+    }
 
     try {
       // Add .env.example
@@ -433,15 +491,102 @@ PORT=3000
     }
   }
 
-  console.log(`\n✅ Applied ${fixedCount} automatic fixes`);
+  if (options.dryRun) {
+    console.log(`\n📋 Would apply ${quickWins.length} fixes (dry run mode)`);
+  } else {
+    console.log(`\n✅ Applied ${fixedCount} automatic fixes`);
+  }
 }
 
 // Parse CLI arguments
-const args = process.argv.slice(2);
-const options = {
-  fix: args.includes('--fix'),
-  json: args.includes('--json')
-};
+function parseArgs(): CliOptions {
+  const args = process.argv.slice(2);
+  const options: CliOptions = {
+    fix: false,
+    noInstall: false,
+    dryRun: false,
+    strict: false,
+    json: false
+  };
+
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    
+    switch (arg) {
+      case '--fix':
+        options.fix = true;
+        break;
+      case '--no-install':
+        options.noInstall = true;
+        break;
+      case '--preset':
+        const nextArg = args[i + 1];
+        if (nextArg && ['nextjs', 'vite', 'express', 'vanilla'].includes(nextArg)) {
+          options.preset = nextArg as any;
+          i++; // Skip next arg
+        } else {
+          console.error('❌ Invalid preset. Use: nextjs, vite, express, or vanilla');
+          process.exit(1);
+        }
+        break;
+      case '--dry-run':
+        options.dryRun = true;
+        break;
+      case '--strict':
+        options.strict = true;
+        break;
+      case '--json':
+        options.json = true;
+        break;
+      case '--help':
+      case '-h':
+        printHelp();
+        process.exit(0);
+        break;
+      default:
+        console.error(`❌ Unknown option: ${arg}`);
+        printHelp();
+        process.exit(1);
+    }
+  }
+
+  return options;
+}
+
+function printHelp() {
+  console.log(`
+DevEnvTemplate Doctor - Health check and auto-fix tool
+
+USAGE:
+  npm run doctor [options]
+
+OPTIONS:
+  --fix              Apply automatic fixes to detected issues
+  --no-install       Skip installing missing dependencies (use with --fix)
+  --preset <type>    Override framework detection (nextjs|vite|express|vanilla)
+  --dry-run          Show what would be fixed without applying changes
+  --strict           Exit with code 1 on any warnings (useful for CI)
+  --json             Output results in JSON format
+  -h, --help         Show this help message
+
+EXAMPLES:
+  npm run doctor                          # Check project health
+  npm run doctor --fix                    # Fix issues automatically
+  npm run doctor --fix --no-install       # Fix but skip package installation
+  npm run doctor --preset nextjs          # Override framework detection
+  npm run doctor --dry-run                # Preview fixes
+  npm run doctor --json                   # Machine-readable output
+  npm run doctor --strict                 # Fail CI on any warnings
+
+WORKFLOW:
+  1. Run 'npm run doctor' to see health score and issues
+  2. Run 'npm run doctor --fix' to auto-fix simple issues
+  3. Review changes and test
+  4. Add --no-install if you want to install dependencies manually
+`);
+}
+
+const options = parseArgs();
 
 // Run doctor
 runDoctor(options).catch(error => {

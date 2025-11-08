@@ -1,9 +1,9 @@
 # Indie Developer CI - Simple & Fast
 #
 # Optimized for GitHub Actions free tier (2000 min/month)
-# - Fast feedback (< 3 minutes)
+# - Fast feedback (< 2.5 minutes)
 # - Essential checks only
-# - Caching enabled
+# - Enhanced caching
 # - Parallel jobs
 
 name: CI
@@ -36,6 +36,18 @@ jobs:
           node-version: '20'
           cache: 'npm'
       
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+            ~/.npm
+            ~/.pnpm-store
+            ~/.cache/yarn
+          key: ${{ runner.os }}-deps-${{ hashFiles('**/package-lock.json', '**/pnpm-lock.yaml', '**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-deps-
+      
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
       
@@ -60,6 +72,29 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
+      
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+            ~/.npm
+            ~/.pnpm-store
+            ~/.cache/yarn
+          key: ${{ runner.os }}-deps-${{ hashFiles('**/package-lock.json', '**/pnpm-lock.yaml', '**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-deps-
+      
+      - name: Cache TypeScript build
+        uses: actions/cache@v3
+        with:
+          path: |
+            dist
+            *.tsbuildinfo
+            tsconfig.tsbuildinfo
+          key: ${{ runner.os }}-tsc-${{ hashFiles('**/*.ts', 'tsconfig.json') }}
+          restore-keys: |
+            ${{ runner.os }}-tsc-
       
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
@@ -107,14 +142,24 @@ jobs:
           node-version: '20'
           cache: 'npm'
       
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+            ~/.npm
+          key: ${{ runner.os }}-deps-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-deps-
+      
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
       
       - name: Detect stack & analyze gaps
         run: |
           mkdir -p .devenv
-          node .github/tools/stack-detector.js > .devenv/stack-report.json || echo "{}" > .devenv/stack-report.json
-          node .github/tools/gap-analyzer.js > .devenv/gaps-report.md || echo "No gaps found" > .devenv/gaps-report.md
+          node scripts/tools/stack-detector.js > .devenv/stack-report.json || echo "{}" > .devenv/stack-report.json
+          node scripts/tools/gap-analyzer.js > .devenv/gaps-report.md || echo "No gaps found" > .devenv/gaps-report.md
       
       - name: Upload analysis
         uses: actions/upload-artifact@v4
@@ -169,6 +214,120 @@ jobs:
             const existingComment = comments.find(c => 
               c.user.login === 'github-actions[bot]' && 
               c.body.includes('DevEnvTemplate Analysis')
+            );
+            
+            if (existingComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existingComment.id,
+                body: comment
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: comment
+              });
+            }
+
+  # Doctor health check (non-blocking, only on PR)
+  doctor:
+    name: Health Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    if: github.event_name == 'pull_request'
+    continue-on-error: true
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+            ~/.npm
+          key: ${{ runner.os }}-deps-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-deps-
+      
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      
+      - name: Run doctor
+        run: npm run doctor --json > .devenv/health.json || true
+      
+      - name: Upload health report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: health-report
+          path: .devenv/health.json
+      
+      - name: Comment health score on PR
+        uses: actions/github-script@v7
+        if: always()
+        with:
+          script: |
+            const fs = require('fs');
+            
+            let comment = '## 🏥 DevEnvTemplate Health Check\n\n';
+            
+            try {
+              const health = JSON.parse(fs.readFileSync('.devenv/health.json', 'utf8'));
+              const score = health.healthScore?.overall || 0;
+              const emoji = score >= 80 ? '🟢' : score >= 60 ? '🟡' : '🔴';
+              
+              comment += `${emoji} **Overall Health: ${score}/100**\n\n`;
+              
+              if (health.healthScore) {
+                comment += '### Category Scores\n\n';
+                comment += `- Testing: ${health.healthScore.testing}/100\n`;
+                comment += `- CI/CD: ${health.healthScore.ci}/100\n`;
+                comment += `- Type Safety: ${health.healthScore.security}/100\n`;
+                comment += `- Code Quality: ${health.healthScore.quality}/100\n\n`;
+              }
+              
+              if (health.critical && health.critical.length > 0) {
+                comment += `### 🔴 Critical Issues (${health.critical.length})\n\n`;
+                health.critical.slice(0, 3).forEach(issue => {
+                  comment += `- ${issue.message}\n`;
+                });
+                if (health.critical.length > 3) {
+                  comment += `\n_... and ${health.critical.length - 3} more_\n`;
+                }
+                comment += '\n';
+              }
+              
+              if (health.quickWins && health.quickWins.length > 0) {
+                comment += `### 💡 Quick Wins (${health.quickWins.length})\n\n`;
+                comment += 'Run `npm run doctor --fix` to apply automatic fixes.\n\n';
+              }
+            } catch (e) {
+              comment += '⚠️ Unable to generate health report.\n\n';
+              comment += `Error: ${e.message}\n\n`;
+            }
+            
+            comment += '---\n*Health check by DevEnvTemplate Doctor*';
+            
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+            
+            const existingComment = comments.find(c => 
+              c.user.login === 'github-actions[bot]' && 
+              c.body.includes('DevEnvTemplate Health Check')
             );
             
             if (existingComment) {

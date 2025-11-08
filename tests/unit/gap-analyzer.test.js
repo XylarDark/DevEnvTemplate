@@ -6,7 +6,7 @@ const { describe, it, before, after } = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs').promises;
 const path = require('path');
-const GapAnalyzer = require('../../.github/tools/gap-analyzer');
+const GapAnalyzer = require('../../scripts/tools/gap-analyzer');
 
 describe('Gap Analyzer', () => {
   const testRoot = path.join(__dirname, '..', 'fixtures', 'gap-analyzer-test');

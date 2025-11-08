@@ -50,7 +50,7 @@ describe('CI Tools Workflow Integration', () => {
   });
 
   it('should run stack-detector and generate stack report', async () => {
-    const stackDetectorPath = path.join(projectRoot, '.github', 'tools', 'stack-detector.js');
+    const stackDetectorPath = path.join(projectRoot, 'scripts', 'tools', 'stack-detector.js');
     
     const { stdout } = await execAsync(
       `node "${stackDetectorPath}"`,
@@ -85,7 +85,7 @@ describe('CI Tools Workflow Integration', () => {
     }
     
     // Run gap analyzer
-    const gapAnalyzerPath = path.join(projectRoot, '.github', 'tools', 'gap-analyzer.js');
+    const gapAnalyzerPath = path.join(projectRoot, 'scripts', 'tools', 'gap-analyzer.js');
     const { stdout } = await execAsync(
       `node "${gapAnalyzerPath}"`,
       { cwd: tempDir }
@@ -113,12 +113,12 @@ describe('CI Tools Workflow Integration', () => {
       const stackDetectorPath = path.join(projectRoot, '.github', 'tools', 'stack-detector.js');
       await execAsync(`node "${stackDetectorPath}"`, { cwd: tempDir });
       
-      const gapAnalyzerPath = path.join(projectRoot, '.github', 'tools', 'gap-analyzer.js');
+      const gapAnalyzerPath = path.join(projectRoot, 'scripts', 'tools', 'gap-analyzer.js');
       await execAsync(`node "${gapAnalyzerPath}"`, { cwd: tempDir });
     }
     
     // Run plan generator
-    const planGeneratorPath = path.join(projectRoot, '.github', 'tools', 'plan-generator.js');
+    const planGeneratorPath = path.join(projectRoot, 'scripts', 'tools', 'plan-generator.js');
     const { stdout } = await execAsync(
       `node "${planGeneratorPath}"`,
       { cwd: tempDir }
@@ -149,8 +149,8 @@ describe('CI Tools Workflow Integration', () => {
     
     // Run full workflow
     const stackDetectorPath = path.join(projectRoot, '.github', 'tools', 'stack-detector.js');
-    const gapAnalyzerPath = path.join(projectRoot, '.github', 'tools', 'gap-analyzer.js');
-    const planGeneratorPath = path.join(projectRoot, '.github', 'tools', 'plan-generator.js');
+    const gapAnalyzerPath = path.join(projectRoot, 'scripts', 'tools', 'gap-analyzer.js');
+    const planGeneratorPath = path.join(projectRoot, 'scripts', 'tools', 'plan-generator.js');
     
     // Step 1: Stack Detection
     await execAsync(`node "${stackDetectorPath}"`, { cwd: tempDir });
@@ -183,7 +183,7 @@ describe('CI Tools Workflow Integration', () => {
     await fs.mkdir(path.join(cleanDir, '.devenv'), { recursive: true });
     
     try {
-      const gapAnalyzerPath = path.join(projectRoot, '.github', 'tools', 'gap-analyzer.js');
+      const gapAnalyzerPath = path.join(projectRoot, 'scripts', 'tools', 'gap-analyzer.js');
       await execAsync(`node "${gapAnalyzerPath}"`, { cwd: cleanDir });
       assert.fail('Should have thrown error for missing stack report');
     } catch (error) {
@@ -199,7 +199,7 @@ describe('CI Tools Workflow Integration', () => {
     await fs.mkdir(path.join(cleanDir, '.devenv'), { recursive: true });
     
     try {
-      const planGeneratorPath = path.join(projectRoot, '.github', 'tools', 'plan-generator.js');
+      const planGeneratorPath = path.join(projectRoot, 'scripts', 'tools', 'plan-generator.js');
       await execAsync(`node "${planGeneratorPath}"`, { cwd: cleanDir });
       assert.fail('Should have thrown error for missing gaps report');
     } catch (error) {
@@ -218,7 +218,7 @@ describe('CI Tools Workflow Integration', () => {
       const stackDetectorPath = path.join(projectRoot, '.github', 'tools', 'stack-detector.js');
       await execAsync(`node "${stackDetectorPath}"`, { cwd: tempDir });
       
-      const gapAnalyzerPath = path.join(projectRoot, '.github', 'tools', 'gap-analyzer.js');
+      const gapAnalyzerPath = path.join(projectRoot, 'scripts', 'tools', 'gap-analyzer.js');
       await execAsync(`node "${gapAnalyzerPath}"`, { cwd: tempDir });
     }
     
@@ -249,8 +249,8 @@ describe('CI Tools Workflow Integration', () => {
     if (!planExists) {
       // Run full workflow
       const stackDetectorPath = path.join(projectRoot, '.github', 'tools', 'stack-detector.js');
-      const gapAnalyzerPath = path.join(projectRoot, '.github', 'tools', 'gap-analyzer.js');
-      const planGeneratorPath = path.join(projectRoot, '.github', 'tools', 'plan-generator.js');
+      const gapAnalyzerPath = path.join(projectRoot, 'scripts', 'tools', 'gap-analyzer.js');
+      const planGeneratorPath = path.join(projectRoot, 'scripts', 'tools', 'plan-generator.js');
       
       await execAsync(`node "${stackDetectorPath}"`, { cwd: tempDir });
       await execAsync(`node "${gapAnalyzerPath}"`, { cwd: tempDir });
