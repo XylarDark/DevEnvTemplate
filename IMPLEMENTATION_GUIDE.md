@@ -1,456 +1,412 @@
-# DevEnvTemplate: Quick Start Guide for Any Technology Stack
+# DevEnvTemplate: Implementation Guide
 
-**What is DevEnvTemplate?** It's your fast-track to professional development setup. Instead of spending days configuring CI/CD, documentation, security scanning, and governance, you get a complete, production-ready foundation in minutes. It works with any programming language, framework, or deployment target.
+**For power users who want to customize and extend DevEnvTemplate.**
 
-**Why use it?** DevEnvTemplate gives your projects:
-- **Professional CI/CD** with security scanning and automated testing
-- **Governance guardrails** to maintain code quality and security standards
-- **Documentation templates** for clear communication and onboarding
-- **Cleanup automation** to keep your codebase lean and focused
-- **Demo deployment** capabilities to showcase working prototypes
-
-**For LLMs and AI agents:** This guide shows how to provide the right context so AI assistants can accelerate your development 10x by understanding your project's structure, requirements, and constraints from the start.
-
----
-
-## Quick Start: 10 Minutes to Professional Setup
-
-### CLI Setup
-
-```bash
-# 1. Copy DevEnvTemplate to your new project
-cp -r DevEnvTemplate/* my-new-project/
-cd my-new-project
-
-# 2. Run interactive setup
-npm run agent:init
-
-# 3. Apply the generated configuration
-npm run agent:apply
-
-# 4. Add your minimal app code
-# (Create Hello World or basic endpoint)
-
-# 5. Clean up template artifacts
-npm run cleanup:apply
-```
-
-**That's it!** You now have professional CI/CD, documentation, security scanning, and governance in place.
-
----
-
-## Understanding the Key Concepts
-
-### Project Manifest: Your Project's DNA
-
-Your `project.manifest.json` is a machine-readable description of what you're building. It includes:
-- **Requirements**: What type of app, features needed, technology choices
-- **Derived features**: Automatically determined capabilities based on your choices
-- **Rationale**: Why certain features were included
-
-Example manifest:
-```json
-{
-  "version": "1.0.0",
-  "requirements": {
-    "productType": "Web Application",
-    "coreFeatures": ["Authentication/Authorization", "Web UI (Frontend)"],
-    "preferredStack": "Node.js",
-    "deploymentTarget": "Docker Containers"
-  },
-  "derived": {
-    "features": ["auth", "frontend", "docker"],
-    "rationale": {
-      "features": "Based on your authentication and UI requirements",
-      "stack": "Node.js supports both frontend and backend",
-      "infrastructure": "Docker enables consistent deployment"
-    }
-  }
-}
-```
-
-### Template Packs: Technology-Specific Blueprints
-
-Template packs contain the actual code and configuration for specific technologies. Each pack includes:
-- **Code templates** for your chosen stack
-- **Configuration files** (package.json, dockerfiles, etc.)
-- **Cleanup rules** to remove unused code
-- **CI/CD workflows** for automated testing and deployment
-
-### Deterministic Pipeline: Predictable Results
-
-Every DevEnvTemplate operation follows the same reliable process:
-1. **Plan**: Preview exactly what will change
-2. **Apply**: Execute the planned changes safely
-3. **Verify**: Confirm everything works as expected
-4. **Rollback**: Undo changes if something goes wrong
-
-### Cleanup Rules: Keep Your Codebase Lean
-
-As your project evolves, cleanup rules automatically remove:
-- Unused dependencies for features you didn't select
-- Template placeholder code
-- Configuration for technologies you're not using
-- Outdated documentation sections
-
-### Policy Gates: Quality and Security Guardrails
-
-Before your code gets merged, policy gates check:
-- **License compliance**: Only approved open-source licenses
-- **Security vulnerabilities**: No known security issues in dependencies
-- **Code quality**: Tests pass, linting clean, no secrets committed
-- **Bundle size**: Stay within performance budgets
-
----
-
-## Optimal Usage with LLMs and AI Agents
-
-### Why Context Matters
-
-When working with AI assistants, providing the right context prevents wasted time and ensures high-quality results. DevEnvTemplate gives you structured context that LLMs understand immediately.
-
-### Essential Context to Provide
-
-**Always include these files when briefing an AI agent:**
-
-1. **`project.manifest.json`** - Your project's requirements and constraints
-2. **Key spec files** from `docs/specs/`:
-   - `project-definition-schema-v1.md` - How manifests work
-   - `cleanup-rules-dsl.md` - How cleanup automation works
-   - `policy-gates-spec.md` - What quality checks apply
-
-3. **Relevant docs**:
-   - `docs/engineering-handbook.md` - Code standards and principles
-   - `.github/SECURITY.md` - Security requirements and practices
-
-### Agent Briefing Template
-
-```
-You are helping develop a project using DevEnvTemplate. Here's the essential context:
-
-PROJECT REQUIREMENTS: [Attach project.manifest.json]
-TECHNOLOGY STANDARDS: See docs/engineering-handbook.md
-QUALITY GATES: See docs/specs/policy-gates-spec.md
-CLEANUP RULES: See docs/specs/cleanup-rules-dsl.md
-
-Key instructions:
-- Follow the schema in project-definition-schema-v1.md for any config changes
-- Use cleanup rules to remove unused code (don't leave template artifacts)
-- Ensure all changes pass policy gates (no secrets, license compliance, etc.)
-- Maintain the existing governance and CI/CD setup
-- Write deterministic, testable code following SOLID principles
-
-Specific task: [Describe what you need help with]
-```
-
-### Common Agent Workflows
-
-#### Adding a New Feature
-
-```
-Context: [project.manifest.json + relevant specs]
-
-I need to add [FEATURE] to my [STACK] application. Please:
-
-1. Check if this requires updating project.manifest.json
-2. Generate the code following our engineering standards
-3. Ensure it integrates with existing cleanup rules
-4. Verify it passes all policy gates
-5. Update documentation if needed
-
-Deliverables: Code changes + any manifest updates + test coverage
-```
-
-#### Debugging Issues
-
-```
-Context: [project.manifest.json + error logs]
-
-I'm getting [ERROR] in my [STACK] app. The error occurs when [CONDITIONS].
-
-Debugging context:
-- Project setup: [How you initialized the project]
-- Recent changes: [What you modified]
-- Environment: [Local dev vs CI vs production]
-
-Please help identify the root cause and provide a fix that:
-- Follows our cleanup rules (no unused code)
-- Maintains policy compliance
-- Includes appropriate error handling
-```
-
-#### Optimizing Performance
-
-```
-Context: [project.manifest.json + performance metrics]
-
-My [STACK] application has [PERFORMANCE ISSUE]. Current metrics:
-- [Bundle size, load times, etc.]
-
-Please optimize by:
-- Following our bundle size limits from policy gates
-- Using appropriate cleanup rules to remove dead code
-- Maintaining code quality standards
-- Providing before/after metrics
-```
-
----
-
-## Step-by-Step Implementation
-
-### Step 1: Define Your Project (Manifest Creation)
-
-**Using CLI:**
-```bash
-npm run agent:init
-# Follow interactive prompts
-```
-
-This interactive CLI will guide you through defining your project requirements and generate a `project.manifest.json` file.
-
-**Manual Creation (Advanced):**
-Create `project.manifest.json` following the schema in `docs/specs/project-definition-schema-v1.md`
-
-### Step 2: Set Up Your Repository
-
-```bash
-# Create new repository
-mkdir my-awesome-project
-cd my-awesome-project
-git init
-
-# Add DevEnvTemplate foundation
-cp -r /path/to/DevEnvTemplate/* ./
-git add .
-git commit -m "chore: initialize project with DevEnvTemplate"
-```
-
-### Step 3: Configure for Your Project
-
-```bash
-# Apply your manifest configuration
-npm run agent:apply
-
-# Or configure manually based on manifest
-```
-
-### Step 4: Add Your Application Code
-
-Create a minimal working version of your app:
-
-**Web Application:**
-```javascript
-// src/app.js
-const express = require('express');
-const app = express();
-
-app.get('/health', (req, res) => res.json({ status: 'ok' }));
-
-module.exports = app;
-```
-
-**Test:**
-```javascript
-// tests/app.test.js
-const request = require('supertest');
-const app = require('../src/app');
-
-test('health endpoint returns ok', async () => {
-  const response = await request(app).get('/health');
-  expect(response.status).toBe(200);
-  expect(response.body.status).toBe('ok');
-});
-```
-
-### Step 5: Clean Up Template Code
-
-```bash
-# Preview what will be removed
-npm run cleanup:dry-run
-
-# Apply cleanup (removes unused template code)
-npm run cleanup:apply
-```
-
-### Step 6: Verify Everything Works
-
-```bash
-# Run tests
-npm test
-
-# Run linting
-npm run lint
-
-# Build if applicable
-npm run build
-
-# Start locally
-npm start
-```
-
-### Step 7: Enable CI/CD
-
-DevEnvTemplate includes GitHub Actions workflows that:
-- Run tests and linting on every push
-- Validate your manifest configuration
-- Check for security vulnerabilities
-- Ensure cleanup rules are followed
-- Scan for secrets and license compliance
-
-The workflows run in "report-only" mode initially, so they won't block your development.
-
-### Step 8: Create Your First Pull Request
-
-```bash
-# Create feature branch
-git checkout -b feat/initial-setup
-
-# Make your changes
-git add .
-git commit -m "feat: initial project setup with DevEnvTemplate"
-
-# Push and create PR
-git push origin feat/initial-setup
-```
-
-Your PR will automatically run all quality checks and provide feedback on any issues.
-
----
-
-## Best Practices for Maximum Benefit
-
-### Development Workflow
-
-1. **Always start with a manifest** - Define requirements first, then build
-2. **Use dry-run mode** - Preview changes before applying them
-3. **Commit frequently** - Small, focused commits with clear messages
-4. **Run cleanup regularly** - Keep your codebase lean as features evolve
-5. **Review policy gate feedback** - Address warnings before they become blocking
-
-### AI Agent Integration
-
-1. **Provide complete context** - Include manifest + relevant specs every time
-2. **Use structured prompts** - Follow the templates above for consistent results
-3. **Validate outputs** - Always run tests and linting after AI-generated code
-4. **Review cleanup impact** - Ensure AI changes work with your cleanup rules
-5. **Maintain governance** - AI code must still pass policy gates
-
-### Team Collaboration
-
-1. **Standardize manifest creation** - Use the website for consistent project definitions
-2. **Share cleanup rules** - Document custom rules for team knowledge
-3. **Review policy configurations** - Ensure team alignment on quality standards
-4. **Document exceptions** - Track approved deviations from standards
-
----
-
-## Troubleshooting Common Issues
-
-### Manifest Validation Errors
-
-**Problem:** `project.manifest.json` fails validation
-**Solution:**
-- Check against `docs/specs/project-definition-schema-v1.md`
-- Use the website to generate valid manifests
-- Validate with: `npm run validate-manifest`
-
-### Cleanup Removes Important Code
-
-**Problem:** Cleanup rules removed code you needed
-**Solution:**
-- Update your manifest to include the required features
-- Re-run `npm run agent:apply` to regenerate cleanup configuration
-- Create custom cleanup rules if needed
-
-### CI/CD Pipeline Fails
-
-**Problem:** GitHub Actions workflows failing
-**Solution:**
-- Check the workflow logs for specific error messages
-- Ensure all required files are present (package.json, etc.)
-- Verify your manifest is valid
-- Run locally first: `npm run lint && npm test && npm run build`
-
-### Policy Gates Blocking Deployment
-
-**Problem:** Security or quality checks failing
-**Solution:**
-- Review the specific policy violation in CI logs
-- Fix security vulnerabilities by updating dependencies
-- Address code quality issues (linting, test coverage)
-- For temporary exceptions, document rationale and get approval
-
-### Dependencies Not Installing
-
-**Problem:** `npm install` fails in CI
-**Solution:**
-- Check Node.js version compatibility
-- Verify package.json syntax
-- Ensure no conflicting dependency versions
-- Use `npm ls` to debug dependency trees
+If you're just getting started, see [USAGE.md](USAGE.md) instead.
 
 ---
 
 ## Advanced Features
 
-### Custom Cleanup Rules
+### Performance Optimization
 
-Create technology-specific cleanup rules in `cleanup.config.yaml`:
+DevEnvTemplate includes several performance features for large codebases:
+
+**Parallel Processing:**
+```bash
+npm run cleanup -- --parallel --apply
+```
+- 2-5x speedup on 100+ file projects
+- Auto-detects optimal concurrency (CPU count)
+- Safe: Same results as sequential execution
+
+**Caching:**
+```bash
+npm run cleanup -- --cache --apply
+```
+- Caches parsed configurations (2-3x speedup)
+- Content-based file caching with SHA-256
+- 1-hour TTL for config cache
+- Disable with `--no-cache` if needed
+
+**Performance Tracking:**
+```bash
+npm run cleanup -- --performance --apply
+```
+- Detailed execution metrics
+- Rule-by-rule timing
+- Memory usage tracking
+- Optimization recommendations
+
+**Progress Reporting:**
+```bash
+npm run cleanup -- --progress --progress-verbosity detailed --apply
+```
+- Live progress bars
+- ETA calculations
+- Three verbosity levels: silent, simple, detailed
+- JSON output with `--json-progress`
+
+### Cleanup Engine
+
+The cleanup engine removes template artifacts after setup:
+
+**Dry Run (Default):**
+```bash
+npm run cleanup
+```
+Shows what would be changed without modifying files.
+
+**Apply Changes:**
+```bash
+npm run cleanup -- --apply
+```
+Actually modifies files based on cleanup rules.
+
+**Advanced Options:**
+```bash
+# Specific profile
+npm run cleanup -- --profile minimal --apply
+
+# Feature flags
+npm run cleanup -- --feature auth,api --apply
+
+# Only specific rules
+npm run cleanup -- --only remove-examples --apply
+
+# Exclude rules
+npm run cleanup -- --exclude remove-docs --apply
+
+# Keep specific files
+npm run cleanup -- --keep README.md,LICENSE --apply
+```
+
+### Stack Detection & Gap Analysis
+
+DevEnvTemplate can analyze existing projects:
+
+**Detect Stack:**
+```bash
+node .github/tools/stack-detector.js > .devenv/stack-report.json
+```
+
+**Analyze Gaps:**
+```bash
+node .github/tools/gap-analyzer.js > .devenv/gaps-report.md
+```
+
+**Generate Plan:**
+```bash
+node .github/tools/plan-generator.js > plans/hardening-plan.md
+```
+
+These tools help you understand your project and get recommendations for improvements.
+
+---
+
+## Customization
+
+### Adding Custom Cleanup Rules
+
+Create `config/cleanup.config.yaml`:
 
 ```yaml
-rules:
-  - name: remove-unused-react-components
-    conditions:
-      - feature: "!Web UI (Frontend)"
-    actions:
-      - type: delete
-        pattern: "src/components/*.tsx"
+profiles:
+  custom:
+    rules:
+      - id: remove-my-template-code
+        type: file-glob-delete
+        glob: "templates/**"
+        reason: "Remove template files after setup"
+      
+      - id: clean-comments
+        type: line-tag
+        tag: "@template-only"
+        reason: "Remove template-only comments"
 ```
 
-### Policy Gate Configuration
-
-Customize quality standards in CI environment variables:
-
+Run with:
 ```bash
-# Allow larger bundles for data-heavy apps
-BUNDLE_SIZE_LIMIT=10MB
-
-# Require higher test coverage for critical systems
-MIN_TEST_COVERAGE=90
-
-# Strict license checking
-LICENSE_POLICY=strict
+npm run cleanup -- --profile custom --apply
 ```
 
-### Demo Deployment
+### Adding Custom Presets
 
-For quick prototyping, DevEnvTemplate can create deployable demos:
+Edit `scripts/agent/cli-simple.js` to add your own project type presets:
 
-```bash
-# Generate demo bundle
-npm run demo:create
+```javascript
+const projectType = await this.prompt(
+  '1️⃣  What are you building?',
+  [
+    'Side Project / SaaS (web app)',
+    'API / Backend Service',
+    'Full-Stack App (frontend + backend)',
+    'Static Website / Landing Page',
+    'Your Custom Type Here',  // Add your preset
+    'Other'
+  ],
+  0
+);
+```
 
-# Deploy to platform (Docker, Vercel, Netlify, etc.)
-npm run demo:deploy -- --platform=docker
+### Extending Stack Detection
+
+Add detection logic in `.github/tools/stack-detector.js`:
+
+```javascript
+// Detect your framework
+if (packageJson.dependencies['your-framework']) {
+  technologies.push({
+    name: 'YourFramework',
+    version: packageJson.dependencies['your-framework'],
+    confidence: 'high'
+  });
+}
 ```
 
 ---
 
-## Resources and References
+## Architecture
 
-- **Engineering Handbook**: `docs/engineering-handbook.md` - Code standards and principles
-- **Security Policy**: `.github/SECURITY.md` - Security requirements and reporting
-- **Technical Specs**: `docs/specs/` - Detailed technical specifications
-- **Checklists**: `docs/checklists/` - Code review and release checklists
-- **Website**: Interactive project configuration tool
+### Project Structure
+
+```
+DevEnvTemplate/
+├── scripts/
+│   ├── agent/              # Interactive CLI for setup
+│   │   ├── cli-simple.js   # 5-question setup (default)
+│   │   └── cli.ts          # Advanced setup (power users)
+│   ├── cleanup/            # Cleanup engine
+│   │   ├── engine.ts       # Core cleanup logic
+│   │   └── package-managers/ # Package manager handlers
+│   ├── types/              # TypeScript type definitions
+│   └── utils/              # Shared utilities
+├── .github/
+│   ├── workflows/          # CI/CD workflows
+│   └── tools/              # CI analysis tools
+├── config/                 # Configuration files
+├── docs/                   # Documentation
+└── tests/                  # Test suite
+```
+
+### Key Technologies
+
+- **TypeScript**: Core modules for type safety
+- **Node.js**: Runtime and tooling
+- **GitHub Actions**: CI/CD automation
+- **YAML**: Configuration format
+
+### Design Principles
+
+1. **Simple by default**: Common use cases should be trivial
+2. **Powerful when needed**: Advanced features available but hidden
+3. **Fast feedback**: < 3 minutes for CI, < 5 minutes for setup
+4. **Free-tier first**: Optimized for GitHub Actions free tier
+5. **Solo-friendly**: No team complexity, no approval gates
 
 ---
 
-## Getting Help
+## TypeScript Development
 
-- **Documentation**: Check `docs/` folder for detailed guides
-- **Issues**: Use GitHub issues for bugs and feature requests
-- **Security**: See `.github/SECURITY.md` for vulnerability reporting
-- **Community**: Join discussions for implementation tips
+DevEnvTemplate is written in TypeScript for type safety.
 
-DevEnvTemplate transforms development from tedious setup to focused creation. By providing structured context to AI agents and following these practices, you'll deliver higher quality software faster while maintaining professional standards.
+**Build:**
+```bash
+npm run build         # One-time build
+npm run build:watch   # Watch mode for development
+```
+
+**Type Check:**
+```bash
+npm run prebuild      # Type check without building
+```
+
+**Project Structure:**
+- Source: `scripts/**/*.ts`
+- Compiled: `dist/**/*.js` + `.d.ts` declarations
+- Config: `tsconfig.json`, `tsconfig.base.json`
+
+---
+
+## Testing
+
+**Run All Tests:**
+```bash
+npm test
+```
+
+**Run Specific Tests:**
+```bash
+npm run test:unit         # Unit tests only
+npm run test:integration  # Integration tests only
+npm run test:fast         # Quick unit tests
+npm run test:slow         # Slower integration tests
+```
+
+**Watch Mode:**
+```bash
+npm run test:watch
+```
+
+**Test Structure:**
+- Unit tests: `tests/unit/**/*.test.js`
+- Integration tests: `tests/integration/**/*.test.js`
+- Fixtures: `tests/fixtures/` (test projects)
+
+---
+
+## Performance Benchmarking
+
+Compare different optimization strategies:
+
+```bash
+# Run all benchmarks
+npm run benchmark
+
+# Compare parallel vs sequential
+npm run benchmark:parallel
+
+# Compare cache on vs off
+npm run benchmark:cache
+
+# CI mode (with comparison)
+npm run benchmark:ci
+```
+
+Benchmarks measure:
+- Execution time (mean, median, stdDev)
+- Memory usage
+- Cache efficiency
+- Regression detection
+
+---
+
+## Contributing
+
+DevEnvTemplate is open source! Contributions welcome.
+
+**Quick Start:**
+1. Fork the repo
+2. Create a feature branch: `git checkout -b feat/my-feature`
+3. Make your changes
+4. Run tests: `npm test`
+5. Commit: `git commit -m "feat: add my feature"`
+6. Push and create a PR
+
+**Commit Convention:**
+- `feat:` New feature
+- `fix:` Bug fix
+- `docs:` Documentation only
+- `refactor:` Code refactoring
+- `perf:` Performance improvement
+- `test:` Test changes
+- `chore:` Maintenance
+
+See [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md) for more details.
+
+---
+
+## Troubleshooting
+
+### Build Errors
+
+**"Cannot find module":**
+```bash
+npm run build  # Ensure TypeScript is compiled
+```
+
+**Type errors:**
+```bash
+npm run prebuild  # Check types without building
+```
+
+### Test Failures
+
+**Timeout errors:**
+- Tests have 5s timeout (unit), 60s (integration)
+- If tests consistently timeout, they need optimization
+
+**File permission errors (Windows):**
+- Use `os.tmpdir()` for temp files
+- Avoid `mock-fs` (Windows incompatible)
+
+### CI Issues
+
+**Free tier exceeded:**
+- Check GitHub Actions usage in Settings
+- Optimize workflows (caching, concurrency)
+- Remove unnecessary jobs
+
+**Workflow not running:**
+- Check `.github/workflows/*.yml` files
+- Ensure triggers match your branch names
+- Look for `.disabled` extension
+
+---
+
+## Advanced Workflows
+
+### Multi-Stack Projects
+
+If you have multiple stacks (e.g., React frontend + Python backend):
+
+1. Run `npm run agent:init` for each stack
+2. Merge the generated `project.manifest.json` files
+3. Run cleanup with combined feature flags
+
+### Custom CI Workflows
+
+Copy and modify `.github/workflows/indie-ci.yml`:
+
+```yaml
+# Add custom jobs
+my-custom-check:
+  name: My Custom Check
+  runs-on: ubuntu-latest
+  steps:
+    - uses: actions/checkout@v4
+    - run: npm run my-custom-script
+```
+
+### Integration with Cursor
+
+DevEnvTemplate was designed for Cursor AI:
+
+1. CI generates artifacts (stack report, gaps report)
+2. Use these as context in Cursor Plan Mode
+3. Let AI implement recommendations
+
+See `docs/guides/cursor-plan-integration.md` for details.
+
+---
+
+## FAQ
+
+**Q: Can I use this with Python/Go/Java?**  
+A: Yes! DevEnvTemplate supports multiple languages. The TypeScript tooling is just for DevEnvTemplate itself.
+
+**Q: Do I need to keep DevEnvTemplate in my repo?**  
+A: No. After initial setup, you can remove the DevEnvTemplate folder if you want.
+
+**Q: Can I customize the CI workflows?**  
+A: Yes! Copy the `.example` workflows and modify them.
+
+**Q: How do I update DevEnvTemplate?**  
+A: Pull the latest version and re-run setup. Your customizations in `project.manifest.json` will be preserved.
+
+**Q: Does this work with monorepos?**  
+A: Basic support. Best for single-project repos currently.
+
+---
+
+## Resources
+
+- **[USAGE.md](USAGE.md)** - Simple guide for beginners
+- **[README.md](README.md)** - Project overview
+- **[docs/market-positioning.md](docs/market-positioning.md)** - Target audience and use cases
+- **[.projectrules](.projectrules)** - Development best practices
+- **[docs/rules-changelog.md](docs/rules-changelog.md)** - Governance evolution
+
+---
+
+**Need help?** Open an issue on GitHub or check the docs.
