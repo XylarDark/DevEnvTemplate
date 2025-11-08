@@ -1,7 +1,8 @@
 # Development Best Practices for Indie Developers
-# Version: 2.0 - Solo Developer Focus
-# Last Updated: 2025-11-07
+# Version: 3.0 - Doctor Mode Focus + Optimization Lessons
+# Last Updated: 2025-11-08
 # Purpose: Quality-first development for indie devs, solo founders, and small teams
+# Changelog: v3.0.0 optimization lessons (Phases 1-5) integrated
 #
 # Quick Links:
 # - README: ../README.md
@@ -38,7 +39,8 @@ code_style:
   - State management: URL params for shareable states; secure storage for persistence.
   - Accessibility (if UI): Keyboard navigation, focus management, ARIA labels, semantic HTML.
   - Performance: Lazy loading, critical path optimization, resource hints (if applicable).
-  - TypeScript adoption: Prefer TypeScript for core modules; strict mode enabled; compile to dist/.
+  - TypeScript adoption: Prefer TypeScript for core modules; strict mode enabled; compile to dist/; verify test imports use dist/ paths after compilation; create tests BEFORE implementing features when possible.
+  - Post-compilation verification: After building TypeScript, run tests to verify all import paths resolve correctly to dist/ compiled output.
   - Type definitions: Create comprehensive interfaces in scripts/types/.
   - Backward compatibility: JavaScript wrappers for TypeScript modules during migration.
   - Code duplication: Use base classes and inheritance to eliminate duplicate code.
@@ -71,6 +73,9 @@ patterns:
   - Parallel Processing: Use Promise.all batching with concurrency control for I/O-bound operations; default to CPU count for concurrency.
   - Concurrency Control: Implement worker pools with max concurrency limits; track batch execution in performance metrics.
   - Memory Efficiency: Process items in chunks, not all at once; validate memory usage with 1000+ item tests.
+  - Test-Driven Deletions: Before removing features: 1) Identify all references (grep), 2) Update/remove tests, 3) Verify tests pass/skip, 4) Delete feature code, 5) Remove dependencies, 6) Update docs.
+  - Fixture Management: Before deleting fixtures: 1) Search all test files for fixture name, 2) Update or skip affected tests, 3) Verify tests pass, 4) Delete fixture directory, 5) Re-run full test suite.
+  - Fixture References: Use constants for fixture paths; grep for fixture directory name before deletion; prefer smaller fixtures over large generated ones.
 
 development_environment:
   - CI Node version: Standardize on Node 20.x LTS for all workflows (if applicable).
@@ -78,7 +83,8 @@ development_environment:
   - Session reporting: At end of development sessions, include errors and workarounds in PR descriptions.
   - Platform testing: Test critical commands on target environment before implementation.
   - Command separation: Use individual terminal commands instead of chained commands.
-  - Windows/PowerShell conventions: Use `;` not `&&` for command chaining; prefer `Get-ChildItem -Force` over `ls -la`; use `$env:VAR='value'` for environment variables.
+  - Windows/PowerShell conventions: Use `;` not `&&` for command chaining; prefer `Get-ChildItem -Force` over `ls -la`; use `$env:VAR='value'` for environment variables; NEVER use emoji in commit messages (causes parse errors); escape special characters in strings.
+  - Commit message safety: Avoid emoji, special characters, and complex formatting in commit messages; use plain ASCII for cross-platform compatibility; PowerShell parsing errors with UTF-8 emojis.
   - Git transport: Prefer HTTPS by default for push operations; SSH optional with explicit host key configuration.
   - Repo-root preflight: Before first commit, run `git rev-parse --show-toplevel` and ensure it equals the project directory; fix before committing if not.
   - Rules evolution: Update rules after each Plan→Agent cycle with new patterns and best practices.
@@ -103,6 +109,8 @@ terminal_timeout_guidelines:
   - Test execution: Unit tests should complete in < 10 seconds; integration tests < 60 seconds; cancel if exceeded
   - User notification: When canceling stalled commands, explain expected vs actual duration and next steps
   - Remediation: After timeout, identify root cause (slow tests, infinite loops, blocking I/O) and fix before retrying
+  - Long operations warning: npm install without cache can take 60+ seconds; npm prune after major dep cleanup can take 30+ seconds; always check package count difference
+  - Test execution after refactor: First test run after major deletions may be slower due to module resolution; subsequent runs should be fast
 
 advanced_patterns:
   - Client-side filtering: URL synchronization for bookmarkable states (if applicable).
@@ -199,6 +207,26 @@ version_control:
   - Session-driven updates: Review each development session and update rules with new optimizations.
   - Advanced practices: Add advanced_patterns section for complex implementation strategies.
   - Cycle closeout: Formal post-cycle review process to maintain standards evolution.
+
+large_scale_refactoring:
+  - Pre-refactor checklist: Full test suite passing; all tests have timeouts; clear rollback plan.
+  - Incremental approach: Test after each major subsection (e.g., every 10-20 file deletions).
+  - Dependency cleanup first: Remove unused deps before removing code to avoid carrying dead weight.
+  - Feature deletion order: Tests → Code → Dependencies → Documentation (reverse of creation).
+  - Version bumping: Major version for breaking changes; document all removals in BREAKING CHANGE.
+  - Fixture validation: Grep for fixture references before deletion; update tests first.
+  - Import path verification: After TypeScript compilation, verify test imports from dist/.
+  - Commit granularity: One logical change per commit; easier rollback and review.
+  - Documentation sync: Update docs immediately after removing features, not at end.
+
+optimization_workflow:
+  - Phase planning: Break large changes into 5-7 phases max; each phase should be independently testable.
+  - Phase boundaries: Test, commit, and push after each phase completion; tag major milestones.
+  - Rollback readiness: Each phase should be independently revertable without breaking functionality.
+  - Dependency timing: Clean up unused dependencies in first phase, not last.
+  - Documentation timing: Update user-facing docs during relevant phase, not deferred to end.
+  - Test suite health: Maintain passing tests throughout; never proceed with failing tests.
+  - Incremental validation: Build and test after every major change (10-20 files or key feature).
 
 cycle_closeout:
   - Quick Review: Before merging, verify:
