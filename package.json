@@ -1,7 +1,10 @@
 {
   "name": "devenv-template",
-  "version": "1.0.0",
-  "description": "Development environment template for Cursor IDE Shopify theme projects",
+  "version": "2.0.0",
+  "description": "Ship quality code faster - Development environment for indie developers & solo founders",
+  "bin": {
+    "devenv-init": "./scripts/init.js"
+  },
   "scripts": {
     "setup:worktree": "npm ci --no-audit --no-fund && npm run tools:verify",
     "tools:verify": "node scripts/verify-tools.js",
@@ -14,7 +17,8 @@
     "test:fast": "node --test tests/unit/**/*.test.js",
     "test:slow": "node --test tests/integration/**/*.test.js",
     "test:watch": "node --test --watch tests/**/*.test.js",
-    "agent:init": "node scripts/agent/cli.js",
+    "agent:init": "node scripts/agent/cli-simple.js",
+    "agent:init:advanced": "node scripts/agent/cli.js",
     "agent:apply": "node scripts/agent/apply.js",
     "agent:validate": "node scripts/agent/validate.js",
     "agent:questions": "node scripts/agent/questionnaire.js",
