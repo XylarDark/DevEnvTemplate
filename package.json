@@ -6,8 +6,6 @@
     "devenv-init": "./scripts/init.js"
   },
   "scripts": {
-    "setup:worktree": "npm ci --no-audit --no-fund && npm run tools:verify",
-    "tools:verify": "node scripts/verify-tools.js",
     "build": "tsc --build",
     "build:watch": "tsc --build --watch",
     "prebuild": "tsc --noEmit",
@@ -19,25 +17,12 @@
     "test:watch": "node --test --watch tests/**/*.test.js",
     "agent:init": "node scripts/agent/cli-simple.js",
     "agent:init:advanced": "node scripts/agent/cli.js",
-    "agent:apply": "node scripts/agent/apply.js",
-    "agent:validate": "node scripts/agent/validate.js",
     "agent:questions": "node scripts/agent/questionnaire.js",
-    "agent:plan": "node scripts/agent/plan-only.js",
-    "agent:context": "node scripts/agent/context-assemble.js",
-    "agent:lint:context": "node scripts/agent/context-lint.js",
-    "agent:impact": "node scripts/agent/impact-analyze.js",
-    "agent:prompt": "node scripts/agent/prompt-build.js",
     "cleanup": "node scripts/cleanup/cli.js",
     "cleanup:dry-run": "node scripts/cleanup/cli.js --dry-run",
     "cleanup:apply": "node scripts/cleanup/cli.js --apply",
     "format": "prettier --write .",
-    "format:check": "prettier --check .",
-    "deadcode": "ts-prune --ignore \"test|spec|__tests__|node_modules\"",
-    "depcheck": "depcheck --ignores=\"husky,@commitlint/cli,@commitlint/config-conventional,lint-staged,ts-prune\"",
-    "changeset": "changeset",
-    "release": "changeset publish",
-    "sbom": "cyclonedx-npm --output-file sbom.json",
-    "prepare": "husky install"
+    "format:check": "prettier --check ."
   },
   "lint-staged-DISABLED": {
     "comment": "Disabled due to file loss issues during Phase 4c. Run 'npm run format' manually before commits.",

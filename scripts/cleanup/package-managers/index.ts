@@ -1,6 +1,9 @@
 /**
  * Package Manager Registry
  * Exports all package manager implementations
+ * 
+ * Focused on Node.js ecosystem (npm, yarn, pnpm) + Python (pip, poetry)
+ * for indie developers and solo founders.
  */
 
 import { BasePackageManager } from './base';
@@ -9,10 +12,6 @@ import { YarnManager } from './yarn';
 import { PnpmManager } from './pnpm';
 import { PipManager } from './pip';
 import { PoetryManager } from './poetry';
-import { GoManager } from './go';
-import { NugetManager } from './nuget';
-import { MavenManager } from './maven';
-import { GradleManager } from './gradle';
 
 /**
  * Get package manager instance by name
@@ -28,15 +27,11 @@ export function getPackageManager(
     pnpm: PnpmManager,
     pip: PipManager,
     poetry: PoetryManager,
-    go: GoManager,
-    nuget: NugetManager,
-    maven: MavenManager,
-    gradle: GradleManager,
   };
 
   const ManagerClass = managers[managerName.toLowerCase()];
   if (!ManagerClass) {
-    throw new Error(`Unknown package manager: ${managerName}`);
+    throw new Error(`Unknown package manager: ${managerName}. Supported: npm, yarn, pnpm, pip, poetry`);
   }
 
   return new ManagerClass(workingDir, dryRun);
@@ -49,9 +44,5 @@ export {
   PnpmManager,
   PipManager,
   PoetryManager,
-  GoManager,
-  NugetManager,
-  MavenManager,
-  GradleManager,
 };
 
