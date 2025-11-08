@@ -103,47 +103,19 @@ describe('Cleanup Workflow Integration', () => {
     });
   });
 
-  describe('Python Project Cleanup', () => {
-    test('should clean Python project successfully', async () => {
-      const tempDir = await createTempFixture('python-project');
-      tempDirs.push(tempDir);
-      
-      const { report, exitCode } = await executeCleanup({
-        workingDir: tempDir,
-        dryRun: false,
-        configPath: 'config/cleanup.config.yaml'
-      });
-      
-      assert.strictEqual(exitCode, 0, 'Should exit with code 0');
-      assert.ok(report, 'Should return report');
-    });
-
-    test('should remove template-only blocks from Python files', async () => {
-      const tempDir = await createTempFixture('python-project');
-      tempDirs.push(tempDir);
-      
-      // Read original content
-      const originalContent = await readFile(tempDir, 'src/main.py');
-      assert.ok(originalContent.includes('TEMPLATE-ONLY:START'), 'Original should have template markers');
-      
-      // Run cleanup
-      await executeCleanup({
-        workingDir: tempDir,
-        dryRun: false,
-        configPath: 'config/cleanup.config.yaml'
-      });
-      
-      // Read cleaned content
-      const cleanedContent = await readFile(tempDir, 'src/main.py');
-      assert.ok(!cleanedContent.includes('TEMPLATE-ONLY:START'), 'Cleaned should not have template markers');
-      assert.ok(!cleanedContent.includes('template_only_function'), 'Cleaned should not have template function');
-    });
-  });
+  // Python project tests removed - focusing on Node.js for indie developers
+  // See Phase 4 optimization: removed python-project fixture
 
   describe('Already Clean Project', () => {
     test('should not modify clean project', async () => {
       const tempDir = await createTempFixture('already-clean-project');
       tempDirs.push(tempDir);
+      
+      // Copy config from basic-node-project for testing
+      const basicConfigPath = path.join(__dirname, '..', 'fixtures', 'basic-node-project', 'config', 'cleanup.config.yaml');
+      const tempConfigDir = path.join(tempDir, 'config');
+      await fs.mkdir(tempConfigDir, { recursive: true });
+      await fs.copyFile(basicConfigPath, path.join(tempConfigDir, 'cleanup.config.yaml'));
       
       // Read original content
       const originalContent = await readFile(tempDir, 'src/index.js');
@@ -152,7 +124,7 @@ describe('Cleanup Workflow Integration', () => {
       const { report } = await executeCleanup({
         workingDir: tempDir,
         dryRun: false,
-        configPath: '../basic-node-project/config/cleanup.config.yaml'
+        configPath: 'config/cleanup.config.yaml'
       });
       
       // Read content after cleanup
