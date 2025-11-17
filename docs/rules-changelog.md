@@ -12,6 +12,38 @@ This document tracks the evolution of `.projectrules` - the central governance f
 
 ---
 
+## 2025-11-17 - v3.0.x - Cross-Stack Practices & Tooling Guidelines
+
+### Highlights
+
+- **New Cross-Stack Practices**: Added technology-agnostic guidance for cross-platform development, library organization, and CLI design
+- **Patching Tool Guidelines**: Added best practices for AI-assisted code editing to improve reliability
+- **Platform Compatibility**: Enhanced focus on cross-platform shell utilities and Unicode handling
+
+### Changes
+
+- Added section 9: Cross-Stack Development Practices (shell utilities, library vs scripts, API surfaces, CLI layering, ASCII defaults)
+- Added section 10: AI-Assisted Development Tooling (patch tool best practices)
+- Updated section numbering throughout the document
+- Enhanced cross-platform compatibility guidance
+
+### Rationale
+
+Recent development cycles revealed common cross-stack issues: platform-specific shell commands failing on Windows, mixed library/script boundaries creating maintenance burdens, and unreliable patch operations. These additions capture lessons learned to improve development workflows and reduce platform-specific failures.
+
+### Impact
+
+- Improved cross-platform compatibility for new projects
+- Better separation of concerns between libraries and scripts
+- More reliable AI-assisted code editing
+- Reduced Unicode/encoding issues in automation
+
+### Files Changed
+
+- `docs/PROJECTRULES-UPDATE-v3.0.md`: Added sections 9 and 10 with new cross-stack practices
+
+---
+
 ## 2025-11-07 - v2.0 - Solo Developer Focus & Market Pivot
 
 ### Highlights

@@ -318,8 +318,39 @@ Defaults should avoid emoji and fancy formatting. If richer output is desired, a
 **Separate DevEnvTemplate checks from core CI until stable**  
 Keep Python tests, type checks, and basic linting as primary CI gates. Keep `npm run doctor` steps as non-blocking (`continue-on-error: true`) until they consistently pass in that specific project.
 
-**Use DevEnvTemplate primarily as a guide early on**  
+**Use DevEnvTemplate primarily as a guide early on**
 Interpret doctor output as recommendations, not absolute requirements, in early project phases. Only promote checks (e.g. doctor `--strict`) into required CI gates once they are reliable in that repo.
+
+### 9. Cross-Stack Development Practices
+
+**Avoid Unix-only shell utilities in cross-platform workflows**
+Do not use Unix-specific commands (`wc`, `sed`, `awk`, `grep`) in automation scripts or tooling that may run on Windows/PowerShell. Prefer language-native solutions (Python `len()`, `re.sub()`, etc.) or explicit PowerShell equivalents (`Get-Content`, `Select-String`).
+
+**Separate library modules from scripts and CLI entrypoints**
+Keep reusable logic in proper package modules that can be imported and tested. Use script files (in `scripts/`, `bin/`, etc.) as thin entrypoints that import from the main package. This maintains clean boundaries between library code and command-line tooling.
+
+**Keep public API surfaces small and intentional**
+Limit the package's public API to a carefully curated set of stable functions. Use `__all__` declarations and maintain an API reference document as the single source of truth for what is considered public. Avoid exposing internal utilities or one-off helpers that may change.
+
+**Build CLI commands as thin layers over tested core APIs**
+Each CLI subcommand should primarily call into tested library functions, not implement new calling conventions. Add CLI options incrementally and test each with `--help` and basic smoke tests before proceeding to the next subcommand.
+
+**Default to ASCII-safe output in automation contexts**
+Keep CLI, log messages, and machine-consumed output free of non-ASCII characters (emoji, superscripts, degree symbols, arrows). Reserve rich formatting for opt-in flags (e.g., `--rich` or `--pretty`) to avoid encoding issues in CI and log aggregation systems.
+
+### 10. AI-Assisted Development Tooling
+
+**Always re-read target files immediately before applying patches**
+File contents may have changed since the initial read. Always perform a fresh read of the target file immediately before constructing a patch to ensure context accuracy.
+
+**Use narrow, localized context for patch operations**
+Limit context blocks to the immediate surrounding lines (3-5 lines) rather than large sections of the file. This reduces sensitivity to unrelated changes and improves patch reliability.
+
+**Avoid multiple edits to the same region in a single session**
+Do not apply multiple patches that affect overlapping or adjacent lines. Complete one logical change, verify it works, then proceed to the next. Use separate patch operations for distinct changes.
+
+**Be cautious with markdown and structured text formatting**
+Headings, code blocks, and list items can be sensitive to whitespace changes. When patching documentation, verify that the patched content maintains proper markdown structure and formatting.
 
 ---
 

@@ -2448,7 +2448,7 @@ Next: Run 'npm run dev' to start developing!"
 
 ### Cross-Reference: Project Rules
 
-For additional guidance on platform-specific shell behavior, dependency management, and cross-stack development practices, see the **Cross-Stack Practices from Recent Projects** section in `docs/PROJECTRULES-UPDATE-v3.0.md`.
+For additional guidance on platform-specific shell behavior, dependency management, and cross-stack development practices, see sections **9. Cross-Stack Development Practices** and **10. AI-Assisted Development Tooling** in `docs/PROJECTRULES-UPDATE-v3.0.md`.
 
 ---
 
