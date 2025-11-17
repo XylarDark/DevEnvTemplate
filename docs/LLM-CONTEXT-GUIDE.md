@@ -2446,6 +2446,10 @@ Your Next.js project is ready to develop:
 Next: Run 'npm run dev' to start developing!"
 ```
 
+### Cross-Reference: Project Rules
+
+For additional guidance on platform-specific shell behavior, dependency management, and cross-stack development practices, see the **Cross-Stack Practices from Recent Projects** section in `docs/PROJECTRULES-UPDATE-v3.0.md`.
+
 ---
 
 **End of LLM Context Guide**

@@ -201,6 +201,123 @@ Follow the `optimization_workflow` section:
 
 ---
 
+## Cross-Stack Practices from Recent Projects
+
+### 1. Dependencies & Native Engines
+
+**Verify library identity before pinning**  
+Before adding any dependency (especially native/physics engines or domain-specific libraries), confirm it is the correct project by checking:
+- Official docs/homepage
+- In a shell: `import <pkg>; dir(<pkg>)` to confirm expected classes
+- Do not assume name similarity is sufficient
+
+**Avoid hard-pinning unverified versions**  
+Do not pin to versions that may not exist for your Python/platform (e.g. avoid `xyz==8.0.0` unless confirmed). Start with `>=` or unpinned versions until a working combination is verified in CI and local testing.
+
+**Treat heavy/native engines as optional extras**  
+Keep core `requirements.txt` limited to broadly available packages. Document native engines (PyChrono, physics libraries, etc.) under "Optional Dependencies" with explicit install commands (conda channels, platform constraints). Code must either:
+- Fail fast with clear error if engine is truly required, or
+- Provide simplified, pure-language fallback model that is covered by tests
+
+### 2. DevEnvTemplate Integration
+
+**Do not modify .devenv internals in project repos**  
+Treat `.devenv/` as a vendored tool; do not change its `package.json` scripts or compiled `dist/` paths to "fix" doctor. Only use documented commands: `npm run doctor`, `npm run cleanup`, `npm run agent:init`.
+
+**Follow the official build path**  
+After copying DevEnvTemplate into `.devenv`:
+- Run `npm install` then `npm run build`
+- If `doctor` fails due to missing built files (e.g. `stack-detector` in `dist`), debug against upstream DevEnvTemplate repo instead of patching locally
+
+**Do not gate core workflows on doctor until it passes once**  
+Use `doctor` as advisory in early stages. Only promote checks (e.g. doctor `--strict`) into required CI gates after a successful, repeatable run for that specific project.
+
+### 3. Shell & OS Compatibility (Windows PowerShell)
+
+**Avoid bash idioms in PowerShell**  
+Do not use:
+- `cmd1 && cmd2`
+- `echo -e "..."`  
+Use:
+- `cmd1; cmd2` for sequencing
+- `Write-Output` or `echo "..."` without `-e`
+
+**One logical command per automation step**  
+In DevEnvTemplate scripts or AI-driven tooling, avoid chaining multiple shell features in one call. Prefer `cd <dir>; <single command>` per invocation to avoid OS-specific parsing issues.
+
+### 4. Unicode & Encoding
+
+**Default to ASCII-safe output**  
+Avoid non-ASCII characters in:
+- CLI output (no emoji, superscripts, degree symbols)
+- Markdown templates used for automated reports  
+- Log messages and error strings
+Use ASCII equivalents:
+- `m/s^2` instead of `m/s²`
+- `deg` instead of `°`  
+- `->` or plain text instead of arrows
+
+**Assume Windows console defaults (cp1252)**  
+Only introduce UTF-8 text if files are explicitly opened with `encoding='utf-8'` and the environment/CI is configured to handle UTF-8.
+
+### 5. String & Syntax Hygiene (Python)
+
+**Never split string literals across lines without explicit `\n`**  
+Do not write:
+- `print("` on one line and `text")` on the next
+Always use:
+- `print("\nText")` or multiple `print(...)` calls
+
+**One statement per line**  
+Avoid multiple statements on a single line, especially in Python:
+- Bad: `print("Results:")    print(value)`
+- Good:
+```python
+print("Results:")
+print(value)
+```
+
+**Compile new Python files before integrating**  
+For any new or heavily edited module:
+- Run `python -m py_compile file.py` and fix all syntax errors before wiring into main flows, CI, or DevEnvTemplate scripts
+
+**Remove placeholder debug prints before merging**  
+Temporary lines like `print(".4f")` must be removed or replaced with meaningful output before commits.
+
+### 6. Modeling & Fallback Design
+
+**Prototype with pure-language models before engine binding**  
+Start with simple analytic/empirical models (e.g. physics equations in pure Python) that:
+- Are fully testable without native libraries
+- Have unit tests proving basic behavior
+- Can serve as fallbacks when heavy engines are unavailable
+
+**Make fallback behavior explicit and tested**  
+If a fallback mode exists (e.g., simplified physics without native engine):
+- Document it clearly in `README.md` and configuration comments
+- Add tests that explicitly validate fallback behavior (not just "no exception")
+
+### 7. CLI & UX Patterns
+
+**Build CLI incrementally and test each subcommand**  
+Add subcommands one at a time and test each:
+- `python cli.py subcommand --help`
+- `python cli.py subcommand --quiet` (smoke test)
+Only then add the next subcommand.
+
+**Keep default CLI output simple and ASCII**  
+Defaults should avoid emoji and fancy formatting. If richer output is desired, add an opt-in flag (e.g. `--rich`), not the default behavior.
+
+### 8. CI & DevEnvTemplate Usage
+
+**Separate DevEnvTemplate checks from core CI until stable**  
+Keep Python tests, type checks, and basic linting as primary CI gates. Keep `npm run doctor` steps as non-blocking (`continue-on-error: true`) until they consistently pass in that specific project.
+
+**Use DevEnvTemplate primarily as a guide early on**  
+Interpret doctor output as recommendations, not absolute requirements, in early project phases. Only promote checks (e.g. doctor `--strict`) into required CI gates once they are reliable in that repo.
+
+---
+
 ## Future Improvements
 
 These rules are now part of the continuous improvement cycle and will be updated based on:
