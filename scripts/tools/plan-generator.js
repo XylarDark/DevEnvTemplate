@@ -5,14 +5,18 @@
  * Maintains backward compatibility
  */
 
-const { PlanGenerator } = require('../../dist/.github/tools/plan-generator');
+const planGeneratorModule = require('../../dist/scripts/tools/plan-generator');
+const PlanGeneratorClass =
+  planGeneratorModule.PlanGenerator || planGeneratorModule.default || planGeneratorModule;
 
-// Re-export the compiled TypeScript class
-module.exports = PlanGenerator;
+// Re-export for both default and named imports
+module.exports = PlanGeneratorClass;
+module.exports.PlanGenerator = PlanGeneratorClass;
+module.exports.default = PlanGeneratorClass;
 
 // CLI execution
 if (require.main === module) {
-  const generator = new PlanGenerator();
+  const generator = new PlanGeneratorClass();
   generator.generate()
     .then(async (plan) => {
       console.log(plan);

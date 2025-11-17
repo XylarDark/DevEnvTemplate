@@ -24,10 +24,12 @@ describe('Gap Analyzer', () => {
   describe('TypeScript Analysis', () => {
     it('should detect missing TypeScript', async () => {
       const stackReport = {
-        technologies: [],
+        technologies: [{ name: 'Node.js' }],
         configurations: [],
         quality: { testing: false, security: false },
-        ci: { present: false }
+        ci: { present: false },
+        profiles: ['node'],
+        languageProfile: 'node'
       };
 
       await fs.writeFile(
@@ -44,10 +46,12 @@ describe('Gap Analyzer', () => {
 
     it('should detect TypeScript without config', async () => {
       const stackReport = {
-        technologies: [{ name: 'TypeScript' }],
+        technologies: [{ name: 'Node.js' }, { name: 'TypeScript' }],
         configurations: [],
         quality: { testing: false, security: false },
-        ci: { present: false }
+        ci: { present: false },
+        profiles: ['node'],
+        languageProfile: 'node'
       };
 
       await fs.writeFile(
@@ -63,10 +67,12 @@ describe('Gap Analyzer', () => {
 
     it('should detect TypeScript without strict mode', async () => {
       const stackReport = {
-        technologies: [{ name: 'TypeScript' }],
+        technologies: [{ name: 'Node.js' }, { name: 'TypeScript' }],
         configurations: [{ type: 'typescript', strict: false }],
         quality: { testing: false, security: false },
-        ci: { present: false }
+        ci: { present: false },
+        profiles: ['node'],
+        languageProfile: 'node'
       };
 
       await fs.writeFile(
@@ -85,10 +91,12 @@ describe('Gap Analyzer', () => {
   describe('Linting Analysis', () => {
     it('should detect missing ESLint', async () => {
       const stackReport = {
-        technologies: [],
+        technologies: [{ name: 'Node.js' }],
         configurations: [],
         quality: { testing: false, security: false },
-        ci: { present: false }
+        ci: { present: false },
+        profiles: ['node'],
+        languageProfile: 'node'
       };
 
       await fs.writeFile(
@@ -104,10 +112,12 @@ describe('Gap Analyzer', () => {
 
     it('should detect missing architectural boundaries', async () => {
       const stackReport = {
-        technologies: [{ name: 'ESLint' }],
+        technologies: [{ name: 'Node.js' }, { name: 'ESLint' }],
         configurations: [{ type: 'eslint', configFile: '.eslintrc.json' }],
         quality: { testing: false, security: false },
-        ci: { present: false }
+        ci: { present: false },
+        profiles: ['node'],
+        languageProfile: 'node'
       };
 
       await fs.writeFile(
@@ -184,10 +194,12 @@ describe('Gap Analyzer', () => {
 
     it('should detect missing CSP for Next.js projects', async () => {
       const stackReport = {
-        technologies: [],
+        technologies: [{ name: 'Node.js' }, { name: 'Next.js' }],
         configurations: [{ type: 'nextjs' }],
         quality: { testing: false, security: false },
-        ci: { present: false }
+        ci: { present: false },
+        profiles: ['node'],
+        languageProfile: 'node'
       };
 
       await fs.writeFile(
@@ -397,6 +409,39 @@ describe('Gap Analyzer', () => {
       );
 
       assert.strictEqual(savedReport, report);
+    });
+  });
+
+  describe('Language-aware recommendations', () => {
+    it('should skip TypeScript/ESLint gaps for python-only stacks', async () => {
+      const stackReport = {
+        technologies: [{ name: 'Python' }, { name: 'Mypy' }],
+        configurations: [],
+        quality: { testing: true, security: false, linting: false },
+        ci: { present: true, type: 'github-actions' },
+        profiles: ['python'],
+        primaryProfile: 'python',
+        languageProfile: 'python',
+        manifest: {
+          technologies: ['python', 'pytorch', 'numpy'],
+          packageManager: 'pip'
+        }
+      };
+
+      await fs.writeFile(
+        path.join(testRoot, '.devenv', 'stack-report.json'),
+        JSON.stringify(stackReport)
+      );
+
+      const analyzer = new GapAnalyzer({ rootDir: testRoot });
+      const report = await analyzer.analyze();
+
+      assert.ok(!report.includes('TypeScript Not Configured'), 'should skip TS gap');
+      assert.ok(!report.includes('ESLint Not Configured'), 'should skip ESLint gap');
+      assert.ok(
+        report.includes('Secrets Handling Not Detected'),
+        'should include python security guidance'
+      );
     });
   });
 });

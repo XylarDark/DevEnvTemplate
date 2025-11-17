@@ -6,11 +6,13 @@
  * This wrapper provides backward compatibility by importing the compiled TypeScript version.
  */
 
-const GapAnalyzer = require('../../dist/.github/tools/gap-analyzer').default;
+const gapAnalyzerModule = require('../../dist/scripts/tools/gap-analyzer');
+const GapAnalyzerClass =
+  gapAnalyzerModule.GapAnalyzer || gapAnalyzerModule.default || gapAnalyzerModule;
 
 // Run the analyzer if called directly
 if (require.main === module) {
-  const analyzer = new GapAnalyzer();
+  const analyzer = new GapAnalyzerClass();
   analyzer.analyze()
     .then(async report => {
       console.log(report);
@@ -22,4 +24,6 @@ if (require.main === module) {
     });
 }
 
-module.exports = GapAnalyzer;
+module.exports = GapAnalyzerClass;
+module.exports.GapAnalyzer = GapAnalyzerClass;
+module.exports.default = GapAnalyzerClass;

@@ -10,7 +10,8 @@
 
 const { describe, test } = require('node:test');
 const assert = require('node:assert');
-const StackDetector = require('../../scripts/tools/stack-detector');
+const path = require('node:path');
+const StackDetector = require('../../dist/scripts/tools/stack-detector');
 
 describe('StackDetector', () => {
   describe('Initialization', () => {
@@ -173,6 +174,20 @@ describe('StackDetector', () => {
       });
       
       assert.strictEqual(detector.stack.technologies[0].confidence, 'low', 'Should have low confidence');
+    });
+  });
+
+  describe('Language profile detection', () => {
+    test('should derive python-only profile from manifest and pyproject', async () => {
+      const fixtureDir = path.join(__dirname, '..', 'fixtures', 'python-sim-project');
+      const detector = new StackDetector({ rootDir: fixtureDir, quiet: true });
+
+      const stack = await detector.detect();
+
+      assert.strictEqual(stack.languageProfile, 'python');
+      assert.ok(stack.profiles.includes('python'), 'should include python profile');
+      assert.ok(!stack.profiles.includes('node'), 'should not include node profile');
+      assert.ok(stack.technologies.some(tech => tech.name === 'Mypy'), 'should detect mypy from pyproject');
     });
   });
 });

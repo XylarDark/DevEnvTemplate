@@ -30,6 +30,8 @@ export interface StackReport {
   };
   profiles?: string[];
   primaryProfile?: string;
+  languageProfile?: string;
+  manifest?: Record<string, unknown>;
   [key: string]: any;
 }
 

@@ -427,6 +427,10 @@ Start with high-priority gaps first:
 
 Low-priority gaps can wait.
 
+### Language-aware recommendations
+
+DevEnvTemplate now records a `languageProfile` in `.devenv/stack-report.json` (for example `node`, `python`, or `python+node`). The doctor and gap analyzer read this profile before emitting tooling recommendations, so Python-only stacks no longer see TypeScript or ESLint gaps, while Node stacks still do. Mixed projects produce separate sections for each profile.
+
 ### "Deployment failed"
 
 Check deployment platform docs:

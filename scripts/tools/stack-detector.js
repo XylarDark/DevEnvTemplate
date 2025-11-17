@@ -17,10 +17,31 @@ const quietMode = jsonOutput || args.includes('--quiet');
 
 const logger = createLogger({ context: 'stack-detector' });
 
+const TECHNOLOGY_ALIASES = {
+  python: 'Python',
+  'python runtime': 'Python Runtime',
+  pytorch: 'PyTorch',
+  pychrono: 'PyChrono',
+  numpy: 'NumPy',
+  scipy: 'SciPy',
+  pandas: 'Pandas',
+  'scikit-learn': 'scikit-learn',
+  sklearn: 'scikit-learn',
+  matplotlib: 'Matplotlib',
+  pytest: 'Pytest',
+  black: 'Black',
+  ruff: 'Ruff',
+  mypy: 'Mypy',
+  fastapi: 'FastAPI',
+  django: 'Django',
+  flask: 'Flask'
+};
+
 class StackDetector {
   constructor(options = {}) {
     this.rootDir = options.rootDir || process.cwd();
     this.quiet = !!options.quiet;
+    this.projectManifest = null;
     this.pyprojectContent = null;
     this.requirementsContent = null;
     this.stack = {
@@ -56,7 +77,9 @@ class StackDetector {
         type: null
       },
       profiles: [],
-      primaryProfile: null
+      primaryProfile: null,
+      languageProfile: 'agnostic',
+      manifest: null
     };
   }
 
@@ -65,6 +88,7 @@ class StackDetector {
       logger.info('🔍 Analyzing repository stack...');
     }
 
+    await this.loadProjectManifest();
     // Detect package managers and frameworks
     await this.detectPackageJson();
     await this.detectScripts();
@@ -81,6 +105,21 @@ class StackDetector {
     this.assignProfiles();
 
     return this.stack;
+  }
+
+  async loadProjectManifest() {
+    const manifestPath = path.join(this.rootDir, 'project.manifest.json');
+    try {
+      const manifest = await readJsonFile(manifestPath);
+      this.projectManifest = manifest;
+      this.stack.manifest = manifest;
+      this.applyManifestTechnologies();
+    } catch (error) {
+      if (error.code !== 'ENOENT') {
+        throw error;
+      }
+      this.projectManifest = null;
+    }
   }
 
   async detectPackageJson() {
@@ -280,6 +319,7 @@ class StackDetector {
       const pyprojectToml = await fs.readFile(path.join(this.rootDir, 'pyproject.toml'), 'utf8');
       this.pyprojectContent = pyprojectToml;
       const tomlData = this.parseTOML(pyprojectToml);
+      const pyprojectLower = pyprojectToml.toLowerCase();
 
       this.addTechnology('Python', {
         version: tomlData.tool?.poetry?.version || 'detected',
@@ -358,6 +398,14 @@ class StackDetector {
             source: 'pyproject.toml'
           });
         }
+      }
+
+      if (pyprojectLower.includes('[tool.mypy') || pyprojectLower.includes('mypy>=')) {
+        this.addTechnology('Mypy', {
+          version: 'detected',
+          confidence: 'medium',
+          source: 'pyproject.toml'
+        });
       }
 
     } catch (error) {
@@ -1155,14 +1203,31 @@ class StackDetector {
   assignProfiles() {
     const profiles = new Set();
     const techNames = this.stack.technologies.map(t => t.name.toLowerCase());
+    const manifestTechs = Array.isArray(this.projectManifest?.technologies)
+      ? this.projectManifest.technologies.map(tech => String(tech).toLowerCase())
+      : [];
+    const packageManager = (this.projectManifest?.packageManager || '').toLowerCase();
 
-    const nodeSignals = ['node.js', 'react', 'next.js', 'vite', 'express', 'typescript', 'javascript', 'svelte'];
-    const pythonSignals = ['python', 'fastapi', 'django', 'flask', 'pytest', 'black', 'ruff', 'mypy'];
+    const nodeSignals = ['node.js', 'node', 'react', 'next.js', 'nextjs', 'vite', 'express', 'typescript', 'javascript', 'svelte'];
+    const pythonSignals = ['python', 'fastapi', 'django', 'flask', 'pytest', 'black', 'ruff', 'mypy', 'pytorch', 'pychrono', 'numpy', 'scipy', 'pandas'];
 
-    if (techNames.some(name => nodeSignals.includes(name))) {
+    const nodePackageManagers = ['npm', 'pnpm', 'yarn', 'bun'];
+    const pythonPackageManagers = ['pip', 'pipenv', 'poetry', 'uv'];
+
+    const hasNodeSignals =
+      techNames.some(name => nodeSignals.includes(name)) ||
+      manifestTechs.some(name => nodeSignals.includes(name)) ||
+      nodePackageManagers.includes(packageManager);
+
+    const hasPythonSignals =
+      techNames.some(name => pythonSignals.includes(name)) ||
+      manifestTechs.some(name => pythonSignals.includes(name)) ||
+      pythonPackageManagers.includes(packageManager);
+
+    if (hasNodeSignals) {
       profiles.add('node');
     }
-    if (techNames.some(name => pythonSignals.includes(name))) {
+    if (hasPythonSignals) {
       profiles.add('python');
     }
 
@@ -1172,6 +1237,15 @@ class StackDetector {
 
     this.stack.profiles = Array.from(profiles);
     this.stack.primaryProfile = this.stack.profiles[0];
+    if (profiles.has('node') && profiles.has('python')) {
+      this.stack.languageProfile = 'python+node';
+    } else if (profiles.has('node')) {
+      this.stack.languageProfile = 'node';
+    } else if (profiles.has('python')) {
+      this.stack.languageProfile = 'python';
+    } else {
+      this.stack.languageProfile = 'agnostic';
+    }
   }
 
   hasTechnology(name) {
@@ -1180,13 +1254,68 @@ class StackDetector {
   }
 
   addTechnology(name, meta = {}) {
-    if (this.hasTechnology(name)) {
+    const normalizedName = this.formatTechnologyName(name);
+    const needle = normalizedName.toLowerCase();
+    const existingIndex = this.stack.technologies.findIndex(
+      t => t.name.toLowerCase() === needle
+    );
+
+    if (existingIndex !== -1) {
+      const existing = this.stack.technologies[existingIndex];
+      const isManifestPlaceholder = existing.source === 'project.manifest.json';
+      const isStrongerSource =
+        meta.source && meta.source !== existing.source;
+
+      if (isManifestPlaceholder && isStrongerSource) {
+        this.stack.technologies[existingIndex] = {
+          ...existing,
+          ...meta,
+          name: normalizedName
+        };
+      }
       return;
     }
     this.stack.technologies.push({
-      name,
+      name: normalizedName,
       ...meta
     });
+  }
+
+  applyManifestTechnologies() {
+    if (!this.projectManifest?.technologies) {
+      return;
+    }
+
+    for (const tech of this.projectManifest.technologies) {
+      const formatted = this.formatTechnologyName(String(tech));
+      if (!formatted) {
+        continue;
+      }
+      this.addTechnology(formatted, {
+        version: 'manifest',
+        confidence: 'medium',
+        source: 'project.manifest.json'
+      });
+    }
+  }
+
+  formatTechnologyName(value) {
+    if (!value) {
+      return '';
+    }
+    const trimmed = String(value).trim();
+    if (!trimmed) {
+      return '';
+    }
+    const lower = trimmed.toLowerCase();
+    if (TECHNOLOGY_ALIASES[lower]) {
+      return TECHNOLOGY_ALIASES[lower];
+    }
+    return trimmed
+      .split(/[-_\s]+/)
+      .filter(Boolean)
+      .map(segment => segment.charAt(0).toUpperCase() + segment.slice(1))
+      .join(' ');
   }
 }
 

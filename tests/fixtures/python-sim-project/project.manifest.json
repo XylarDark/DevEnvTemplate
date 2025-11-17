@@ -1,0 +1,12 @@
+{
+  "name": "python-sim-project",
+  "productType": "simulation-software",
+  "technologies": ["python", "pytorch", "numpy", "scipy"],
+  "features": ["physics-simulation", "ai-optimization"],
+  "packageManager": "pip",
+  "deployment": {
+    "target": "local-development",
+    "platforms": ["desktop"]
+  }
+}
+

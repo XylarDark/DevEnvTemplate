@@ -16,12 +16,17 @@ import { createLogger } from '../../scripts/utils/logger';
 import type { Gap, StackReport, GapReport, GapAnalysisOptions } from '../types/gaps';
 
 const logger = createLogger({ context: 'gap-analyzer' });
+const NODE_TECH_HINTS = ['node.js', 'node', 'react', 'next.js', 'nextjs', 'vite', 'express', 'typescript', 'javascript', 'svelte'];
+const PYTHON_TECH_HINTS = ['python', 'fastapi', 'django', 'flask', 'pytest', 'black', 'ruff', 'mypy', 'pytorch', 'pychrono', 'numpy', 'scipy', 'pandas'];
+const NODE_PACKAGE_MANAGERS = ['npm', 'pnpm', 'yarn', 'bun'];
+const PYTHON_PACKAGE_MANAGERS = ['pip', 'pipenv', 'poetry', 'uv'];
 
 class GapAnalyzer {
   private rootDir: string;
   private stack: StackReport | null = null;
   private gaps: Gap[] = [];
   private profiles: Set<string> = new Set();
+  private languageProfile: string = 'agnostic';
 
   constructor(options: GapAnalysisOptions = {}) {
     this.rootDir = options.rootDir || process.cwd();
@@ -39,6 +44,14 @@ class GapAnalyzer {
         ? this.stack.profiles
         : this.detectProfilesFromStack();
       this.profiles = new Set(inferredProfiles);
+      this.applyManifestProfiles();
+      const stackLanguageProfile = (this.stack as any).languageProfile;
+      if (typeof stackLanguageProfile === 'string' && stackLanguageProfile.length > 0) {
+        this.languageProfile = stackLanguageProfile;
+        this.syncProfilesWithLanguageProfile();
+      } else {
+        this.languageProfile = this.computeLanguageProfile();
+      }
       logger.info('Stack report loaded successfully');
     } catch (error) {
       logger.error('Stack report not found. Run stack-detector first.');
@@ -285,11 +298,11 @@ class GapAnalyzer {
           category: 'security',
           severity: 'high',
           title: 'Security Measures Not Detected',
-          description: 'Basic security practices like environment variable management and CSP are missing.',
+          description: 'Basic security practices like environment variable management and dependency scanning are missing.',
           impact: 'Potential security vulnerabilities and data exposure',
-          recommendation: 'Add .env files, implement CSP headers, and security scanning',
+          recommendation: 'Add .env files, enable dependency scanning (Dependabot/pip-audit), and enforce secret management guardrails in CI',
           effort: 'medium',
-          files: ['.env.example', 'next.config.js', '.github/workflows/security.yml']
+          files: ['.env.example', '.github/workflows/security.yml']
         });
       }
     }
@@ -698,13 +711,11 @@ echo "npm run lint && npm run format:check" > .husky/pre-commit`
   private detectProfilesFromStack(): string[] {
     const names = this.stack?.technologies?.map(t => t.name.toLowerCase()) || [];
     const profiles: string[] = [];
-    const nodeSignals = ['node.js', 'react', 'next.js', 'vite', 'express', 'typescript', 'javascript', 'svelte'];
-    const pythonSignals = ['python', 'fastapi', 'django', 'flask', 'pytest', 'black', 'ruff', 'mypy'];
 
-    if (names.some(name => nodeSignals.includes(name))) {
+    if (names.some(name => NODE_TECH_HINTS.includes(name))) {
       profiles.push('node');
     }
-    if (names.some(name => pythonSignals.includes(name))) {
+    if (names.some(name => PYTHON_TECH_HINTS.includes(name))) {
       profiles.push('python');
     }
 
@@ -715,7 +726,61 @@ echo "npm run lint && npm run format:check" > .husky/pre-commit`
     return profiles;
   }
 
+  private applyManifestProfiles(): void {
+    const manifest = (this.stack as any)?.manifest;
+    if (!manifest) {
+      return;
+    }
+
+    const manifestTechs = Array.isArray(manifest.technologies)
+      ? manifest.technologies.map((tech: string) => tech.toLowerCase())
+      : [];
+    const packageManager = (manifest.packageManager || '').toLowerCase();
+
+    if (
+      manifestTechs.some((tech: string) => NODE_TECH_HINTS.includes(tech)) ||
+      NODE_PACKAGE_MANAGERS.includes(packageManager)
+    ) {
+      this.profiles.add('node');
+    }
+
+    if (
+      manifestTechs.some((tech: string) => PYTHON_TECH_HINTS.includes(tech)) ||
+      PYTHON_PACKAGE_MANAGERS.includes(packageManager)
+    ) {
+      this.profiles.add('python');
+    }
+  }
+
+  private computeLanguageProfile(): string {
+    if (this.profiles.has('node') && this.profiles.has('python')) {
+      return 'python+node';
+    }
+    if (this.profiles.has('node')) {
+      return 'node';
+    }
+    if (this.profiles.has('python')) {
+      return 'python';
+    }
+    return 'agnostic';
+  }
+
+  private syncProfilesWithLanguageProfile(): void {
+    if (this.languageProfile.includes('node')) {
+      this.profiles.add('node');
+    }
+    if (this.languageProfile.includes('python')) {
+      this.profiles.add('python');
+    }
+  }
+
   private hasProfile(profile: string): boolean {
+    if (this.languageProfile === 'python+node') {
+      return profile === 'python' || profile === 'node';
+    }
+    if (this.languageProfile === profile) {
+      return true;
+    }
     return this.profiles.has(profile);
   }
 
