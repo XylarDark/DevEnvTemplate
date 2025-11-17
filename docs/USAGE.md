@@ -345,6 +345,21 @@ node .github/tools/plan-generator.js
 
 **Note**: These run automatically in CI. You usually don't need to run them locally.
 
+### Running GitHub Actions Manually
+
+The default `CI` workflow is now manual-only. Trigger it when you need a full validation run:
+
+1. Open **GitHub → Actions → CI**  
+2. Click **Run workflow**, pick the branch, and confirm
+
+Or via GitHub CLI:
+
+```bash
+gh workflow run CI --ref main
+```
+
+You will only receive email notifications for the runs you start manually.
+
 ---
 
 ## Configuration
