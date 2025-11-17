@@ -6,6 +6,7 @@
     "devenv-init": "./scripts/init.js"
   },
   "scripts": {
+    "postinstall": "node scripts/tools/ensure-gitignore.js",
     "build": "tsc --build",
     "postbuild": "node scripts/tools/copy-static.js",
     "build:watch": "tsc --build --watch",

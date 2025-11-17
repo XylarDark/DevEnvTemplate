@@ -25,6 +25,7 @@ npm run build        # compile doctor/stack-detector/gap-analyzer
 ```
 
 This populates `dist/` so that `npm run doctor` works from CI and terminals.
+> **Auto Gitignore:** During `npm install`, DevEnvTemplate now appends `.devenv/` to your parent `.gitignore` if it isn’t already there, so you don’t accidentally commit the embedded tooling repo.
 
 ## 3. Capture Project Intent (Optional, Recommended)
 
