@@ -229,8 +229,13 @@ After copying DevEnvTemplate into `.devenv`:
 - Run `npm install` then `npm run build`
 - If `doctor` fails due to missing built files (e.g. `stack-detector` in `dist`), debug against upstream DevEnvTemplate repo instead of patching locally
 
-**Do not gate core workflows on doctor until it passes once**  
+**Do not gate core workflows on doctor until it passes once**
 Use `doctor` as advisory in early stages. Only promote checks (e.g. doctor `--strict`) into required CI gates after a successful, repeatable run for that specific project.
+
+**Keep commit messages project-neutral**
+When committing changes to DevEnvTemplate, do not reference specific projects that use or contributed to the changes. Commit messages should be technology-agnostic and focus on the general improvements, not their origin. For example:
+- ❌ "add cross-stack practices from lunar mining project"
+- ✅ "docs: add cross-stack practices section to project rules"
 
 ### 3. Shell & OS Compatibility (Windows PowerShell)
 
