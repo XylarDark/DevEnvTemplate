@@ -338,6 +338,9 @@ Each CLI subcommand should primarily call into tested library functions, not imp
 **Default to ASCII-safe output in automation contexts**
 Keep CLI, log messages, and machine-consumed output free of non-ASCII characters (emoji, superscripts, degree symbols, arrows). Reserve rich formatting for opt-in flags (e.g., `--rich` or `--pretty`) to avoid encoding issues in CI and log aggregation systems.
 
+**Ignore generated doctor artifacts in VCS**
+Doctor writes `gaps-report.md`, `stack-report.json`, `health-report.json`, and similar files inside `.devenv/`. Add explicit entries to your project’s `.gitignore` so these reports don’t pollute diffs while keeping the `.devenv` repository itself versioned.
+
 ### 10. AI-Assisted Development Tooling
 
 **Always re-read target files immediately before applying patches**
