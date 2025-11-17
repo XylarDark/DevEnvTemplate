@@ -11,11 +11,16 @@ const fs = require('fs').promises;
 const path = require('path');
 const { createLogger } = require('../../scripts/utils/logger');
 
+const args = process.argv.slice(2);
+const jsonOutput = args.includes('--json');
+const quietMode = jsonOutput || args.includes('--quiet');
+
 const logger = createLogger({ context: 'stack-detector' });
 
 class StackDetector {
-  constructor() {
-    this.rootDir = process.cwd();
+  constructor(options = {}) {
+    this.rootDir = options.rootDir || process.cwd();
+    this.quiet = !!options.quiet;
     this.stack = {
       technologies: [],
       configurations: [],
@@ -52,7 +57,9 @@ class StackDetector {
   }
 
   async detect() {
-    logger.info('🔍 Analyzing repository stack...');
+    if (!this.quiet) {
+      logger.info('🔍 Analyzing repository stack...');
+    }
 
     // Detect package managers and frameworks
     await this.detectPackageJson();
@@ -72,8 +79,9 @@ class StackDetector {
   }
 
   async detectPackageJson() {
+    const packagePath = path.join(this.rootDir, 'package.json');
     try {
-      const packageJson = JSON.parse(await fs.readFile(path.join(this.rootDir, 'package.json'), 'utf8'));
+      const packageJson = await readJsonFile(packagePath);
 
       // Node.js version
       if (packageJson.engines?.node) {
@@ -226,7 +234,9 @@ class StackDetector {
       }
 
     } catch (error) {
-      // No package.json found
+      if (error.code !== 'ENOENT') {
+        throw error;
+      }
     }
 
     // Detect Python
@@ -244,8 +254,7 @@ class StackDetector {
 
   async detectTypeScript() {
     try {
-      const tsconfig = await fs.readFile(path.join(this.rootDir, 'tsconfig.json'), 'utf8');
-      const config = JSON.parse(tsconfig);
+      const config = await readJsonFile(path.join(this.rootDir, 'tsconfig.json'));
 
       this.stack.quality.typescript = true;
       this.stack.configurations.push({
@@ -254,7 +263,9 @@ class StackDetector {
         target: config.compilerOptions?.target || 'unknown'
       });
     } catch (error) {
-      // No tsconfig.json
+      if (error.code !== 'ENOENT') {
+        throw error;
+      }
     }
   }
 
@@ -654,7 +665,7 @@ class StackDetector {
 
   async detectScripts() {
     try {
-      const packageJson = JSON.parse(await fs.readFile(path.join(this.rootDir, 'package.json'), 'utf8'));
+      const packageJson = await readJsonFile(path.join(this.rootDir, 'package.json'));
       const scripts = packageJson.scripts || {};
       
       // Essential scripts we look for
@@ -672,7 +683,9 @@ class StackDetector {
       
       this.stack.scripts = { detected, missing };
     } catch (error) {
-      // No package.json
+      if (error.code !== 'ENOENT') {
+        throw error;
+      }
     }
   }
 
@@ -867,7 +880,7 @@ class StackDetector {
 
     // Check for package.json eslintConfig
     try {
-      const packageJson = JSON.parse(await fs.readFile(path.join(this.rootDir, 'package.json'), 'utf8'));
+      const packageJson = await readJsonFile(path.join(this.rootDir, 'package.json'));
       if (packageJson.eslintConfig) {
         this.stack.quality.linting = true;
         this.stack.configurations.push({
@@ -877,7 +890,9 @@ class StackDetector {
         lintConfigs.push('package.json (eslintConfig)');
       }
     } catch (error) {
-      // No package.json or no eslintConfig
+      if (error.code !== 'ENOENT') {
+        throw error;
+      }
     }
 
     this.stack.tooling.linting = {
@@ -921,7 +936,7 @@ class StackDetector {
 
     // Check for package.json prettier config
     try {
-      const packageJson = JSON.parse(await fs.readFile(path.join(this.rootDir, 'package.json'), 'utf8'));
+      const packageJson = await readJsonFile(path.join(this.rootDir, 'package.json'));
       if (packageJson.prettier) {
         this.stack.quality.formatting = true;
         this.stack.configurations.push({
@@ -931,7 +946,9 @@ class StackDetector {
         formatConfigs.push('package.json (prettier)');
       }
     } catch (error) {
-      // No package.json or no prettier config
+      if (error.code !== 'ENOENT') {
+        throw error;
+      }
     }
 
     this.stack.tooling.formatting = {
@@ -997,20 +1014,49 @@ class StackDetector {
     await fs.mkdir(devenvDir, { recursive: true });
     const reportPath = path.join(devenvDir, 'stack-report.json');
     await fs.writeFile(reportPath, JSON.stringify(report, null, 2), 'utf8');
-    logger.info(`Stack report saved to ${reportPath}`);
+    if (!this.quiet) {
+      logger.info(`Stack report saved to ${reportPath}`);
+    }
   }
 }
 
 // Run the detector
 if (require.main === module) {
-  const detector = new StackDetector();
+  const detector = new StackDetector({ quiet: quietMode });
   detector.detect().then(async (result) => {
-    logger.info(JSON.stringify(result, null, 2));
+    if (jsonOutput) {
+      process.stdout.write(JSON.stringify(result));
+    } else {
+      logger.info(JSON.stringify(result, null, 2));
+    }
     await detector.saveReport(result);
   }).catch(error => {
-    logger.error('Stack detection failed:', { error: error.message, stack: error.stack });
+    if (jsonOutput) {
+      process.stderr.write(
+        JSON.stringify({ error: 'Stack detection failed', message: error.message }) + '\n'
+      );
+    } else {
+      logger.error('Stack detection failed:', { error: error.message, stack: error.stack });
+    }
     process.exit(1);
   });
 }
 
 module.exports = StackDetector;
+
+async function readJsonFile(filePath) {
+  try {
+    const content = await fs.readFile(filePath, 'utf8');
+    return JSON.parse(content);
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      throw error;
+    }
+    if (error instanceof SyntaxError) {
+      const parseError = new Error(`Invalid JSON in ${filePath}: ${error.message}`);
+      parseError.code = 'JSON_PARSE_ERROR';
+      throw parseError;
+    }
+    throw error;
+  }
+}

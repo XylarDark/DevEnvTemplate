@@ -352,6 +352,8 @@ Do not apply multiple patches that affect overlapping or adjacent lines. Complet
 **Be cautious with markdown and structured text formatting**
 Headings, code blocks, and list items can be sensitive to whitespace changes. When patching documentation, verify that the patched content maintains proper markdown structure and formatting.
 
+📎 **Reference:** `docs/EMBEDDED-USAGE-ISSUES.md` captures current cross-stack issues and the guardrails we derived from them.
+
 ---
 
 ## Future Improvements

@@ -30,6 +30,21 @@ npm run doctor
 
 ## Stack Detection Issues
 
+### `Cannot find module '...stack-detector.js'`
+
+**Problem:** Running `npm run doctor` (or `node dist/scripts/tools/stack-detector.js`) fails with `Cannot find module '...stack-detector.js'`.
+
+**Cause:** The TypeScript build cleaned `dist/` and removed the prebuilt stack-detector helper.
+
+**Solution:**
+```bash
+# Rebuild (postbuild copies stack-detector into dist/)
+npm run build
+
+# Re-run doctor
+npm run doctor
+```
+
 ### No Technologies Detected
 
 **Problem:** Stack detector finds no technologies in your project.
@@ -57,6 +72,41 @@ node .github/tools/stack-detector.js
 cat package.json | grep dependencies
 
 # Manually specify in project.manifest.json if needed
+```
+
+### Doctor Inspects the Wrong Directory
+
+**Problem:** `npm run doctor` (inside `.devenv/`) scans the DevEnvTemplate checkout instead of your actual project.
+
+**Cause:** Running from a nested tools directory without telling the doctor where the real project root lives.
+
+**Solution:**
+```bash
+# In Windows PowerShell
+Set-Location .\my-project\.devenv
+npm run doctor                # auto-detects parent project
+npm run doctor -- --project-root ..   # or set manually
+
+# Or with env var (any shell)
+DEVENV_PROJECT_ROOT=../.. npm run doctor
+```
+
+## JSON Parse Errors
+
+### `Invalid JSON in package.json`
+
+**Problem:** Doctor exits with `Invalid JSON in <path>/package.json`.
+
+**Cause:** The target project's configuration file is malformed (extra commas, missing quotes, etc.).
+
+**Solution:**
+```bash
+# Validate JSON (Node 20+)
+node -e "JSON.parse(require('fs').readFileSync('package.json','utf8'))"
+
+# Fix formatting (remove trailing commas, ensure valid quotes)
+# Re-run doctor
+npm run doctor
 ```
 
 ## Gap Analysis Issues

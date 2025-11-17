@@ -10,7 +10,7 @@
  * - Shows health score
  */
 
-import { promises as fs } from 'fs';
+import { promises as fs, existsSync } from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
 
@@ -46,6 +46,7 @@ interface CliOptions {
   dryRun?: boolean;
   strict?: boolean;
   json?: boolean;
+  projectRoot?: string;
 }
 
 /**
@@ -56,9 +57,17 @@ async function runDoctor(options: CliOptions = {}) {
     console.log('🏥 DevEnvTemplate Health Check\n');
   }
 
-  const workingDir = process.cwd();
+  const currentDir = process.cwd();
+  const { projectRoot, autoDetected } = await resolveProjectRoot(currentDir, options.projectRoot);
+  if (autoDetected && !options.json) {
+    console.log(`ℹ️ Detected embedded DevEnvTemplate folder. Analyzing parent project: ${projectRoot}\n`);
+  }
+  if (projectRoot !== currentDir) {
+    process.chdir(projectRoot);
+  }
+  const workingDir = projectRoot;
   const reportDir = path.join(workingDir, '.devenv');
-  
+
   // Ensure .devenv directory exists
   await fs.mkdir(reportDir, { recursive: true });
 
@@ -68,24 +77,37 @@ async function runDoctor(options: CliOptions = {}) {
   }
 
   // Step 1: Run stack detector
-  console.log('🔍 Analyzing project stack...');
-  const stackDetectorPath = path.join(__dirname, '../tools/stack-detector.js');
+  if (!options.json) {
+    console.log('🔍 Analyzing project stack...');
+  }
+  const stackDetectorDistPath = path.join(__dirname, '../tools/stack-detector.js');
+  const stackDetectorSourcePath = path.join(__dirname, '../../../scripts/tools/stack-detector.js');
+  const stackDetectorPath = existsSync(stackDetectorDistPath)
+    ? stackDetectorDistPath
+    : existsSync(stackDetectorSourcePath)
+      ? stackDetectorSourcePath
+      : stackDetectorDistPath;
   let stackData: any;
   
   try {
-    const stackOutput = execSync(`node "${stackDetectorPath}"`, {
+    const stackOutput = execSync(`node "${stackDetectorPath}" --json`, {
       cwd: workingDir,
       encoding: 'utf8',
       stdio: ['pipe', 'pipe', 'pipe']
     });
     stackData = JSON.parse(stackOutput);
   } catch (error: any) {
-    console.error('❌ Failed to detect stack:', error.message);
+    const stderr = error?.stderr?.toString()?.trim();
+    const stdout = error?.stdout?.toString()?.trim();
+    const details = stderr || stdout || error.message;
+    console.error('❌ Failed to detect stack:', details);
     process.exit(1);
   }
 
   // Step 2: Run gap analyzer
-  console.log('🔬 Identifying gaps and issues...');
+  if (!options.json) {
+    console.log('🔬 Identifying gaps and issues...');
+  }
   const gapAnalyzerPath = path.join(__dirname, '../tools/gap-analyzer.js');
   let gapsReport: string;
   
@@ -105,7 +127,9 @@ async function runDoctor(options: CliOptions = {}) {
   }
 
   // Step 3: Parse gaps and calculate health score
-  console.log('📊 Calculating health score...\n');
+  if (!options.json) {
+    console.log('📊 Calculating health score...\n');
+  }
   const report = parseGapsReport(gapsReport);
 
   // Step 4: Display report
@@ -119,7 +143,9 @@ async function runDoctor(options: CliOptions = {}) {
   const reportPath = path.join(reportDir, 'health-report.json');
   await fs.writeFile(reportPath, JSON.stringify(report, null, 2));
   
-  console.log(`\n💾 Full report saved: ${path.relative(workingDir, reportPath)}`);
+  if (!options.json) {
+    console.log(`\n💾 Full report saved: ${path.relative(workingDir, reportPath)}`);
+  }
 
   // Step 6: Auto-fix if requested
   if (options.fix) {
@@ -538,15 +564,31 @@ function parseArgs(): CliOptions {
       case '--json':
         options.json = true;
         break;
+      case '--project-root':
+        if (args[i + 1]) {
+          options.projectRoot = args[i + 1];
+          i++;
+        } else {
+          console.error('❌ Missing value for --project-root');
+          process.exit(1);
+        }
+        break;
       case '--help':
       case '-h':
         printHelp();
         process.exit(0);
         break;
       default:
-        console.error(`❌ Unknown option: ${arg}`);
-        printHelp();
-        process.exit(1);
+        if (arg.startsWith('--project-root=')) {
+          options.projectRoot = arg.split('=')[1];
+        } else if (!arg.startsWith('-') && !options.projectRoot) {
+          // Positional project root (e.g., `npm run doctor -- ..`)
+          options.projectRoot = arg;
+        } else {
+          console.error(`❌ Unknown option: ${arg}`);
+          printHelp();
+          process.exit(1);
+        }
     }
   }
 
@@ -567,6 +609,7 @@ OPTIONS:
   --dry-run          Show what would be fixed without applying changes
   --strict           Exit with code 1 on any warnings (useful for CI)
   --json             Output results in JSON format
+  --project-root     Explicitly set the project root to analyze
   -h, --help         Show this help message
 
 EXAMPLES:
@@ -577,6 +620,7 @@ EXAMPLES:
   npm run doctor --dry-run                # Preview fixes
   npm run doctor --json                   # Machine-readable output
   npm run doctor --strict                 # Fail CI on any warnings
+  npm run doctor --project-root ..        # Run from .devenv folder
 
 WORKFLOW:
   1. Run 'npm run doctor' to see health score and issues
@@ -584,6 +628,32 @@ WORKFLOW:
   3. Review changes and test
   4. Add --no-install if you want to install dependencies manually
 `);
+}
+
+async function resolveProjectRoot(cwd: string, override?: string): Promise<{ projectRoot: string; autoDetected: boolean }> {
+  const envOverride = process.env.DEVENV_PROJECT_ROOT;
+  const requested = override || envOverride;
+  let candidate = requested ? path.resolve(cwd, requested) : cwd;
+
+  if (!requested && path.basename(candidate) === '.devenv') {
+    const parent = path.dirname(candidate);
+    if (parent && parent !== candidate) {
+      candidate = parent;
+      await ensurePathExists(candidate);
+      return { projectRoot: candidate, autoDetected: true };
+    }
+  }
+
+  await ensurePathExists(candidate);
+  return { projectRoot: candidate, autoDetected: false };
+}
+
+async function ensurePathExists(targetPath: string) {
+  try {
+    await fs.access(targetPath);
+  } catch {
+    throw new Error(`Project root not found: ${targetPath}`);
+  }
 }
 
 const options = parseArgs();

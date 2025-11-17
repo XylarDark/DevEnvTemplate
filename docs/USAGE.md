@@ -121,6 +121,37 @@ git add . && git commit -m "Add DevEnvTemplate" && git push
 
 **Result**: CI runs, detects your stack, shows quality gaps.
 
+> 💡 **Windows PowerShell**: replace chained commands (`&&`) with two lines:
+> `Set-Location .\your-project\.devenv` then `npm run doctor`.
+
+### Running DevEnvTemplate from `.devenv/`
+
+Once `.devenv/` exists, you can run the doctor directly from that folder and it will analyze the parent project automatically:
+
+```powershell
+# Windows PowerShell
+Set-Location C:\dev\your-project\.devenv
+npm run doctor              # auto-detects parent project
+
+# Explicit override (any shell)
+npm run doctor -- --project-root ..
+```
+
+```bash
+# macOS / Linux
+cd ~/dev/your-project/.devenv
+npm run doctor                    # auto-detects parent project
+
+# Or point anywhere:
+DEVENV_PROJECT_ROOT=../ ..
+npm run doctor -- --project-root ../other-project
+```
+
+The `--project-root` flag (or `DEVENV_PROJECT_ROOT` environment variable) is handy when:
+- `.devenv/` lives in a nested tools directory
+- You keep multiple DevEnvTemplate clones for different repos
+- You need to target a temporary scratch directory
+
 ---
 
 ### "I want to see what's wrong with my project"
