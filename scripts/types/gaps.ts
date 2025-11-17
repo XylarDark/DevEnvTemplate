@@ -28,6 +28,8 @@ export interface StackReport {
     type?: string;
     [key: string]: any;
   };
+  profiles?: string[];
+  primaryProfile?: string;
   [key: string]: any;
 }
 

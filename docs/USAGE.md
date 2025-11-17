@@ -22,6 +22,8 @@ This runs a comprehensive health check:
 ```
 🏥 DevEnvTemplate Health Check
 
+🧠 Stack profile: node
+
 🟢 Project Health: 75/100
 
 📊 Health Breakdown:
@@ -38,6 +40,14 @@ This runs a comprehensive health check:
    2. Enable TypeScript strict → 1 min
    3. Add ESLint config → 5 min
 ```
+
+Once `.devenv/stack-report.json` exists, the doctor prints the detected profile(s) up front. All subsequent recommendations switch to stack-specific quick wins:
+
+| Stack profile | Default quick wins |
+|---------------|--------------------|
+| `node` | Vitest + ESLint flat config + Playwright + Dependabot/lockfile checks |
+| `python` | Pytest + Ruff + Black + Mypy + pip/poetry lockfile hygiene |
+| `node + python` | Separate sections for each profile (doctor prints both) |
 
 ### Auto-Fix Issues
 
@@ -64,21 +74,7 @@ Useful for CI integration or programmatic access.
 
 ### First Time Setup
 
-```bash
-# Install in your project
-npx devenv-init
-
-# Check health
-npm run doctor
-
-# Fix issues
-npm run doctor:fix
-
-# Push and monitor
-git push  # CI runs automatically
-```
-
-That's it! Your project is now monitored for quality issues.
+See [`docs/SETUP-GUIDE.md`](SETUP-GUIDE.md) for the full walkthrough (cloning `.devenv/`, building it, running `agent:init`, and the first doctor pass). Once setup is complete, use this Usage guide for the day-to-day commands (`doctor`, `doctor:fix`, `cleanup`, etc.).
 
 ---
 
@@ -86,40 +82,13 @@ That's it! Your project is now monitored for quality issues.
 
 ### "I want to start a new side project"
 
-```bash
-# 1. Create your project folder
-mkdir my-saas-app && cd my-saas-app
-
-# 2. Initialize your stack (e.g., Next.js)
-npx create-next-app@latest . 
-
-# 3. Add DevEnvTemplate
-git clone https://github.com/yourusername/DevEnvTemplate .devenv
-cd .devenv && npm install && npm run build
-npm run agent:init
-
-# 4. Push and go
-git add . && git commit -m "Initial setup" && git push
-```
-
-**Result**: Testing, CI/CD, linting all configured in < 5 minutes.
+Use the ["New Project" flow in the Setup Guide](SETUP-GUIDE.md#quick-reference) to scaffold your framework, drop in `.devenv/`, and run the first `npm run doctor`. After that initial bootstrap, come back here for routine doctor/cleanup commands.
 
 ---
 
 ### "I want to add DevEnvTemplate to an existing project"
 
-```bash
-# In your existing project
-git clone https://github.com/yourusername/DevEnvTemplate .devenv
-cd .devenv
-npm install && npm run build
-npm run agent:init  # Detects your existing stack
-
-# Commit and push
-git add . && git commit -m "Add DevEnvTemplate" && git push
-```
-
-**Result**: CI runs, detects your stack, shows quality gaps.
+Follow the ["Existing Project" flow in the Setup Guide](SETUP-GUIDE.md#quick-reference) to clone `.devenv/`, build it once, and run the first doctor. The rest of this Usage guide assumes setup is complete and focuses on health checks, fixes, and automation.
 
 > 💡 **Windows PowerShell**: replace chained commands (`&&`) with two lines:
 > `Set-Location .\your-project\.devenv` then `npm run doctor`.

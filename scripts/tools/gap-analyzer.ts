@@ -21,6 +21,7 @@ class GapAnalyzer {
   private rootDir: string;
   private stack: StackReport | null = null;
   private gaps: Gap[] = [];
+  private profiles: Set<string> = new Set();
 
   constructor(options: GapAnalysisOptions = {}) {
     this.rootDir = options.rootDir || process.cwd();
@@ -34,6 +35,10 @@ class GapAnalyzer {
       const stackReportPath = path.join(this.rootDir, '.devenv', 'stack-report.json');
       const content = await fs.readFile(stackReportPath, 'utf8');
       this.stack = JSON.parse(content) as StackReport;
+      const inferredProfiles = Array.isArray(this.stack.profiles) && this.stack.profiles.length > 0
+        ? this.stack.profiles
+        : this.detectProfilesFromStack();
+      this.profiles = new Set(inferredProfiles);
       logger.info('Stack report loaded successfully');
     } catch (error) {
       logger.error('Stack report not found. Run stack-detector first.');
@@ -58,12 +63,16 @@ class GapAnalyzer {
     await this.analyzeEnvironment();
     await this.analyzeGitHooks();
     this.analyzeFrameworks();
+    this.analyzePythonTooling();
 
     logger.info(`Gap analysis complete. Found ${this.gaps.length} gaps`);
     return this.generateReport();
   }
 
   private analyzeTypeScript(): void {
+    if (!this.hasProfile('node')) {
+      return;
+    }
     const hasTypeScript = this.stack!.technologies.some(t => t.name === 'TypeScript');
     const hasTSConfig = this.stack!.configurations.some(c => c.type === 'typescript');
 
@@ -118,93 +127,174 @@ class GapAnalyzer {
   }
 
   private analyzeLinting(): void {
-    const hasESLint = this.stack!.technologies.some(t => t.name === 'ESLint');
-    const hasESLintConfig = this.stack!.configurations.some(c => c.type === 'eslint');
+    if (this.hasProfile('node')) {
+      const hasESLint = this.stack!.technologies.some(t => t.name === 'ESLint');
+      const hasESLintConfig = this.stack!.configurations.some(c => c.type === 'eslint');
 
-    if (!hasESLint) {
-      this.gaps.push({
-        category: 'linting',
-        severity: 'high',
-        title: 'ESLint Not Configured',
-        description: 'ESLint enforces consistent code style and catches potential issues.',
-        impact: 'Inconsistent code quality and potential bugs',
-        recommendation: 'Add ESLint with TypeScript support and import/no-internal-modules rule',
-        effort: 'low',
-        files: ['package.json', '.eslintrc.json']
-      });
-    } else if (!hasESLintConfig) {
-      this.gaps.push({
-        category: 'linting',
-        severity: 'high',
-        title: 'Missing ESLint Configuration',
-        description: 'ESLint is installed but not configured.',
-        impact: 'Linting rules not enforced',
-        recommendation: 'Create .eslintrc.json with appropriate rules for your stack',
-        effort: 'low',
-        files: ['.eslintrc.json']
-      });
+      if (!hasESLint) {
+        this.gaps.push({
+          category: 'linting',
+          severity: 'high',
+          title: 'ESLint Not Configured',
+          description: 'ESLint enforces consistent code style and catches potential issues.',
+          impact: 'Inconsistent code quality and potential bugs',
+          recommendation: 'Adopt ESLint with the official flat config and plugin:boundaries for architecture checks',
+          effort: 'low',
+          files: ['package.json', 'eslint.config.js']
+        });
+      } else if (!hasESLintConfig) {
+        this.gaps.push({
+          category: 'linting',
+          severity: 'high',
+          title: 'Missing ESLint Configuration',
+          description: 'ESLint is installed but not configured.',
+          impact: 'Linting rules not enforced',
+          recommendation: 'Create eslint.config.js with TypeScript + accessibility presets',
+          effort: 'low',
+          files: ['eslint.config.js']
+        });
+      }
+
+      if (hasESLint && !this.stack!.configurations.some(c => c.configFile?.includes('boundaries'))) {
+        this.gaps.push({
+          category: 'linting',
+          severity: 'medium',
+          title: 'Missing Architectural Boundaries',
+          description: 'eslint-plugin-boundaries enforces clean architecture layer separation.',
+          impact: 'Code organization may become unstructured',
+          recommendation: 'Extend eslint-plugin-boundaries with feature/domain layer rules',
+          effort: 'medium',
+          files: ['package.json', 'eslint.config.js']
+        });
+      }
     }
 
-    if (hasESLint && !this.stack!.configurations.some(c => c.configFile?.includes('boundaries'))) {
+    if (this.hasProfile('python')) {
+      this.analyzePythonLinting();
+    }
+  }
+
+  private analyzePythonLinting(): void {
+    const hasRuff = this.hasTechnology('Ruff');
+    if (!hasRuff) {
       this.gaps.push({
         category: 'linting',
         severity: 'medium',
-        title: 'Missing Architectural Boundaries',
-        description: 'eslint-plugin-boundaries enforces clean architecture layer separation.',
-        impact: 'Code organization may become unstructured',
-        recommendation: 'Add eslint-plugin-boundaries and configure layer rules',
-        effort: 'medium',
-        files: ['package.json', '.eslintrc.json']
+        title: 'Ruff Linter Not Configured',
+        description: 'Ruff is the recommended Python linter because it is fast and bundles common Flake8 rules.',
+        impact: 'Inconsistent style and missed Python-specific issues',
+        recommendation: 'Add Ruff via pyproject.toml and run it in CI: `ruff check .`',
+        effort: 'low',
+        files: ['pyproject.toml', 'ruff.toml'],
+        resources: ['https://docs.astral.sh/ruff/']
       });
     }
   }
 
   private analyzeTesting(): void {
-    if (!this.stack!.quality.testing) {
+    const handledProfiles: string[] = [];
+    if (this.hasProfile('node')) {
+      this.analyzeNodeTesting();
+      handledProfiles.push('node');
+    }
+    if (this.hasProfile('python')) {
+      this.analyzePythonTesting();
+      handledProfiles.push('python');
+    }
+
+    if (handledProfiles.length === 0 && !this.stack!.quality.testing) {
       this.gaps.push({
         category: 'testing',
         severity: 'high',
         title: 'No Testing Framework Detected',
         description: 'Automated tests are essential for code reliability and refactoring safety.',
         impact: 'Cannot safely refactor code or catch regressions',
-        recommendation: 'Add Jest or Vitest with comprehensive test coverage',
+        recommendation: 'Add a minimal test harness (e.g., pytest, Vitest) and run it in CI',
         effort: 'medium',
-        files: ['package.json', 'jest.config.js', 'tests/']
+        files: ['tests/']
+      });
+    }
+  }
+
+  private analyzeNodeTesting(): void {
+    const hasJest = this.hasTestingFramework('Jest');
+    const hasVitest = this.hasTestingFramework('Vitest');
+
+    if (!hasJest && !hasVitest) {
+      this.gaps.push({
+        category: 'testing',
+        severity: 'high',
+        title: 'No JS Unit Tests Detected',
+        description: 'Vitest (or Jest) should cover components and utilities.',
+        impact: 'Refactors may break behavior silently',
+        recommendation: 'Add Vitest with a watch mode and run `vitest run --coverage` in CI',
+        effort: 'medium',
+        files: ['package.json', 'vitest.config.ts']
       });
     }
 
-    const hasPlaywright = this.stack!.technologies.some(t => t.name === 'Playwright');
-    const isUIProject = this.stack!.technologies.some(t => t.name === 'React' || t.name === 'Next.js' || t.name === 'Vue');
-    
+    const hasPlaywright = this.hasTestingFramework('Playwright');
+    const isUIProject = this.stack!.technologies.some(t => ['React', 'Next.js', 'Vue'].includes(t.name));
+
     if (!hasPlaywright && isUIProject) {
       this.gaps.push({
         category: 'testing',
         severity: 'medium',
         title: 'Missing End-to-End Testing',
-        description: 'E2E tests validate complete user workflows and integration.',
+        description: 'Playwright validates core user flows end-to-end.',
         impact: 'Cannot verify complete application functionality',
-        recommendation: 'Add Playwright for E2E testing of user flows',
+        recommendation: 'Add a Playwright smoke suite (login + critical flows) and run nightly',
         effort: 'medium',
         files: ['package.json', 'playwright.config.ts', 'tests/e2e/']
       });
     }
   }
 
-  private analyzeSecurity(): void {
-    if (!this.stack!.quality.security) {
+  private analyzePythonTesting(): void {
+    const hasPytest = this.hasTestingFramework('Pytest');
+
+    if (!hasPytest) {
       this.gaps.push({
-        category: 'security',
+        category: 'testing',
         severity: 'high',
-        title: 'Security Measures Not Detected',
-        description: 'Basic security practices like environment variable management and CSP are missing.',
-        impact: 'Potential security vulnerabilities and data exposure',
-        recommendation: 'Add .env files, implement CSP headers, and security scanning',
+        title: 'Pytest Suite Missing',
+        description: 'Pytest is the preferred test runner once a Python stack is declared.',
+        impact: 'No regression safety net for services or notebooks',
+        recommendation: 'Install pytest and add `pytest.ini`; run `pytest -q` in CI',
         effort: 'medium',
-        files: ['.env.example', 'next.config.js', '.github/workflows/security.yml']
+        files: ['pyproject.toml', 'pytest.ini']
       });
     }
+  }
 
-    const hasNextJS = this.stack!.configurations.some(c => c.type === 'nextjs');
+  private analyzeSecurity(): void {
+    if (!this.stack!.quality.security) {
+      if (this.hasProfile('python')) {
+        this.gaps.push({
+          category: 'security',
+          severity: 'high',
+          title: 'Secrets Handling Not Detected',
+          description: 'Python services should ship with .env.example, dotenv loading, and a Bandit/pip-audit step.',
+          impact: 'Sensitive credentials may leak or go unsanitized',
+          recommendation: 'Add `.env.example`, load env vars via pydantic/decouple, and run `pip-audit` in CI',
+          effort: 'medium',
+          files: ['.env.example', '.github/workflows/security.yml']
+        });
+      } else {
+        this.gaps.push({
+          category: 'security',
+          severity: 'high',
+          title: 'Security Measures Not Detected',
+          description: 'Basic security practices like environment variable management and CSP are missing.',
+          impact: 'Potential security vulnerabilities and data exposure',
+          recommendation: 'Add .env files, implement CSP headers, and security scanning',
+          effort: 'medium',
+          files: ['.env.example', 'next.config.js', '.github/workflows/security.yml']
+        });
+      }
+    }
+
+    const hasNextJS = this.hasProfile('node') && this.stack!.configurations.some(c => c.type === 'nextjs');
     if (hasNextJS) {
       this.gaps.push({
         category: 'security',
@@ -337,30 +427,43 @@ class GapAnalyzer {
   }
 
   private analyzeDependencies(): void {
-    // Check for outdated dependencies
-    this.gaps.push({
-      category: 'dependencies',
-      severity: 'medium',
-      title: 'Dependency Health Check Needed',
-      description: 'Regular dependency updates prevent security vulnerabilities',
-      impact: 'Outdated dependencies may have known security issues',
-      recommendation: 'Run npm audit and npm outdated regularly; use Dependabot',
-      effort: 'low',
-      files: ['package.json', '.github/dependabot.yml']
-    });
-
-    // Check for lock file
-    const hasPackageJson = this.stack!.technologies.some(t => t.name === 'Node.js');
-    if (hasPackageJson) {
+    if (this.hasProfile('node')) {
       this.gaps.push({
         category: 'dependencies',
         severity: 'medium',
-        title: 'Lock File Best Practices',
-        description: 'Lock files ensure consistent dependency versions',
-        impact: 'Different environments may have different dependency versions',
-        recommendation: 'Commit package-lock.json or yarn.lock to version control',
+        title: 'Dependency Health Check Needed',
+        description: 'Regular dependency updates prevent security vulnerabilities',
+        impact: 'Outdated dependencies may have known security issues',
+        recommendation: 'Run `npm audit` / `npm outdated` weekly and enable Dependabot security updates',
         effort: 'low',
-        files: ['package-lock.json', 'yarn.lock']
+        files: ['package.json', '.github/dependabot.yml']
+      });
+
+      const hasPackageJson = this.stack!.technologies.some(t => t.name === 'Node.js');
+      if (hasPackageJson) {
+        this.gaps.push({
+          category: 'dependencies',
+          severity: 'medium',
+          title: 'Lock File Best Practices',
+          description: 'Lock files ensure consistent dependency versions',
+          impact: 'Different environments may have different dependency versions',
+          recommendation: 'Commit package-lock.json or pnpm-lock.yaml and fail CI when it changes unintentionally',
+          effort: 'low',
+          files: ['package-lock.json', 'pnpm-lock.yaml']
+        });
+      }
+    }
+
+    if (this.hasProfile('python')) {
+      this.gaps.push({
+        category: 'dependencies',
+        severity: 'medium',
+        title: 'Python Dependency Hygiene Not Verified',
+        description: 'Poetry/pip-tools lock files keep virtualenvs reproducible.',
+        impact: 'Production environments may drift from local installs',
+        recommendation: 'Use Poetry or pip-tools with a committed lock file and schedule `pip-audit`',
+        effort: 'medium',
+        files: ['pyproject.toml', 'poetry.lock', 'requirements.txt']
       });
     }
   }
@@ -558,6 +661,74 @@ echo "npm run lint && npm run format:check" > .husky/pre-commit`
         });
       }
     });
+  }
+
+  private analyzePythonTooling(): void {
+    if (!this.hasProfile('python')) {
+      return;
+    }
+
+    if (!this.hasTechnology('Black')) {
+      this.gaps.push({
+        category: 'quality',
+        severity: 'medium',
+        title: 'Black Formatter Not Enabled',
+        description: 'Black provides opinionated formatting for Python projects and keeps diffs small.',
+        impact: 'Inconsistent formatting slows down code reviews',
+        recommendation: 'Add Black to pyproject.toml and run `black .` in CI or as a pre-commit hook',
+        effort: 'low',
+        files: ['pyproject.toml', 'pyproject.lock']
+      });
+    }
+
+    if (!this.hasTechnology('Mypy')) {
+      this.gaps.push({
+        category: 'quality',
+        severity: 'medium',
+        title: 'Static Typing (Mypy) Missing',
+        description: 'Mypy catches entire classes of runtime errors for Python services.',
+        impact: 'Refactors may introduce silent type errors',
+        recommendation: 'Add Mypy with `python -m mypy src/` and enable strict optional checking',
+        effort: 'medium',
+        files: ['mypy.ini', 'pyproject.toml']
+      });
+    }
+  }
+
+  private detectProfilesFromStack(): string[] {
+    const names = this.stack?.technologies?.map(t => t.name.toLowerCase()) || [];
+    const profiles: string[] = [];
+    const nodeSignals = ['node.js', 'react', 'next.js', 'vite', 'express', 'typescript', 'javascript', 'svelte'];
+    const pythonSignals = ['python', 'fastapi', 'django', 'flask', 'pytest', 'black', 'ruff', 'mypy'];
+
+    if (names.some(name => nodeSignals.includes(name))) {
+      profiles.push('node');
+    }
+    if (names.some(name => pythonSignals.includes(name))) {
+      profiles.push('python');
+    }
+
+    if (profiles.length === 0) {
+      profiles.push('agnostic');
+    }
+
+    return profiles;
+  }
+
+  private hasProfile(profile: string): boolean {
+    return this.profiles.has(profile);
+  }
+
+  private hasTechnology(name: string): boolean {
+    const needle = name.toLowerCase();
+    return this.stack!.technologies.some(t => t.name.toLowerCase() === needle);
+  }
+
+  private hasTestingFramework(name: string): boolean {
+    const needle = name.toLowerCase();
+    return (this.stack!.tooling?.testing?.frameworks || []).some(
+      (framework: { name: string }) => framework.name.toLowerCase() === needle
+    );
   }
 
   private generateReport(): string {

@@ -4,6 +4,8 @@ Quick solutions to common issues.
 
 ## Setup Issues
 
+> Need the full bootstrap flow? Start with [`docs/SETUP-GUIDE.md`](SETUP-GUIDE.md). This section only covers problems that appear after following that guide.
+
 ### Installation Fails
 
 **Problem:** `npm install` fails with dependency errors.
@@ -72,6 +74,23 @@ node .github/tools/stack-detector.js
 cat package.json | grep dependencies
 
 # Manually specify in project.manifest.json if needed
+```
+
+### Doctor Still Recommends TypeScript for a Python Repo
+
+**Problem:** After moving to a Python-only project the doctor still suggests ESLint/TypeScript quick wins.
+
+**Cause:** Stack detector is still seeing JavaScript signals (leftover `package.json`, `node_modules`, or TS config).
+
+**Solution:**
+```bash
+# Remove stale JS artifacts if this repo really is Python-only
+rm -rf node_modules package-lock.json tsconfig.json
+
+# Re-run stack detector so it records the python profile
+npm run doctor -- --json > nul  # or node scripts/tools/stack-detector.js
+
+# Doctor output should now start with "🧠 Stack profile: python"
 ```
 
 ### Doctor Inspects the Wrong Directory

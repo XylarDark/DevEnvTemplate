@@ -21,6 +21,8 @@ class StackDetector {
   constructor(options = {}) {
     this.rootDir = options.rootDir || process.cwd();
     this.quiet = !!options.quiet;
+    this.pyprojectContent = null;
+    this.requirementsContent = null;
     this.stack = {
       technologies: [],
       configurations: [],
@@ -52,7 +54,9 @@ class StackDetector {
       ci: {
         present: false,
         type: null
-      }
+      },
+      profiles: [],
+      primaryProfile: null
     };
   }
 
@@ -74,6 +78,7 @@ class StackDetector {
     await this.detectFormatting();
     await this.detectCI();
     await this.detectSecurity();
+    this.assignProfiles();
 
     return this.stack;
   }
@@ -273,10 +278,10 @@ class StackDetector {
     try {
       // Check for pyproject.toml (modern Python packaging)
       const pyprojectToml = await fs.readFile(path.join(this.rootDir, 'pyproject.toml'), 'utf8');
+      this.pyprojectContent = pyprojectToml;
       const tomlData = this.parseTOML(pyprojectToml);
 
-      this.stack.technologies.push({
-        name: 'Python',
+      this.addTechnology('Python', {
         version: tomlData.tool?.poetry?.version || 'detected',
         confidence: 'high',
         source: 'pyproject.toml'
@@ -284,8 +289,7 @@ class StackDetector {
 
       // Check for Python version in pyproject.toml
       if (tomlData.tool?.poetry?.python) {
-        this.stack.technologies.push({
-          name: 'Python Runtime',
+        this.addTechnology('Python Runtime', {
           version: tomlData.tool.poetry.python,
           confidence: 'high',
           source: 'pyproject.toml'
@@ -322,14 +326,46 @@ class StackDetector {
             source: 'pyproject.toml'
           });
         }
+
+        if (deps.pytest) {
+          this.addTechnology('Pytest', {
+            version: deps.pytest,
+            confidence: 'high',
+            source: 'pyproject.toml'
+          });
+        }
+
+        if (deps.black) {
+          this.addTechnology('Black', {
+            version: deps.black,
+            confidence: 'high',
+            source: 'pyproject.toml'
+          });
+        }
+
+        if (deps.ruff) {
+          this.addTechnology('Ruff', {
+            version: deps.ruff,
+            confidence: 'high',
+            source: 'pyproject.toml'
+          });
+        }
+
+        if (deps.mypy) {
+          this.addTechnology('Mypy', {
+            version: deps.mypy,
+            confidence: 'high',
+            source: 'pyproject.toml'
+          });
+        }
       }
 
     } catch (error) {
       // Try requirements.txt as fallback
       try {
         const requirements = await fs.readFile(path.join(this.rootDir, 'requirements.txt'), 'utf8');
-        this.stack.technologies.push({
-          name: 'Python',
+        this.requirementsContent = requirements;
+        this.addTechnology('Python', {
           version: 'detected',
           confidence: 'medium',
           source: 'requirements.txt'
@@ -337,8 +373,7 @@ class StackDetector {
 
         // Check for common frameworks in requirements
         if (requirements.includes('fastapi')) {
-          this.stack.technologies.push({
-            name: 'FastAPI',
+          this.addTechnology('FastAPI', {
             version: 'detected',
             confidence: 'medium',
             source: 'requirements.txt'
@@ -346,8 +381,7 @@ class StackDetector {
         }
 
         if (requirements.includes('django')) {
-          this.stack.technologies.push({
-            name: 'Django',
+          this.addTechnology('Django', {
             version: 'detected',
             confidence: 'medium',
             source: 'requirements.txt'
@@ -355,8 +389,39 @@ class StackDetector {
         }
 
         if (requirements.includes('flask')) {
-          this.stack.technologies.push({
-            name: 'Flask',
+          this.addTechnology('Flask', {
+            version: 'detected',
+            confidence: 'medium',
+            source: 'requirements.txt'
+          });
+        }
+
+        if (requirements.includes('pytest')) {
+          this.addTechnology('Pytest', {
+            version: 'detected',
+            confidence: 'medium',
+            source: 'requirements.txt'
+          });
+        }
+
+        if (requirements.includes('black')) {
+          this.addTechnology('Black', {
+            version: 'detected',
+            confidence: 'medium',
+            source: 'requirements.txt'
+          });
+        }
+
+        if (requirements.includes('ruff')) {
+          this.addTechnology('Ruff', {
+            version: 'detected',
+            confidence: 'medium',
+            source: 'requirements.txt'
+          });
+        }
+
+        if (requirements.includes('mypy')) {
+          this.addTechnology('Mypy', {
             version: 'detected',
             confidence: 'medium',
             source: 'requirements.txt'
@@ -845,6 +910,27 @@ class StackDetector {
       present: this.stack.quality.testing || testingFrameworks.length > 0,
       frameworks: testingFrameworks
     };
+
+    // Detect Pytest via config files or dependencies
+    let pytestConfig = null;
+    try {
+      await fs.access(path.join(this.rootDir, 'pytest.ini'));
+      pytestConfig = 'pytest.ini';
+    } catch (error) {
+      if (this.pyprojectContent && this.pyprojectContent.toLowerCase().includes('pytest')) {
+        pytestConfig = 'pyproject.toml';
+      } else if (this.requirementsContent && this.requirementsContent.toLowerCase().includes('pytest')) {
+        pytestConfig = 'requirements.txt';
+      }
+    }
+
+    if (pytestConfig) {
+      if (!testingFrameworks.some(f => f.name === 'Pytest')) {
+        testingFrameworks.push({ name: 'Pytest', config: pytestConfig });
+      }
+      this.stack.quality.testing = true;
+      this.stack.tooling.testing.present = true;
+    }
   }
 
   async detectLinting() {
@@ -893,6 +979,34 @@ class StackDetector {
       if (error.code !== 'ENOENT') {
         throw error;
       }
+    }
+
+    // Detect Ruff for Python projects
+    let ruffDetected = false;
+    try {
+      await fs.access(path.join(this.rootDir, 'ruff.toml'));
+      ruffDetected = true;
+      lintConfigs.push('ruff.toml');
+    } catch (error) {
+      try {
+        await fs.access(path.join(this.rootDir, '.ruff.toml'));
+        ruffDetected = true;
+        lintConfigs.push('.ruff.toml');
+      } catch (error2) {
+        if (this.pyprojectContent && this.pyprojectContent.toLowerCase().includes('[tool.ruff')) {
+          ruffDetected = true;
+          lintConfigs.push('pyproject.toml (ruff)');
+        }
+      }
+    }
+
+    if (ruffDetected) {
+      this.stack.quality.linting = true;
+      this.addTechnology('Ruff', {
+        version: 'detected',
+        confidence: 'medium',
+        source: 'ruff-config'
+      });
     }
 
     this.stack.tooling.linting = {
@@ -949,6 +1063,25 @@ class StackDetector {
       if (error.code !== 'ENOENT') {
         throw error;
       }
+    }
+
+    // Detect Black formatter for Python projects
+    let blackDetected = false;
+    if (this.pyprojectContent && this.pyprojectContent.toLowerCase().includes('[tool.black')) {
+      blackDetected = true;
+      formatConfigs.push('pyproject.toml (black)');
+    } else if (this.requirementsContent && this.requirementsContent.toLowerCase().includes('black')) {
+      blackDetected = true;
+      formatConfigs.push('requirements.txt (black)');
+    }
+
+    if (blackDetected) {
+      this.stack.quality.formatting = true;
+      this.addTechnology('Black', {
+        version: 'detected',
+        confidence: 'medium',
+        source: 'black-config'
+      });
     }
 
     this.stack.tooling.formatting = {
@@ -1017,6 +1150,43 @@ class StackDetector {
     if (!this.quiet) {
       logger.info(`Stack report saved to ${reportPath}`);
     }
+  }
+
+  assignProfiles() {
+    const profiles = new Set();
+    const techNames = this.stack.technologies.map(t => t.name.toLowerCase());
+
+    const nodeSignals = ['node.js', 'react', 'next.js', 'vite', 'express', 'typescript', 'javascript', 'svelte'];
+    const pythonSignals = ['python', 'fastapi', 'django', 'flask', 'pytest', 'black', 'ruff', 'mypy'];
+
+    if (techNames.some(name => nodeSignals.includes(name))) {
+      profiles.add('node');
+    }
+    if (techNames.some(name => pythonSignals.includes(name))) {
+      profiles.add('python');
+    }
+
+    if (profiles.size === 0) {
+      profiles.add('agnostic');
+    }
+
+    this.stack.profiles = Array.from(profiles);
+    this.stack.primaryProfile = this.stack.profiles[0];
+  }
+
+  hasTechnology(name) {
+    const needle = name.toLowerCase();
+    return this.stack.technologies.some(t => t.name.toLowerCase() === needle);
+  }
+
+  addTechnology(name, meta = {}) {
+    if (this.hasTechnology(name)) {
+      return;
+    }
+    this.stack.technologies.push({
+      name,
+      ...meta
+    });
   }
 }
 

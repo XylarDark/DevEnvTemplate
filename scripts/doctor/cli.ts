@@ -96,6 +96,12 @@ async function runDoctor(options: CliOptions = {}) {
       stdio: ['pipe', 'pipe', 'pipe']
     });
     stackData = JSON.parse(stackOutput);
+    const profiles = Array.isArray(stackData.profiles) && stackData.profiles.length > 0
+      ? stackData.profiles
+      : ['agnostic'];
+    if (!options.json) {
+      console.log(`🧠 Stack profile${profiles.length > 1 ? 's' : ''}: ${profiles.join(', ')}`);
+    }
   } catch (error: any) {
     const stderr = error?.stderr?.toString()?.trim();
     const stdout = error?.stdout?.toString()?.trim();

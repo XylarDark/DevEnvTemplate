@@ -341,6 +341,9 @@ Keep CLI, log messages, and machine-consumed output free of non-ASCII characters
 **Ignore generated doctor artifacts in VCS**
 Doctor writes `gaps-report.md`, `stack-report.json`, `health-report.json`, and similar files inside `.devenv/`. Add explicit entries to your project’s `.gitignore` so these reports don’t pollute diffs while keeping the `.devenv` repository itself versioned.
 
+**Let stack profiles replace generic prescriptions**
+DevEnvTemplate intentionally starts technology-agnostic. The moment doctor/stack-detector confirms a stack profile (e.g., `node`, `python`), recommendations pivot to one “blessed” toolchain per concern (Vitest + ESLint + Playwright for Node, Pytest + Ruff + Black + Mypy for Python). Do not mix profiles in the same run unless the project is truly polyglot—generic advice should disappear once the stack is declared.
+
 ### 10. AI-Assisted Development Tooling
 
 **Always re-read target files immediately before applying patches**

@@ -23,6 +23,8 @@
 13. [Complete Flag Reference](#complete-flag-reference)
 14. [Quick Reference Tables](#quick-reference-tables)
 
+> 📚 **Context bootstrap:** Before editing `.devenv/`, load every file listed in [`docs/LLM-FILE-INDEX.md`](LLM-FILE-INDEX.md). That index is the authoritative checklist of rules, guides, and tooling entry points an AI assistant must ingest.
+
 ---
 
 ## Executive Summary
@@ -68,6 +70,8 @@ DevEnvTemplate is a **development environment doctor** that:
 - ✅ "Fix issues" = assess → preview → apply → verify
 - ✅ "Deploy ready" = fix → format → test → build
 - ❌ Don't ask user after each step - explain full plan upfront, then execute
+
+> **Stack profiles:** The doctor begins technology-agnostic, but as soon as `stack-detector` writes `.devenv/stack-report.json`, DevEnvTemplate marks the active profiles (e.g., `["node"]`, `["python"]`). From that point forward, prefer the stack-specific quick wins surfaced by the doctor (Vitest/ESLint/Playwright for Node, Pytest/Ruff/Black/Mypy for Python) instead of generic tooling suggestions.
 
 ---
 
