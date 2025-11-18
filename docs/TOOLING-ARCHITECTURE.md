@@ -43,3 +43,9 @@ There may be value in exploring standalone doctor binaries (Go/Rust) that people
 
 Until then, TypeScript + Node remains the single source of truth for DevEnvTemplate tooling.
 
+## Performance levers built into the doctor
+
+- **File-system caching:** the stack detector memoizes reads of package manifests, workflow files, and configs so repeated checks don’t thrash disk I/O.
+- **Directory ignore lists:** both stack detector and gap analyzer skip heavy folders (`node_modules`, `dist/`, `.venv/`, datasets, etc.) and cap workflow traversal to a handful of files per CI folder.
+- **Fast mode (`npm run doctor --fast`):** runs the short path (stack detection + core quality/security checks) and skips documentation, accessibility, Docker, and git-hook analyses. Default/full scans still run everything before releases.
+

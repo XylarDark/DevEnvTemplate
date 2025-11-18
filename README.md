@@ -212,6 +212,7 @@ See [IMPLEMENTATION_GUIDE.md](IMPLEMENTATION_GUIDE.md) for advanced usage.
 - **[docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)** - Troubleshooting guide
 - **[docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)** - Build/test loop for editing the doctor
 - **[docs/RFC-standalone-doctor.md](docs/RFC-standalone-doctor.md)** - Research notes on future binary tooling
+- **[docs/PERF-BASELINE.md](docs/PERF-BASELINE.md)** - Current doctor runtimes (fast vs. full) and goals
 - **[IMPLEMENTATION_GUIDE.md](IMPLEMENTATION_GUIDE.md)** - Advanced features and customization
 - **[Engineering Handbook](docs/engineering-handbook.md)** - Architecture and patterns
 

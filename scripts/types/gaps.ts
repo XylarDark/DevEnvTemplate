@@ -15,30 +15,92 @@ export interface Configuration {
   [key: string]: any;
 }
 
+export interface EnvTemplateInfo {
+  present: boolean;
+  files: string[];
+}
+
+export interface EnvLoaderInfo {
+  present: boolean;
+  tools: string[];
+}
+
+export interface DependencyAuditInfo {
+  present: boolean;
+  tools: string[];
+}
+
+export interface SecretsMetadata {
+  envTemplate?: EnvTemplateInfo;
+  envIgnored?: boolean;
+  envLoader?: EnvLoaderInfo;
+  dependencyAudit?: DependencyAuditInfo;
+  [key: string]: any;
+}
+
+export interface ToolingFramework {
+  name: string;
+  config?: string;
+}
+
+export interface StackToolingCategory {
+  present: boolean;
+  frameworks?: ToolingFramework[];
+  configs?: string[];
+}
+
+export interface StackTooling {
+  testing: StackToolingCategory;
+  linting: StackToolingCategory;
+  formatting: StackToolingCategory;
+  [key: string]: any;
+}
+
+export interface StackScriptsInfo {
+  detected: Array<{ name: string; command: string }>;
+  missing: string[];
+}
+
+export interface StackFilesInfo {
+  configs: string[];
+  key_patterns: string[];
+}
+
+export interface StackFrameworkInfo {
+  type: string;
+  version: string | null;
+  dirs: string[];
+}
+
+export interface StackQuality {
+  linting: boolean;
+  testing: boolean;
+  typescript: boolean;
+  security: boolean;
+  formatting: boolean;
+  [key: string]: any;
+}
+
+export interface StackCIInfo {
+  present: boolean;
+  type?: string;
+  [key: string]: any;
+}
+
 export interface StackReport {
   technologies: Technology[];
   configurations: Configuration[];
-  secrets?: {
-    envTemplate?: { present: boolean; files: string[] };
-    envIgnored?: boolean;
-    envLoader?: { present: boolean; tools: string[] };
-    dependencyAudit?: { present: boolean; tools: string[] };
-    [key: string]: any;
-  };
-  quality: {
-    testing: boolean;
-    security: boolean;
-    [key: string]: any;
-  };
-  ci: {
-    present: boolean;
-    type?: string;
-    [key: string]: any;
-  };
+  tooling: StackTooling;
+  scripts: StackScriptsInfo;
+  files: StackFilesInfo;
+  frameworks: StackFrameworkInfo;
+  secrets?: SecretsMetadata;
+  quality: StackQuality;
+  ci: StackCIInfo;
   profiles?: string[];
-  primaryProfile?: string;
+  primaryProfile?: string | null;
   languageProfile?: string;
-  manifest?: Record<string, unknown>;
+  manifest?: Record<string, unknown> | null;
   [key: string]: any;
 }
 
@@ -88,5 +150,7 @@ export interface GapAnalysisOptions {
   rootDir?: string;
   stackReportPath?: string;
   includeCodeSnippets?: boolean;
+  mode?: 'fast' | 'full';
+  debug?: boolean;
 }
 

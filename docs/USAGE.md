@@ -58,6 +58,19 @@ For simulation/ML-style Python repos the doctor now:
 
 All shared tooling inside `.devenv/`—stack detection, gap analysis, plan generation, cleanup—runs on **Node.js** and is authored in **TypeScript**. That single runtime keeps the embedded experience predictable on macOS, Linux, and Windows (`cd .devenv && npm install && npm run doctor`). Projects are still free to keep helper scripts in their native stacks (e.g., a Python repo can ship a `scripts/check_env.py`), but if a helper becomes broadly useful we port it into the TypeScript core so every template user benefits. See [`docs/TOOLING-ARCHITECTURE.md`](TOOLING-ARCHITECTURE.md) for the contributor guidelines.
 
+### Fast vs. full doctor runs
+
+`npm run doctor --fast` (or `--mode fast`) now uses a shallow scan that skips documentation, accessibility, Docker, and git-hook checks. It trims a typical run down to ~200 ms (see [`docs/PERF-BASELINE.md`](PERF-BASELINE.md)) by aggressively ignoring cache directories and reusing parsed configs. Use it during tight feedback loops, then switch back to the default/full run (`npm run doctor` or `npm run doctor --full`) before releasing or merging to `main` so nothing slips through.
+
+### Diagnostics & debug logging
+
+Use `npm run doctor -- --debug` to turn on verbose logging (it sets `LOG_LEVEL=DEBUG` for the underlying tools). The flag is handy when stack detection or gap analysis behaves unexpectedly, but it writes additional lines to stdout, so avoid combining it with `--json`. You can also enable diagnostics on individual tools:
+
+```bash
+node .github/tools/stack-detector.js --debug --json
+node .github/tools/gap-analyzer.js --debug
+```
+
 ### Secrets handling checklist
 
 The doctor clears the “Secrets Handling Not Detected” gap when it sees four signals:
@@ -368,6 +381,8 @@ node .github/tools/plan-generator.js
 ```
 
 **Note**: These run automatically in CI. You usually don't need to run them locally.
+
+For a quick sanity check you can append `--mode fast` to the stack detector or gap analyzer commands above; omit it (or pass `--mode full`) for the complete scan.
 
 ### Running GitHub Actions Manually
 

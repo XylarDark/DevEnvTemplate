@@ -1,7 +1,5 @@
 #!/usr/bin/env node
 
-// @ts-nocheck
-
 /**
  * Stack Detector - CI-only utility
  *
@@ -12,15 +10,82 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import { createLogger } from '../utils/logger';
+import type {
+  StackReport,
+  SecretsMetadata,
+  ToolingFramework,
+  EnvTemplateInfo,
+  EnvLoaderInfo,
+  DependencyAuditInfo
+} from '../types/gaps';
+
+type DetectorMode = 'fast' | 'full';
 
 interface StackDetectorOptions {
   rootDir?: string;
   quiet?: boolean;
+  mode?: DetectorMode;
+  debug?: boolean;
 }
+
+interface CachedFileOptions {
+  allowMissing?: boolean;
+}
+
+type FullSecretsMetadata = {
+  envTemplate: EnvTemplateInfo;
+  envIgnored: boolean;
+  envLoader: EnvLoaderInfo;
+  dependencyAudit: DependencyAuditInfo;
+};
+
+const DEFAULT_IGNORED_DIRS = [
+  'node_modules',
+  '.git',
+  '.hg',
+  '.svn',
+  '.idea',
+  '.vscode',
+  '.turbo',
+  '.parcel-cache',
+  '.cache',
+  '.next',
+  'build',
+  'dist',
+  'out',
+  '.devenv',
+  '.venv',
+  'venv',
+  '.pytest_cache',
+  '.mypy_cache',
+  '__pycache__'
+];
+
+const FAST_ONLY_IGNORED_DIRS = [
+  'coverage',
+  '.nyc_output',
+  'docs',
+  'public',
+  'tmp',
+  'temp',
+  'data',
+  'datasets'
+];
+
+const WORKFLOW_SCAN_LIMIT = 50;
+const FAST_WORKFLOW_SCAN_LIMIT = 12;
 
 const args = process.argv.slice(2);
 const jsonOutput = args.includes('--json');
-const quietMode = jsonOutput || args.includes('--quiet');
+const debugFlag = args.includes('--debug');
+if (debugFlag && !process.env.LOG_LEVEL) {
+  process.env.LOG_LEVEL = 'DEBUG';
+}
+const quietMode = jsonOutput || (!debugFlag && args.includes('--quiet'));
+const modeArg = args.find(arg => arg.startsWith('--mode='));
+const inlineFastFlag = args.includes('--fast') || args.includes('--shallow');
+const requestedMode = modeArg ? modeArg.split('=')[1] : inlineFastFlag ? 'fast' : 'full';
+const detectorMode: DetectorMode = requestedMode === 'fast' ? 'fast' : 'full';
 
 const logger = createLogger({ context: 'stack-detector' });
 
@@ -47,15 +112,32 @@ const TECHNOLOGY_ALIASES: Record<string, string> = {
 class StackDetector {
   private rootDir: string;
   private quiet: boolean;
-  private projectManifest: any;
+  private projectManifest: Record<string, unknown> | null;
   private pyprojectContent: string | null;
   private requirementsContent: string | null;
   private packageJsonDeps: Record<string, string> | null;
-  private stack: any;
+  private stack: StackReport;
+  private mode: DetectorMode;
+  private fileCache: Map<string, string | null>;
+  private ignoredDirectories: Set<string>;
+  private workflowScanLimit: number;
+  private debugMode: boolean;
 
   constructor(options: StackDetectorOptions = {}) {
     this.rootDir = options.rootDir || process.cwd();
     this.quiet = !!options.quiet;
+    this.mode = options.mode || detectorMode;
+    this.debugMode = !!options.debug;
+    this.fileCache = new Map();
+    this.ignoredDirectories = new Set(
+      DEFAULT_IGNORED_DIRS.map(dir => dir.toLowerCase())
+    );
+    if (this.mode === 'fast') {
+      FAST_ONLY_IGNORED_DIRS.forEach(dir => this.ignoredDirectories.add(dir.toLowerCase()));
+    }
+    this.workflowScanLimit = this.mode === 'fast'
+      ? FAST_WORKFLOW_SCAN_LIMIT
+      : WORKFLOW_SCAN_LIMIT;
     this.projectManifest = null;
     this.pyprojectContent = null;
     this.requirementsContent = null;
@@ -89,8 +171,7 @@ class StackDetector {
         formatting: false
       },
       ci: {
-        present: false,
-        type: null
+        present: false
       },
       secrets: {
         envTemplate: { present: false, files: [] },
@@ -102,10 +183,63 @@ class StackDetector {
       primaryProfile: null,
       languageProfile: 'agnostic',
       manifest: null
-    };
+    } as StackReport;
+
+    this.logDebug('StackDetector initialized', {
+      rootDir: this.rootDir,
+      mode: this.mode
+    });
   }
 
-  async detect() {
+  private shouldSkipDirectory(name: string): boolean {
+    return this.ignoredDirectories.has(name.toLowerCase());
+  }
+
+  private logDebug(message: string, meta: Record<string, unknown> = {}): void {
+    if (this.debugMode) {
+      logger.debug(message, meta);
+    }
+  }
+
+  private async readFileCached(filePath: string, options: CachedFileOptions = {}): Promise<string | null> {
+    const allowMissing = options.allowMissing !== false;
+    const absPath = path.isAbsolute(filePath) ? filePath : path.join(this.rootDir, filePath);
+    if (this.fileCache.has(absPath)) {
+      return this.fileCache.get(absPath) ?? null;
+    }
+    try {
+      const content = await fs.readFile(absPath, 'utf8');
+      this.fileCache.set(absPath, content);
+      return content;
+    } catch (error: any) {
+      if (!allowMissing || error.code !== 'ENOENT') {
+        throw error;
+      }
+      this.fileCache.set(absPath, null);
+      return null;
+    }
+  }
+
+  private async readJsonFile(filePath: string): Promise<any> {
+    const absPath = path.isAbsolute(filePath) ? filePath : path.join(this.rootDir, filePath);
+    const content = await this.readFileCached(absPath, { allowMissing: false });
+    if (content === null) {
+      throw new Error(`File not found: ${absPath}`);
+    }
+    try {
+      return JSON.parse(content);
+    } catch (error: any) {
+      if (error instanceof SyntaxError) {
+        const parseError = new Error(`Invalid JSON in ${absPath}: ${error.message}`) as NodeJS.ErrnoException;
+        parseError.code = 'JSON_PARSE_ERROR';
+        throw parseError;
+      }
+      throw error;
+    }
+  }
+
+  async detect(): Promise<StackReport> {
+    this.logDebug('Starting stack detection run', { mode: this.mode });
     if (!this.quiet) {
       logger.info('🔍 Analyzing repository stack...');
     }
@@ -130,25 +264,25 @@ class StackDetector {
     return this.stack;
   }
 
-  async loadProjectManifest() {
-    const manifestPath = path.join(this.rootDir, 'project.manifest.json');
+  async loadProjectManifest(): Promise<void> {
     try {
-      const manifest = await readJsonFile(manifestPath);
+      const manifest = await this.readJsonFile('project.manifest.json');
       this.projectManifest = manifest;
       this.stack.manifest = manifest;
       this.applyManifestTechnologies();
-    } catch (error) {
+      this.logDebug('Loaded project.manifest.json', { keys: Object.keys(manifest) });
+    } catch (error: any) {
       if (error.code !== 'ENOENT') {
         throw error;
       }
       this.projectManifest = null;
+      this.logDebug('project.manifest.json not found');
     }
   }
 
-  async detectPackageJson() {
-    const packagePath = path.join(this.rootDir, 'package.json');
+  async detectPackageJson(): Promise<void> {
     try {
-      const packageJson = await readJsonFile(packagePath);
+      const packageJson = await this.readJsonFile('package.json');
 
       // Node.js version
       if (packageJson.engines?.node) {
@@ -170,6 +304,10 @@ class StackDetector {
       // Dependencies
       const deps = { ...packageJson.dependencies, ...packageJson.devDependencies };
       this.packageJsonDeps = deps;
+      this.logDebug('Parsed package.json', {
+        dependencies: Object.keys(packageJson.dependencies || {}).length,
+        devDependencies: Object.keys(packageJson.devDependencies || {}).length
+      });
 
       // React
       if (deps.react) {
@@ -301,10 +439,11 @@ class StackDetector {
         });
       }
 
-    } catch (error) {
+    } catch (error: any) {
       if (error.code !== 'ENOENT') {
         throw error;
       }
+      this.logDebug('package.json not found');
     }
 
     // Detect Python
@@ -320,9 +459,9 @@ class StackDetector {
     await this.detectDotNet();
   }
 
-  async detectTypeScript() {
+  async detectTypeScript(): Promise<void> {
     try {
-      const config = await readJsonFile(path.join(this.rootDir, 'tsconfig.json'));
+      const config = await this.readJsonFile('tsconfig.json');
 
       this.stack.quality.typescript = true;
       this.stack.configurations.push({
@@ -330,17 +469,16 @@ class StackDetector {
         strict: config.compilerOptions?.strict || false,
         target: config.compilerOptions?.target || 'unknown'
       });
-    } catch (error) {
+    } catch (error: any) {
       if (error.code !== 'ENOENT') {
         throw error;
       }
     }
   }
 
-  async detectPython() {
-    try {
-      // Check for pyproject.toml (modern Python packaging)
-      const pyprojectToml = await fs.readFile(path.join(this.rootDir, 'pyproject.toml'), 'utf8');
+  async detectPython(): Promise<void> {
+    const pyprojectToml = await this.readFileCached('pyproject.toml');
+    if (pyprojectToml) {
       this.pyprojectContent = pyprojectToml;
       const tomlData = this.parseTOML(pyprojectToml);
       const pyprojectLower = pyprojectToml.toLowerCase();
@@ -350,8 +488,6 @@ class StackDetector {
         confidence: 'high',
         source: 'pyproject.toml'
       });
-
-      // Check for Python version in pyproject.toml
       if (tomlData.tool?.poetry?.python) {
         this.addTechnology('Python Runtime', {
           version: tomlData.tool.poetry.python,
@@ -360,9 +496,12 @@ class StackDetector {
         });
       }
 
-      // Detect Python framework
-      if (tomlData.tool?.poetry?.dependencies) {
-        const deps = tomlData.tool.poetry.dependencies;
+      const deps = tomlData.tool?.poetry?.dependencies as Record<string, any> | undefined;
+      this.logDebug('Detected pyproject.toml', {
+        hasDependencies: Boolean(deps),
+        pythonVersion: tomlData.tool?.poetry?.python
+      });
+      if (deps) {
 
         if (deps.fastapi) {
           this.stack.technologies.push({
@@ -431,19 +570,18 @@ class StackDetector {
           source: 'pyproject.toml'
         });
       }
-
-    } catch (error) {
-      // Try requirements.txt as fallback
-      try {
-        const requirements = await fs.readFile(path.join(this.rootDir, 'requirements.txt'), 'utf8');
+    } else {
+      this.pyprojectContent = null;
+      const requirements = await this.readFileCached('requirements.txt');
+      if (requirements) {
         this.requirementsContent = requirements;
         this.addTechnology('Python', {
           version: 'detected',
           confidence: 'medium',
           source: 'requirements.txt'
         });
+        this.logDebug('Detected requirements.txt for Python signals');
 
-        // Check for common frameworks in requirements
         if (requirements.includes('fastapi')) {
           this.addTechnology('FastAPI', {
             version: 'detected',
@@ -499,16 +637,15 @@ class StackDetector {
             source: 'requirements.txt'
           });
         }
-
-      } catch (error2) {
-        // No Python project detected
+      } else {
+        this.requirementsContent = null;
       }
     }
   }
 
-  async detectGo() {
-    try {
-      const goMod = await fs.readFile(path.join(this.rootDir, 'go.mod'), 'utf8');
+  async detectGo(): Promise<void> {
+    const goMod = await this.readFileCached('go.mod');
+    if (goMod) {
       const lines = goMod.split('\n');
 
       // Extract module name and Go version
@@ -555,15 +692,12 @@ class StackDetector {
         });
       }
 
-    } catch (error) {
-      // No Go project detected
     }
   }
 
-  async detectJava() {
-    try {
-      // Check for pom.xml (Maven)
-      const pomXml = await fs.readFile(path.join(this.rootDir, 'pom.xml'), 'utf8');
+  async detectJava(): Promise<void> {
+    const pomXml = await this.readFileCached('pom.xml');
+    if (pomXml) {
 
       this.stack.technologies.push({
         name: 'Java',
@@ -611,10 +745,9 @@ class StackDetector {
         });
       }
 
-    } catch (error) {
-      // Try Gradle as fallback
-      try {
-        const buildGradle = await fs.readFile(path.join(this.rootDir, 'build.gradle'), 'utf8');
+    } else {
+      const buildGradle = await this.readFileCached('build.gradle');
+      if (buildGradle) {
 
         this.stack.technologies.push({
           name: 'Java',
@@ -641,21 +774,21 @@ class StackDetector {
             source: 'build.gradle'
           });
         }
-
-      } catch (error2) {
-        // No Java project detected
       }
     }
   }
 
-  async detectDotNet() {
+  async detectDotNet(): Promise<void> {
     try {
       // Check for .csproj files
       const csprojFiles = await this.findFiles('*.csproj');
 
       if (csprojFiles.length > 0) {
         // Read first .csproj file
-        const csprojContent = await fs.readFile(csprojFiles[0], 'utf8');
+        const csprojContent = await this.readFileCached(csprojFiles[0]);
+        if (!csprojContent) {
+          return;
+        }
 
         this.stack.technologies.push({
           name: '.NET',
@@ -696,12 +829,12 @@ class StackDetector {
         }
       }
 
-    } catch (error) {
+    } catch (error: any) {
       // No .NET project detected
     }
   }
 
-  async findFiles(pattern) {
+  async findFiles(pattern: string): Promise<string[]> {
     // Simple file finder - in a real implementation, you'd use glob
     try {
       const files = await fs.readdir(this.rootDir);
@@ -711,17 +844,17 @@ class StackDetector {
     }
   }
 
-  parseTOML(content) {
+  parseTOML(content: string): Record<string, any> {
     // Simple TOML parser for basic pyproject.toml structure
     // In a real implementation, you'd use a proper TOML parser
-    const result = {};
+    const result: Record<string, any> = {};
 
     try {
       // Very basic parsing - just extract tool.poetry section
       const toolSection = content.match(/\[tool\.poetry\]([\s\S]*?)(?=\[|$)/);
       if (toolSection) {
         const lines = toolSection[1].split('\n');
-        const poetry = {};
+        const poetry: Record<string, string> = {};
 
         lines.forEach(line => {
           const match = line.match(/(\w+)\s*=\s*"([^"]+)"/);
@@ -732,14 +865,14 @@ class StackDetector {
 
         result.tool = { poetry };
       }
-    } catch (error) {
+    } catch (error: any) {
       // Parsing failed
     }
 
     return result;
   }
 
-  async detectFrameworks() {
+  async detectFrameworks(): Promise<void> {
     // Check for Next.js - config files and directories
     const nextConfigFiles = ['next.config.js', 'next.config.mjs', 'next.config.ts'];
     for (const configFile of nextConfigFiles) {
@@ -752,7 +885,7 @@ class StackDetector {
         this.stack.files.configs.push(configFile);
         
         // Detect Next.js type (app dir vs pages dir)
-        const dirs = [];
+        const dirs: string[] = [];
         try {
           await fs.access(path.join(this.rootDir, 'app'));
           dirs.push('app');
@@ -770,8 +903,9 @@ class StackDetector {
           version: nextVersion || 'detected',
           dirs
         };
+        this.logDebug('Detected Next.js framework', { dirs });
         break;
-      } catch (error) {
+      } catch (error: any) {
         // Continue checking
       }
     }
@@ -793,22 +927,23 @@ class StackDetector {
           version: viteVersion || 'detected',
           dirs: ['src']
         };
+        this.logDebug('Detected Vite framework');
         break;
-      } catch (error) {
+      } catch (error: any) {
         // Continue checking
       }
     }
   }
 
-  async detectScripts() {
+  async detectScripts(): Promise<void> {
     try {
-      const packageJson = await readJsonFile(path.join(this.rootDir, 'package.json'));
+      const packageJson = await this.readJsonFile('package.json');
       const scripts = packageJson.scripts || {};
       
       // Essential scripts we look for
       const essentialScripts = ['dev', 'build', 'test', 'lint', 'format', 'typecheck'];
-      const detected = [];
-      const missing = [];
+      const detected: Array<{ name: string; command: string }> = [];
+      const missing: string[] = [];
       
       for (const scriptName of essentialScripts) {
         if (scripts[scriptName]) {
@@ -819,21 +954,28 @@ class StackDetector {
       }
       
       this.stack.scripts = { detected, missing };
-    } catch (error) {
+      this.logDebug('Script detection complete', {
+        detected: detected.map(script => script.name),
+        missing
+      });
+    } catch (error: any) {
       if (error.code !== 'ENOENT') {
         throw error;
       }
     }
   }
 
-  async detectExpress() {
+  async detectExpress(): Promise<void> {
     // Check for Express patterns
     const expressFiles = ['server.js', 'server.ts', 'app.js', 'app.ts', 'index.js', 'index.ts'];
     
     for (const file of expressFiles) {
       try {
         const filePath = path.join(this.rootDir, file);
-        const content = await fs.readFile(filePath, 'utf8');
+        const content = await this.readFileCached(filePath);
+        if (!content) {
+          continue;
+        }
         
         // Look for express patterns
         if (content.includes('express()') || content.includes('require(\'express\')') || content.includes('from \'express\'')) {
@@ -850,13 +992,13 @@ class StackDetector {
           }
           break;
         }
-      } catch (error) {
+      } catch (error: any) {
         // File doesn't exist or can't be read
       }
     }
   }
 
-  async detectPrisma() {
+  async detectPrisma(): Promise<void> {
     try {
       await fs.access(path.join(this.rootDir, 'prisma', 'schema.prisma'));
       this.stack.files.configs.push('prisma/schema.prisma');
@@ -865,7 +1007,7 @@ class StackDetector {
         type: 'prisma',
         configFile: 'prisma/schema.prisma'
       });
-    } catch (error) {
+    } catch (error: any) {
       // Also check root level
       try {
         await fs.access(path.join(this.rootDir, 'schema.prisma'));
@@ -875,13 +1017,13 @@ class StackDetector {
           type: 'prisma',
           configFile: 'schema.prisma'
         });
-      } catch (error2) {
+      } catch (error2: any) {
         // No Prisma schema
       }
     }
   }
 
-  async detectTailwind() {
+  async detectTailwind(): Promise<void> {
     const tailwindConfigs = ['tailwind.config.js', 'tailwind.config.ts', 'tailwind.config.cjs', 'tailwind.config.mjs'];
     
     for (const configFile of tailwindConfigs) {
@@ -894,26 +1036,26 @@ class StackDetector {
           configFile
         });
         break;
-      } catch (error) {
+      } catch (error: any) {
         // Continue checking
       }
     }
   }
 
-  async detectTesting() {
-    const testingFrameworks = [];
+  async detectTesting(): Promise<void> {
+    const testingFrameworks: ToolingFramework[] = [];
     
     // Check for test directories
     try {
       await fs.access(path.join(this.rootDir, 'tests'));
       this.stack.quality.testing = true;
       this.stack.files.key_patterns.push('tests/ (test directory)');
-    } catch (error) {
+    } catch (error: any) {
       try {
         await fs.access(path.join(this.rootDir, '__tests__'));
         this.stack.quality.testing = true;
         this.stack.files.key_patterns.push('__tests__/ (test directory)');
-      } catch (error) {
+      } catch (error: any) {
         // Check for test files in src
         try {
           const files = await fs.readdir(path.join(this.rootDir, 'src'));
@@ -921,7 +1063,7 @@ class StackDetector {
             this.stack.quality.testing = true;
             this.stack.files.key_patterns.push('src/**/*.test.* (test files)');
           }
-        } catch (error) {
+        } catch (error: any) {
           // No tests detected
         }
       }
@@ -939,7 +1081,7 @@ class StackDetector {
         this.stack.files.configs.push(configFile);
         testingFrameworks.push({ name: 'Jest', config: configFile });
         break;
-      } catch (error) {
+      } catch (error: any) {
         // Continue checking
       }
     }
@@ -956,7 +1098,7 @@ class StackDetector {
         this.stack.files.configs.push(configFile);
         testingFrameworks.push({ name: 'Vitest', config: configFile });
         break;
-      } catch (error) {
+      } catch (error: any) {
         // Continue checking
       }
     }
@@ -973,7 +1115,7 @@ class StackDetector {
         this.stack.files.configs.push(configFile);
         testingFrameworks.push({ name: 'Playwright', config: configFile });
         break;
-      } catch (error) {
+      } catch (error: any) {
         // Continue checking
       }
     }
@@ -988,7 +1130,7 @@ class StackDetector {
     try {
       await fs.access(path.join(this.rootDir, 'pytest.ini'));
       pytestConfig = 'pytest.ini';
-    } catch (error) {
+    } catch (error: any) {
       if (this.pyprojectContent && this.pyprojectContent.toLowerCase().includes('pytest')) {
         pytestConfig = 'pyproject.toml';
       } else if (this.requirementsContent && this.requirementsContent.toLowerCase().includes('pytest')) {
@@ -1005,8 +1147,8 @@ class StackDetector {
     }
   }
 
-  async detectLinting() {
-    const lintConfigs = [];
+  async detectLinting(): Promise<void> {
+    const lintConfigs: string[] = [];
     
     // Check for ESLint config (various formats)
     const eslintFiles = [
@@ -1031,14 +1173,14 @@ class StackDetector {
         this.stack.files.configs.push(file);
         lintConfigs.push(file);
         break;
-      } catch (error) {
+      } catch (error: any) {
         // Continue checking
       }
     }
 
     // Check for package.json eslintConfig
     try {
-      const packageJson = await readJsonFile(path.join(this.rootDir, 'package.json'));
+      const packageJson = await this.readJsonFile('package.json');
       if (packageJson.eslintConfig) {
         this.stack.quality.linting = true;
         this.stack.configurations.push({
@@ -1047,7 +1189,7 @@ class StackDetector {
         });
         lintConfigs.push('package.json (eslintConfig)');
       }
-    } catch (error) {
+    } catch (error: any) {
       if (error.code !== 'ENOENT') {
         throw error;
       }
@@ -1059,12 +1201,12 @@ class StackDetector {
       await fs.access(path.join(this.rootDir, 'ruff.toml'));
       ruffDetected = true;
       lintConfigs.push('ruff.toml');
-    } catch (error) {
+    } catch (error: any) {
       try {
         await fs.access(path.join(this.rootDir, '.ruff.toml'));
         ruffDetected = true;
         lintConfigs.push('.ruff.toml');
-      } catch (error2) {
+      } catch (error2: any) {
         if (this.pyprojectContent && this.pyprojectContent.toLowerCase().includes('[tool.ruff')) {
           ruffDetected = true;
           lintConfigs.push('pyproject.toml (ruff)');
@@ -1087,8 +1229,8 @@ class StackDetector {
     };
   }
 
-  async detectFormatting() {
-    const formatConfigs = [];
+  async detectFormatting(): Promise<void> {
+    const formatConfigs: string[] = [];
     
     // Check for Prettier config
     const prettierFiles = [
@@ -1115,14 +1257,14 @@ class StackDetector {
         this.stack.files.configs.push(file);
         formatConfigs.push(file);
         break;
-      } catch (error) {
+      } catch (error: any) {
         // Continue checking
       }
     }
 
     // Check for package.json prettier config
     try {
-      const packageJson = await readJsonFile(path.join(this.rootDir, 'package.json'));
+      const packageJson = await this.readJsonFile('package.json');
       if (packageJson.prettier) {
         this.stack.quality.formatting = true;
         this.stack.configurations.push({
@@ -1131,7 +1273,7 @@ class StackDetector {
         });
         formatConfigs.push('package.json (prettier)');
       }
-    } catch (error) {
+    } catch (error: any) {
       if (error.code !== 'ENOENT') {
         throw error;
       }
@@ -1162,13 +1304,13 @@ class StackDetector {
     };
   }
 
-  async detectCI() {
+  async detectCI(): Promise<void> {
     // Check for GitHub Actions
     try {
       await fs.access(path.join(this.rootDir, '.github', 'workflows'));
       this.stack.ci.present = true;
       this.stack.ci.type = 'github-actions';
-    } catch (error) {
+    } catch (error: any) {
       // No GitHub Actions
     }
 
@@ -1181,13 +1323,17 @@ class StackDetector {
         this.stack.ci.present = true;
         this.stack.ci.type = file.replace('.', '').replace('-', '');
         break;
-      } catch (error) {
+      } catch (error: any) {
         // Continue checking
       }
     }
+    this.logDebug('CI detection complete', {
+      present: this.stack.ci.present,
+      type: this.stack.ci.type
+    });
   }
 
-  async detectSecurity() {
+  async detectSecurity(): Promise<void> {
     // Check for security-related files
     const securityFiles = ['.env', '.env.local', '.env.production'];
 
@@ -1196,30 +1342,29 @@ class StackDetector {
         await fs.access(path.join(this.rootDir, file));
         this.stack.quality.security = true;
         break;
-      } catch (error) {
+      } catch (error: any) {
         // Continue checking
       }
     }
 
     // Check for CSP or security headers
     if (this.stack.configurations.some(c => c.type === 'nextjs')) {
-      try {
-        const nextConfig = await fs.readFile(path.join(this.rootDir, 'next.config.js'), 'utf8');
-        if (nextConfig.includes('Content-Security-Policy') || nextConfig.includes('headers')) {
-          this.stack.quality.security = true;
-        }
-      } catch (error) {
-        // Cannot read Next.js config
+      const nextConfig = await this.readFileCached('next.config.js');
+      if (nextConfig && (nextConfig.includes('Content-Security-Policy') || nextConfig.includes('headers'))) {
+        this.stack.quality.security = true;
       }
     }
+    this.logDebug('Security detection complete', {
+      securityFiles: this.stack.quality.security
+    });
   }
 
-  async detectSecretsHygiene() {
-    const secrets = {
-      envTemplate: { present: false, files: [] },
+  async detectSecretsHygiene(): Promise<void> {
+    const secrets: FullSecretsMetadata = {
+      envTemplate: { present: false, files: [] as string[] },
       envIgnored: false,
-      envLoader: { present: false, tools: [] },
-      dependencyAudit: { present: false, tools: [] }
+      envLoader: { present: false, tools: [] as string[] },
+      dependencyAudit: { present: false, tools: [] as string[] }
     };
 
     const templateCandidates = [
@@ -1236,23 +1381,21 @@ class StackDetector {
       try {
         await fs.access(candidatePath);
         secrets.envTemplate.files.push(candidate);
-      } catch (error) {
+      } catch (error: any) {
         // File missing - skip
       }
     }
     secrets.envTemplate.present = secrets.envTemplate.files.length > 0;
 
-    try {
-      const gitignore = await fs.readFile(path.join(this.rootDir, '.gitignore'), 'utf8');
+    const gitignore = await this.readFileCached('.gitignore');
+    if (gitignore) {
       const gitignoreLower = gitignore.toLowerCase();
       if (gitignoreLower.includes('.env')) {
         secrets.envIgnored = true;
       }
-    } catch (error) {
-      // No .gitignore
     }
 
-    const loaderTools = new Set();
+    const loaderTools = new Set<string>();
     if (this.packageJsonDeps) {
       const nodeLoaders = ['dotenv', 'dotenv-flow', 'dotenv-expand', 'env-cmd', '@next/env'];
       for (const loader of nodeLoaders) {
@@ -1298,7 +1441,7 @@ class StackDetector {
     secrets.envLoader.tools = Array.from(loaderTools);
     secrets.envLoader.present = secrets.envLoader.tools.length > 0;
 
-    const auditTools = new Set();
+    const auditTools = new Set<string>();
     const workflowFiles = await this.collectWorkflowFiles();
     if (workflowFiles.length > 0) {
       const auditPatterns = [
@@ -1311,16 +1454,15 @@ class StackDetector {
       ];
 
       for (const workflowFile of workflowFiles) {
-        try {
-          const content = await fs.readFile(workflowFile, 'utf8');
-          const lowerContent = content.toLowerCase();
-          for (const { tool, patterns } of auditPatterns) {
-            if (patterns.some(pattern => lowerContent.includes(pattern))) {
-              auditTools.add(tool);
-            }
+        const content = await this.readFileCached(workflowFile);
+        if (!content) {
+          continue;
+        }
+        const lowerContent = content.toLowerCase();
+        for (const { tool, patterns } of auditPatterns) {
+          if (patterns.some(pattern => lowerContent.includes(pattern))) {
+            auditTools.add(tool);
           }
-        } catch (error) {
-          // Cannot read workflow file
         }
       }
     }
@@ -1338,24 +1480,39 @@ class StackDetector {
     }
 
     this.stack.secrets = secrets;
+    this.logDebug('Secrets hygiene signals', {
+      template: secrets.envTemplate.present,
+      ignored: secrets.envIgnored,
+      loader: secrets.envLoader.present,
+      audit: secrets.dependencyAudit.present
+    });
   }
 
-  async collectWorkflowFiles() {
+  async collectWorkflowFiles(): Promise<string[]> {
     const workflowDir = path.join(this.rootDir, '.github', 'workflows');
-    const yamlFiles = [];
+    const yamlFiles: string[] = [];
     try {
       await this.collectYamlFiles(workflowDir, yamlFiles);
-    } catch (error) {
+    } catch (error: any) {
       // No workflows directory
     }
     return yamlFiles;
   }
 
-  async collectYamlFiles(directory, results) {
+  async collectYamlFiles(directory: string, results: string[]): Promise<void> {
+    if (results.length >= this.workflowScanLimit) {
+      return;
+    }
     const entries = await fs.readdir(directory, { withFileTypes: true });
     for (const entry of entries) {
+      if (results.length >= this.workflowScanLimit) {
+        break;
+      }
       const entryPath = path.join(directory, entry.name);
       if (entry.isDirectory()) {
+        if (this.shouldSkipDirectory(entry.name)) {
+          continue;
+        }
         await this.collectYamlFiles(entryPath, results);
       } else if (entry.isFile() && (entry.name.endsWith('.yml') || entry.name.endsWith('.yaml'))) {
         results.push(entryPath);
@@ -1363,16 +1520,16 @@ class StackDetector {
     }
   }
 
-  async fileExists(relativePath) {
+  async fileExists(relativePath: string): Promise<boolean> {
     try {
       await fs.access(path.join(this.rootDir, relativePath));
       return true;
-    } catch (error) {
+    } catch (error: any) {
       return false;
     }
   }
 
-  async saveReport(report) {
+  async saveReport(report: StackReport): Promise<void> {
     const devenvDir = path.join(this.rootDir, '.devenv');
     await fs.mkdir(devenvDir, { recursive: true });
     const reportPath = path.join(devenvDir, 'stack-report.json');
@@ -1382,13 +1539,16 @@ class StackDetector {
     }
   }
 
-  assignProfiles() {
-    const profiles = new Set();
+  assignProfiles(): void {
+    const profiles = new Set<string>();
     const techNames = this.stack.technologies.map(t => t.name.toLowerCase());
-    const manifestTechs = Array.isArray(this.projectManifest?.technologies)
-      ? this.projectManifest.technologies.map(tech => String(tech).toLowerCase())
+    const manifest = this.projectManifest as Record<string, any> | null;
+    const manifestTechs = Array.isArray(manifest?.technologies)
+      ? (manifest!.technologies as unknown[]).map(tech => String(tech).toLowerCase())
       : [];
-    const packageManager = (this.projectManifest?.packageManager || '').toLowerCase();
+    const rawPackageManager = manifest?.packageManager;
+    const packageManager =
+      typeof rawPackageManager === 'string' ? rawPackageManager.toLowerCase() : '';
 
     const nodeSignals = ['node.js', 'node', 'react', 'next.js', 'nextjs', 'vite', 'express', 'typescript', 'javascript', 'svelte'];
     const pythonSignals = ['python', 'fastapi', 'django', 'flask', 'pytest', 'black', 'ruff', 'mypy', 'pytorch', 'pychrono', 'numpy', 'scipy', 'pandas'];
@@ -1430,12 +1590,12 @@ class StackDetector {
     }
   }
 
-  hasTechnology(name) {
+  hasTechnology(name: string): boolean {
     const needle = name.toLowerCase();
     return this.stack.technologies.some(t => t.name.toLowerCase() === needle);
   }
 
-  addTechnology(name, meta = {}) {
+  addTechnology(name: string, meta: Record<string, any> = {}): void {
     const normalizedName = this.formatTechnologyName(name);
     const needle = normalizedName.toLowerCase();
     const existingIndex = this.stack.technologies.findIndex(
@@ -1463,12 +1623,17 @@ class StackDetector {
     });
   }
 
-  applyManifestTechnologies() {
-    if (!this.projectManifest?.technologies) {
+  applyManifestTechnologies(): void {
+    const manifest = this.projectManifest as Record<string, any> | null;
+    if (!manifest?.technologies) {
       return;
     }
 
-    for (const tech of this.projectManifest.technologies) {
+    const technologies = Array.isArray(manifest.technologies)
+      ? (manifest.technologies as unknown[])
+      : [];
+
+    for (const tech of technologies) {
       const formatted = this.formatTechnologyName(String(tech));
       if (!formatted) {
         continue;
@@ -1481,7 +1646,7 @@ class StackDetector {
     }
   }
 
-  formatTechnologyName(value) {
+  formatTechnologyName(value: string): string {
     if (!value) {
       return '';
     }
@@ -1503,7 +1668,7 @@ class StackDetector {
 
 // Run the detector
 if (require.main === module) {
-  const detector = new StackDetector({ quiet: quietMode });
+  const detector = new StackDetector({ quiet: quietMode, mode: detectorMode, debug: debugFlag });
   detector.detect().then(async (result) => {
     if (jsonOutput) {
       process.stdout.write(JSON.stringify(result));
@@ -1524,20 +1689,3 @@ if (require.main === module) {
 }
 
 export = StackDetector;
-
-async function readJsonFile(filePath) {
-  try {
-    const content = await fs.readFile(filePath, 'utf8');
-    return JSON.parse(content);
-  } catch (error) {
-    if (error.code === 'ENOENT') {
-      throw error;
-    }
-    if (error instanceof SyntaxError) {
-      const parseError = new Error(`Invalid JSON in ${filePath}: ${error.message}`);
-      parseError.code = 'JSON_PARSE_ERROR';
-      throw parseError;
-    }
-    throw error;
-  }
-}

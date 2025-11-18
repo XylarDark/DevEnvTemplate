@@ -30,6 +30,21 @@ npm run build
 npm run doctor
 ```
 
+### Enable Debug Logging
+
+**Problem:** Stack detection or gap analysis behaves unexpectedly and you need more context.
+
+**Solution:**
+```bash
+# Run doctor with verbose logs (avoid mixing with --json)
+npm run doctor -- --debug
+
+# Or target a single tool
+node .github/tools/stack-detector.js --debug --json
+node .github/tools/gap-analyzer.js --debug
+```
+This sets `LOG_LEVEL=DEBUG` so the tools print detailed progress. Re-run without `--debug` once you’re done to keep console noise down.
+
 ## Stack Detection Issues
 
 ### `Cannot find module '...stack-detector.js'`

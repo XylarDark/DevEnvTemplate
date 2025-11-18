@@ -16,6 +16,32 @@ import { createLogger } from '../../scripts/utils/logger';
 import type { Gap, StackReport, GapReport, GapAnalysisOptions } from '../types/gaps';
 
 const logger = createLogger({ context: 'gap-analyzer' });
+const cliArgs = process.argv.slice(2);
+const debugFlag = cliArgs.includes('--debug');
+if (debugFlag && !process.env.LOG_LEVEL) {
+  process.env.LOG_LEVEL = 'DEBUG';
+}
+let parsedMode: 'fast' | 'full' | undefined;
+const inlineModeArg = cliArgs.find(arg => arg.startsWith('--mode='));
+if (inlineModeArg) {
+  const value = inlineModeArg.split('=')[1];
+  if (value === 'fast' || value === 'full') {
+    parsedMode = value;
+  }
+}
+if (!parsedMode) {
+  const modeIndex = cliArgs.indexOf('--mode');
+  if (modeIndex !== -1 && (cliArgs[modeIndex + 1] === 'fast' || cliArgs[modeIndex + 1] === 'full')) {
+    parsedMode = cliArgs[modeIndex + 1] as 'fast' | 'full';
+  }
+}
+if (!parsedMode && (cliArgs.includes('--fast') || cliArgs.includes('--shallow'))) {
+  parsedMode = 'fast';
+}
+if (!parsedMode && cliArgs.includes('--full')) {
+  parsedMode = 'full';
+}
+const analyzerMode: 'fast' | 'full' = parsedMode === 'fast' ? 'fast' : 'full';
 const NODE_TECH_HINTS = ['node.js', 'node', 'react', 'next.js', 'nextjs', 'vite', 'express', 'typescript', 'javascript', 'svelte'];
 const PYTHON_TECH_HINTS = ['python', 'fastapi', 'django', 'flask', 'pytest', 'black', 'ruff', 'mypy', 'pytorch', 'pychrono', 'numpy', 'scipy', 'pandas'];
 const NODE_PACKAGE_MANAGERS = ['npm', 'pnpm', 'yarn', 'bun'];
@@ -28,9 +54,13 @@ class GapAnalyzer {
   private gaps: Gap[] = [];
   private profiles: Set<string> = new Set();
   private languageProfile: string = 'agnostic';
+  private mode: 'fast' | 'full';
+  private debug: boolean;
 
   constructor(options: GapAnalysisOptions = {}) {
     this.rootDir = options.rootDir || process.cwd();
+    this.mode = options.mode || analyzerMode;
+    this.debug = !!options.debug;
   }
 
   async analyze(): Promise<string> {
@@ -54,33 +84,59 @@ class GapAnalyzer {
         this.languageProfile = this.computeLanguageProfile();
       }
       logger.info('Stack report loaded successfully');
+      this.logDebug('Stack report loaded', {
+        profiles: Array.from(this.profiles),
+        languageProfile: this.languageProfile
+      });
     } catch (error) {
       logger.error('Stack report not found. Run stack-detector first.');
       throw new Error('Stack report not found. Run stack-detector first.');
     }
 
-    // Run all analysis methods
-    this.analyzeTypeScript();
-    this.analyzeLinting();
-    this.analyzeTesting();
-    this.analyzeSecurity();
-    this.analyzeCI();
-    this.analyzeBoundaries();
-    this.analyzeQualityGates();
+    if (this.isFastMode()) {
+      logger.info('Fast mode enabled: skipping documentation, accessibility, Docker, and git-hook checks.');
+    }
+
+    await this.runStage('TypeScript', () => this.analyzeTypeScript());
+    await this.runStage('Linting', () => this.analyzeLinting());
+    await this.runStage('Testing', () => this.analyzeTesting());
+    await this.runStage('Security', () => this.analyzeSecurity());
+    await this.runStage('CI/CD', () => this.analyzeCI());
+    await this.runStage('Boundaries', () => this.analyzeBoundaries());
+    await this.runStage('Quality Gates', () => this.analyzeQualityGates());
     
-    // Enhanced analysis methods (async)
-    await this.analyzeDocumentation();
-    this.analyzeDependencies();
-    this.analyzePerformance();
-    this.analyzeAccessibility();
-    await this.analyzeDocker();
-    await this.analyzeEnvironment();
-    await this.analyzeGitHooks();
-    this.analyzeFrameworks();
-    this.analyzePythonTooling();
+    if (this.isFastMode()) {
+      await this.runStage('Dependencies', () => this.analyzeDependencies());
+      this.gaps.push({
+        category: 'documentation',
+        severity: 'low',
+        title: 'Fast doctor run (partial coverage)',
+        description: 'Fast mode skips documentation, accessibility, Docker, environment, and git-hook checks.',
+        impact: 'Some gaps only appear in full scans.',
+        recommendation: 'Re-run `npm run doctor --full` before releases for complete coverage.',
+        effort: 'low',
+        files: []
+      });
+      this.logDebug('Inserted fast-mode diagnostics gap');
+    } else {
+      await this.runStage('Documentation', () => this.analyzeDocumentation());
+      await this.runStage('Dependencies', () => this.analyzeDependencies());
+      await this.runStage('Performance', () => this.analyzePerformance());
+      await this.runStage('Accessibility', () => this.analyzeAccessibility());
+      await this.runStage('Docker', () => this.analyzeDocker());
+      await this.runStage('Environment', () => this.analyzeEnvironment());
+      await this.runStage('Git Hooks', () => this.analyzeGitHooks());
+      await this.runStage('Frameworks', () => this.analyzeFrameworks());
+      await this.runStage('Python Tooling', () => this.analyzePythonTooling());
+    }
 
     logger.info(`Gap analysis complete. Found ${this.gaps.length} gaps`);
+    this.logDebug('Gap analysis finished', { gaps: this.gaps.length, mode: this.mode });
     return this.generateReport();
+  }
+
+  private isFastMode(): boolean {
+    return this.mode === 'fast';
   }
 
   private analyzeTypeScript(): void {
@@ -556,7 +612,8 @@ module.exports = {
   experimental: {
     optimizePackageImports: ['@mui/icons-material']
   }
-}`
+};
+`
       });
 
       this.gaps.push({
@@ -570,6 +627,18 @@ module.exports = {
         files: ['next.config.js']
       });
     }
+  }
+
+  private logDebug(message: string, meta: Record<string, unknown> = {}): void {
+    if (this.debug) {
+      logger.debug(message, meta);
+    }
+  }
+
+  private async runStage(stage: string, fn: () => void | Promise<void>): Promise<void> {
+    const before = this.gaps.length;
+    await fn();
+    this.logDebug(`${stage} analysis complete`, { added: this.gaps.length - before });
   }
 
   private analyzeAccessibility(): void {
@@ -909,7 +978,7 @@ echo "npm run lint && npm run format:check" > .husky/pre-commit`
   private hasTestingFramework(name: string): boolean {
     const needle = name.toLowerCase();
     return (this.stack!.tooling?.testing?.frameworks || []).some(
-      (framework: { name: string }) => framework.name.toLowerCase() === needle
+      framework => framework.name.toLowerCase() === needle
     );
   }
 
@@ -993,7 +1062,7 @@ echo "npm run lint && npm run format:check" > .husky/pre-commit`
 
 // Run the analyzer
 if (require.main === module) {
-  const analyzer = new GapAnalyzer();
+  const analyzer = new GapAnalyzer({ mode: analyzerMode, debug: debugFlag });
   analyzer.analyze()
     .then(async report => {
       console.log(report);

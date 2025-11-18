@@ -47,14 +47,22 @@ interface CliOptions {
   strict?: boolean;
   json?: boolean;
   projectRoot?: string;
+  mode?: 'fast' | 'full';
+  debug?: boolean;
 }
 
 /**
  * Main doctor command
  */
 async function runDoctor(options: CliOptions = {}) {
+  if (options.debug && !process.env.LOG_LEVEL) {
+    process.env.LOG_LEVEL = 'DEBUG';
+  }
   if (!options.json) {
     console.log('🏥 DevEnvTemplate Health Check\n');
+    if (options.debug) {
+      console.log('🪲 Debug logging enabled (LOG_LEVEL=DEBUG)\n');
+    }
   }
 
   const currentDir = process.cwd();
@@ -67,6 +75,7 @@ async function runDoctor(options: CliOptions = {}) {
   }
   const workingDir = projectRoot;
   const reportDir = path.join(workingDir, '.devenv');
+  const scanMode: 'fast' | 'full' = options.mode === 'fast' ? 'fast' : 'full';
 
   // Ensure .devenv directory exists
   await fs.mkdir(reportDir, { recursive: true });
@@ -79,6 +88,9 @@ async function runDoctor(options: CliOptions = {}) {
   // Step 1: Run stack detector
   if (!options.json) {
     console.log('🔍 Analyzing project stack...');
+    if (scanMode === 'fast') {
+      console.log('⚡ Fast mode enabled: skipping deep scans for quicker feedback\n');
+    }
   }
   const stackDetectorDistPath = path.join(__dirname, '../tools/stack-detector.js');
   const stackDetectorSourcePath = path.join(__dirname, '../../../scripts/tools/stack-detector.ts');
@@ -90,7 +102,15 @@ async function runDoctor(options: CliOptions = {}) {
   let stackData: any;
   
   try {
-    const stackOutput = execSync(`node "${stackDetectorPath}" --json`, {
+    const stackArgs = ['--json'];
+    if (scanMode === 'fast') {
+      stackArgs.push('--mode=fast');
+    }
+    if (options.debug) {
+      stackArgs.push('--debug');
+    }
+    const stackCommand = `node "${stackDetectorPath}" ${stackArgs.join(' ')}`;
+    const stackOutput = execSync(stackCommand, {
       cwd: workingDir,
       encoding: 'utf8',
       stdio: ['pipe', 'pipe', 'pipe']
@@ -118,7 +138,18 @@ async function runDoctor(options: CliOptions = {}) {
   let gapsReport: string;
   
   try {
-    execSync(`node "${gapAnalyzerPath}"`, {
+    const gapArgs: string[] = [];
+    if (scanMode === 'fast') {
+      gapArgs.push('--mode=fast');
+    }
+    if (options.debug) {
+      gapArgs.push('--debug');
+    }
+    const gapCommand =
+      gapArgs.length > 0
+        ? `node "${gapAnalyzerPath}" ${gapArgs.join(' ')}`
+        : `node "${gapAnalyzerPath}"`;
+    execSync(gapCommand, {
       cwd: workingDir,
       encoding: 'utf8',
       stdio: 'inherit'
@@ -570,6 +601,25 @@ function parseArgs(): CliOptions {
       case '--json':
         options.json = true;
         break;
+      case '--debug':
+        options.debug = true;
+        break;
+      case '--fast':
+      case '--shallow':
+        options.mode = 'fast';
+        break;
+      case '--full':
+        options.mode = 'full';
+        break;
+      case '--mode':
+        if (args[i + 1] && (args[i + 1] === 'fast' || args[i + 1] === 'full')) {
+          options.mode = args[i + 1] as 'fast' | 'full';
+          i++;
+        } else {
+          console.error('❌ Invalid value for --mode. Use "fast" or "full".');
+          process.exit(1);
+        }
+        break;
       case '--project-root':
         if (args[i + 1]) {
           options.projectRoot = args[i + 1];
@@ -587,6 +637,14 @@ function parseArgs(): CliOptions {
       default:
         if (arg.startsWith('--project-root=')) {
           options.projectRoot = arg.split('=')[1];
+        } else if (arg.startsWith('--mode=')) {
+          const value = arg.split('=')[1];
+          if (value === 'fast' || value === 'full') {
+            options.mode = value as 'fast' | 'full';
+          } else {
+            console.error('❌ Invalid value for --mode. Use "fast" or "full".');
+            process.exit(1);
+          }
         } else if (!arg.startsWith('-') && !options.projectRoot) {
           // Positional project root (e.g., `npm run doctor -- ..`)
           options.projectRoot = arg;
@@ -615,6 +673,10 @@ OPTIONS:
   --dry-run          Show what would be fixed without applying changes
   --strict           Exit with code 1 on any warnings (useful for CI)
   --json             Output results in JSON format
+  --fast             Run a shallow scan (skips some expensive checks)
+  --full             Force a full scan (default)
+  --mode <fast|full> Equivalent to --fast/--full for scripting
+  --debug            Enable verbose logging (writes to stdout; avoid with --json)
   --project-root     Explicitly set the project root to analyze
   -h, --help         Show this help message
 
@@ -626,6 +688,8 @@ EXAMPLES:
   npm run doctor --dry-run                # Preview fixes
   npm run doctor --json                   # Machine-readable output
   npm run doctor --strict                 # Fail CI on any warnings
+  npm run doctor --fast                   # Quick feedback loop (reduced coverage)
+  npm run doctor --debug                  # Verbose logging for troubleshooting
   npm run doctor --project-root ..        # Run from .devenv folder
 
 WORKFLOW:
