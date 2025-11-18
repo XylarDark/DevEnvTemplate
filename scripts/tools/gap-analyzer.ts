@@ -20,6 +20,7 @@ const NODE_TECH_HINTS = ['node.js', 'node', 'react', 'next.js', 'nextjs', 'vite'
 const PYTHON_TECH_HINTS = ['python', 'fastapi', 'django', 'flask', 'pytest', 'black', 'ruff', 'mypy', 'pytorch', 'pychrono', 'numpy', 'scipy', 'pandas'];
 const NODE_PACKAGE_MANAGERS = ['npm', 'pnpm', 'yarn', 'bun'];
 const PYTHON_PACKAGE_MANAGERS = ['pip', 'pipenv', 'poetry', 'uv'];
+const ENV_SAMPLE_FILES = ['.env.example', '.env.sample', 'env.example', 'env.sample', 'env-example.txt', 'env-example.env'];
 
 class GapAnalyzer {
   private rootDir: string;
@@ -363,6 +364,33 @@ class GapAnalyzer {
   }
 
   private analyzeQualityGates(): void {
+    const pythonOnly = this.hasProfile('python') && !this.hasProfile('node');
+
+    if (pythonOnly) {
+      this.gaps.push({
+        category: 'quality',
+        severity: 'low',
+        title: 'Experiment Budgets Not Defined',
+        description: 'Simulation/ML projects still need guardrails on runtime, dataset freshness, and numerical drift.',
+        impact: 'Long-running experiments and stale datasets go unnoticed',
+        recommendation: 'Add an experiment-budgets.yaml with max runtime, min epochs, and dataset checksum expectations',
+        effort: 'low',
+        files: ['experiments/budgets.yaml', 'pyproject.toml']
+      });
+
+      this.gaps.push({
+        category: 'observability',
+        severity: 'low',
+        title: 'Run Tracking Not Configured',
+        description: 'Run tracking (Weights & Biases, MLflow, or JSON logs) keeps a provenance trail for physics/AI studies.',
+        impact: 'Cannot compare experiments or reproduce regressions',
+        recommendation: 'Log each experiment with metrics + params via mlflow/wandb or append JSONL entries under data/runs/',
+        effort: 'medium',
+        files: ['data/runs/', 'scripts/track_runs.py']
+      });
+      return;
+    }
+
     this.gaps.push({
       category: 'quality',
       severity: 'low',
@@ -591,23 +619,29 @@ dist`
   }
 
   private async analyzeEnvironment(): Promise<void> {
-    try {
-      await fs.access(path.join(this.rootDir, '.env.example'));
-    } catch {
-      // Check if project uses environment variables
-      const hasPackageJson = this.stack!.technologies.some(t => t.name === 'Node.js');
-      if (hasPackageJson) {
-        this.gaps.push({
-          category: 'environment',
-          severity: 'medium',
-          title: 'Missing .env.example File',
-          description: '.env.example documents required environment variables',
-          impact: 'Developers may not know which environment variables are needed',
-          recommendation: 'Create .env.example with placeholder values',
-          effort: 'low',
-          files: ['.env.example']
-        });
-      }
+    const envSample = await this.findEnvSampleFile();
+    if (!envSample) {
+      this.gaps.push({
+        category: 'environment',
+        severity: 'medium',
+        title: 'Missing .env.example File',
+        description: '.env.example documents required environment variables for all contributors.',
+        impact: 'Developers may not know which environment variables are needed',
+        recommendation: 'Create .env.example with placeholder values under the repo root',
+        effort: 'low',
+        files: ['.env.example']
+      });
+    } else if (!envSample.startsWith('.env')) {
+      this.gaps.push({
+        category: 'environment',
+        severity: 'low',
+        title: 'Environment Template Uses Non-Standard Name',
+        description: `Found ${envSample}; renaming to .env.example keeps tooling (and DevEnvTemplate) happy.`,
+        impact: 'Tooling like dotenv/pre-commit may not auto-detect the template file',
+        recommendation: `Rename ${envSample} to .env.example and update docs referencing it`,
+        effort: 'low',
+        files: [envSample]
+      });
     }
 
     // Check for .env in .gitignore
@@ -631,9 +665,34 @@ dist`
   }
 
   private async analyzeGitHooks(): Promise<void> {
-    try {
-      await fs.access(path.join(this.rootDir, '.husky'));
-    } catch {
+    const hasPreCommit = await this.fileExists('.pre-commit-config.yaml');
+    const hasHusky = await this.fileExists('.husky');
+
+    if (this.hasProfile('python') && !hasPreCommit) {
+      this.gaps.push({
+        category: 'git-hooks',
+        severity: 'low',
+        title: 'Pre-commit Hooks Not Configured',
+        description: 'pre-commit keeps Ruff/Black/Mypy/Pytest in sync with CI for Python repos.',
+        impact: 'Developers may skip the fast fail checks that CI enforces',
+        recommendation: 'Add pre-commit with Ruff/Black/Mypy/Pytest stages and run `pre-commit install`',
+        effort: 'low',
+        files: ['.pre-commit-config.yaml'],
+        codeSnippet: `repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      - id: ruff
+  - repo: local
+    hooks:
+      - id: pytest
+        entry: python -m pytest`,
+        resources: ['https://pre-commit.com/']
+      });
+      return;
+    }
+
+    if (this.hasProfile('node') && !hasHusky) {
       this.gaps.push({
         category: 'git-hooks',
         severity: 'low',
@@ -646,6 +705,17 @@ dist`
         codeSnippet: `npm install --save-dev husky
 npx husky init
 echo "npm run lint && npm run format:check" > .husky/pre-commit`
+      });
+    } else if (!hasPreCommit && !hasHusky) {
+      this.gaps.push({
+        category: 'git-hooks',
+        severity: 'low',
+        title: 'Git Hooks Not Configured',
+        description: 'Pre-commit hooks (pre-commit or Husky) keep local workflows aligned with CI.',
+        impact: 'Local commits may skip formatting/linting',
+        recommendation: 'Add either pre-commit (Python) or Husky (Node) with lint/test tasks',
+        effort: 'low',
+        files: ['.pre-commit-config.yaml', '.husky/pre-commit']
       });
     }
   }
@@ -705,6 +775,24 @@ echo "npm run lint && npm run format:check" > .husky/pre-commit`
         effort: 'medium',
         files: ['mypy.ini', 'pyproject.toml']
       });
+    }
+  }
+
+  private async findEnvSampleFile(): Promise<string | null> {
+    for (const candidate of ENV_SAMPLE_FILES) {
+      if (await this.fileExists(candidate)) {
+        return candidate;
+      }
+    }
+    return null;
+  }
+
+  private async fileExists(relativePath: string): Promise<boolean> {
+    try {
+      await fs.access(path.join(this.rootDir, relativePath));
+      return true;
+    } catch {
+      return false;
     }
   }
 

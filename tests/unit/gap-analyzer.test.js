@@ -214,6 +214,64 @@ describe('Gap Analyzer', () => {
     });
   });
 
+  describe('Python-specific guidance', () => {
+    const pythonStack = {
+      technologies: [{ name: 'Python' }, { name: 'Ruff' }],
+      configurations: [],
+      quality: { testing: true, security: false, linting: true },
+      ci: { present: true, type: 'github-actions' },
+      profiles: ['python'],
+      languageProfile: 'python'
+    };
+
+    async function writeStack(stack) {
+      await fs.writeFile(
+        path.join(testRoot, '.devenv', 'stack-report.json'),
+        JSON.stringify(stack)
+      );
+    }
+
+    async function resetRoot() {
+      await fs.rm(testRoot, { recursive: true, force: true });
+      await fs.mkdir(path.join(testRoot, '.devenv'), { recursive: true });
+    }
+
+    it('flags non-standard env templates instead of missing file', async () => {
+      await resetRoot();
+      await writeStack(pythonStack);
+      await fs.writeFile(path.join(testRoot, 'env-example.txt'), 'SIMULATION_GRAVITY=-1.62\n');
+
+      const analyzer = new GapAnalyzer({ rootDir: testRoot });
+      const report = await analyzer.analyze();
+
+      assert.ok(report.includes('Environment Template Uses Non-Standard Name'));
+      assert.ok(!report.includes('Missing .env.example File'));
+    });
+
+    it('recommends pre-commit hooks for python stacks', async () => {
+      await resetRoot();
+      await writeStack(pythonStack);
+
+      const analyzer = new GapAnalyzer({ rootDir: testRoot });
+      const report = await analyzer.analyze();
+
+      assert.ok(report.includes('Pre-commit Hooks Not Configured'));
+      assert.ok(!report.includes('Husky'));
+    });
+
+    it('uses experiment/run-tracking guidance for python stacks', async () => {
+      await resetRoot();
+      await writeStack(pythonStack);
+
+      const analyzer = new GapAnalyzer({ rootDir: testRoot });
+      const report = await analyzer.analyze();
+
+      assert.ok(report.includes('Experiment Budgets Not Defined'));
+      assert.ok(report.includes('Run Tracking Not Configured'));
+      assert.ok(!report.includes('Quality Budgets Not Configured'));
+    });
+  });
+
   describe('CI/CD Analysis', () => {
     it('should detect missing CI pipeline', async () => {
       const stackReport = {

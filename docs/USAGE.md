@@ -46,8 +46,13 @@ Once `.devenv/stack-report.json` exists, the doctor prints the detected profile(
 | Stack profile | Default quick wins |
 |---------------|--------------------|
 | `node` | Vitest + ESLint flat config + Playwright + Dependabot/lockfile checks |
-| `python` | Pytest + Ruff + Black + Mypy + pip/poetry lockfile hygiene |
+| `python` | Pytest + Ruff + Black + Mypy + pip/poetry lockfile hygiene + pre-commit hooks + experiment/run tracking |
 | `node + python` | Separate sections for each profile (doctor prints both) |
+
+For simulation/ML-style Python repos the doctor now:
+- Accepts existing `env-example*` templates but nudges you to rename them to `.env.example`
+- Prefers `pre-commit` hooks over Husky
+- Recommends experiment budgets plus run-tracking observability instead of bundle-size budgets
 
 ### Auto-Fix Issues
 
