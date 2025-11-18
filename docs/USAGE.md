@@ -54,6 +54,10 @@ For simulation/ML-style Python repos the doctor now:
 - Prefers `pre-commit` hooks over Husky
 - Recommends experiment budgets plus run-tracking observability instead of bundle-size budgets
 
+### Tooling architecture (why Node? why TypeScript?)
+
+All shared tooling inside `.devenv/`—stack detection, gap analysis, plan generation, cleanup—runs on **Node.js** and is authored in **TypeScript**. That single runtime keeps the embedded experience predictable on macOS, Linux, and Windows (`cd .devenv && npm install && npm run doctor`). Projects are still free to keep helper scripts in their native stacks (e.g., a Python repo can ship a `scripts/check_env.py`), but if a helper becomes broadly useful we port it into the TypeScript core so every template user benefits. See [`docs/TOOLING-ARCHITECTURE.md`](TOOLING-ARCHITECTURE.md) for the contributor guidelines.
+
 ### Secrets handling checklist
 
 The doctor clears the “Secrets Handling Not Detected” gap when it sees four signals:
@@ -345,6 +349,8 @@ npm run test:fast    # Quick unit tests
 npm run test:slow    # Integration tests
 npm run test:watch   # Watch mode
 ```
+
+> All test commands run `npm run build` first, which triggers `tsc --noEmit` followed by the emit step. This keeps `dist/` in sync so doctor runs the same code you just edited.
 
 ---
 

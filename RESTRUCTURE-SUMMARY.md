@@ -173,7 +173,7 @@ npm run build
 
 ### CI/CD Status
 ✅ Workflow updated with new paths
-- Stack detector: `scripts/tools/stack-detector.js`
+- Stack detector: `scripts/tools/stack-detector.ts`
 - Gap analyzer: `scripts/tools/gap-analyzer.js`
 
 ## Migration Notes

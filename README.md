@@ -210,6 +210,8 @@ See [IMPLEMENTATION_GUIDE.md](IMPLEMENTATION_GUIDE.md) for advanced usage.
 - **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** - Project structure and design principles
 - **[docs/LLM-CONTEXT-GUIDE.md](docs/LLM-CONTEXT-GUIDE.md)** - Context guide for AI assistants
 - **[docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)** - Troubleshooting guide
+- **[docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)** - Build/test loop for editing the doctor
+- **[docs/RFC-standalone-doctor.md](docs/RFC-standalone-doctor.md)** - Research notes on future binary tooling
 - **[IMPLEMENTATION_GUIDE.md](IMPLEMENTATION_GUIDE.md)** - Advanced features and customization
 - **[Engineering Handbook](docs/engineering-handbook.md)** - Architecture and patterns
 
@@ -217,7 +219,7 @@ See [IMPLEMENTATION_GUIDE.md](IMPLEMENTATION_GUIDE.md) for advanced usage.
 
 Found a bug? Have a feature idea? PRs welcome!
 
-See [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md) for guidelines.
+See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) for guidelines.
 
 ## License
 

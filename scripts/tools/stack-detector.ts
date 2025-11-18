@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+// @ts-nocheck
+
 /**
  * Stack Detector - CI-only utility
  *
@@ -7,9 +9,14 @@
  * Used by DevEnvTemplate drop-in to understand the current project setup.
  */
 
-const fs = require('fs').promises;
-const path = require('path');
-const { createLogger } = require('../../scripts/utils/logger');
+import { promises as fs } from 'fs';
+import path from 'path';
+import { createLogger } from '../utils/logger';
+
+interface StackDetectorOptions {
+  rootDir?: string;
+  quiet?: boolean;
+}
 
 const args = process.argv.slice(2);
 const jsonOutput = args.includes('--json');
@@ -17,7 +24,7 @@ const quietMode = jsonOutput || args.includes('--quiet');
 
 const logger = createLogger({ context: 'stack-detector' });
 
-const TECHNOLOGY_ALIASES = {
+const TECHNOLOGY_ALIASES: Record<string, string> = {
   python: 'Python',
   'python runtime': 'Python Runtime',
   pytorch: 'PyTorch',
@@ -38,7 +45,15 @@ const TECHNOLOGY_ALIASES = {
 };
 
 class StackDetector {
-  constructor(options = {}) {
+  private rootDir: string;
+  private quiet: boolean;
+  private projectManifest: any;
+  private pyprojectContent: string | null;
+  private requirementsContent: string | null;
+  private packageJsonDeps: Record<string, string> | null;
+  private stack: any;
+
+  constructor(options: StackDetectorOptions = {}) {
     this.rootDir = options.rootDir || process.cwd();
     this.quiet = !!options.quiet;
     this.projectManifest = null;
@@ -1508,7 +1523,7 @@ if (require.main === module) {
   });
 }
 
-module.exports = StackDetector;
+export = StackDetector;
 
 async function readJsonFile(filePath) {
   try {

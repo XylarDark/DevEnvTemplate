@@ -36,11 +36,11 @@ npm run doctor
 
 **Problem:** Running `npm run doctor` (or `node dist/scripts/tools/stack-detector.js`) fails with `Cannot find module '...stack-detector.js'`.
 
-**Cause:** The TypeScript build cleaned `dist/` and removed the prebuilt stack-detector helper.
+**Cause:** The TypeScript build has not been run yet, so `dist/scripts/tools/stack-detector.js` does not exist.
 
 **Solution:**
 ```bash
-# Rebuild (postbuild copies stack-detector into dist/)
+# Compile TypeScript (prebuild + build)
 npm run build
 
 # Re-run doctor
@@ -88,7 +88,7 @@ cat package.json | grep dependencies
 rm -rf node_modules package-lock.json tsconfig.json
 
 # Re-run stack detector so it records the python profile
-npm run doctor -- --json > nul  # or node scripts/tools/stack-detector.js
+npm run doctor -- --json > nul  # or node dist/scripts/tools/stack-detector.js
 
 # Doctor output should now start with "🧠 Stack profile: python"
 ```

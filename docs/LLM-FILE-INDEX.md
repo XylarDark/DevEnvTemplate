@@ -24,7 +24,7 @@ This index lists the minimal set of files an AI assistant should load before edi
 | File | Description |
 |------|-------------|
 | `scripts/doctor/cli.ts` | The main doctor CLI – orchestrates stack detection, gap analysis, report printing, and quick-fix logic. |
-| `scripts/tools/stack-detector.js` | Detects technologies/configs and now records `profiles`/`primaryProfile` used to specialize recommendations. |
+| `scripts/tools/stack-detector.ts` | Detects technologies/configs and now records `profiles`/`primaryProfile` used to specialize recommendations. |
 | `scripts/tools/gap-analyzer.ts` | Generates `.devenv/gaps-report.md`, applies stack-aware rules (Node vs Python, etc.), and computes health scores. |
 | `scripts/tools/plan-generator.ts` | Produces `hardening-plan.md` and other action plans from the gaps report. |
 

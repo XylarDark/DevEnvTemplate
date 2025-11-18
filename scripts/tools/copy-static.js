@@ -2,7 +2,7 @@
 
 /**
  * Copy static JS utilities that are not produced by the TypeScript build.
- * Ensures `dist/scripts/tools/stack-detector.js` exists after `npm run build`.
+ * (Currently empty – all tooling now compiles from TypeScript sources.)
  */
 
 const fs = require('fs').promises;
@@ -10,12 +10,7 @@ const path = require('path');
 
 async function main() {
   const repoRoot = path.resolve(__dirname, '..', '..');
-  const copies = [
-    {
-      src: path.join(repoRoot, 'scripts', 'tools', 'stack-detector.js'),
-      dest: path.join(repoRoot, 'dist', 'scripts', 'tools', 'stack-detector.js')
-    }
-  ];
+  const copies = [];
 
   for (const file of copies) {
     try {

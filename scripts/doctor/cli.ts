@@ -81,7 +81,7 @@ async function runDoctor(options: CliOptions = {}) {
     console.log('🔍 Analyzing project stack...');
   }
   const stackDetectorDistPath = path.join(__dirname, '../tools/stack-detector.js');
-  const stackDetectorSourcePath = path.join(__dirname, '../../../scripts/tools/stack-detector.js');
+  const stackDetectorSourcePath = path.join(__dirname, '../../../scripts/tools/stack-detector.ts');
   const stackDetectorPath = existsSync(stackDetectorDistPath)
     ? stackDetectorDistPath
     : existsSync(stackDetectorSourcePath)

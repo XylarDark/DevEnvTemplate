@@ -194,7 +194,7 @@ tests/
 ```
 User runs: npm run doctor --fix
 
-1. Stack Detection (scripts/tools/stack-detector.js)
+1. Stack Detection (scripts/tools/stack-detector.ts)
    ↓
    Analyzes project files to identify:
    - Frameworks (Next.js, Vite, Express, etc.)
