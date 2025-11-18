@@ -18,6 +18,13 @@ export interface Configuration {
 export interface StackReport {
   technologies: Technology[];
   configurations: Configuration[];
+  secrets?: {
+    envTemplate?: { present: boolean; files: string[] };
+    envIgnored?: boolean;
+    envLoader?: { present: boolean; tools: string[] };
+    dependencyAudit?: { present: boolean; tools: string[] };
+    [key: string]: any;
+  };
   quality: {
     testing: boolean;
     security: boolean;

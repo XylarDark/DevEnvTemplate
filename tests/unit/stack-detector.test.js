@@ -190,5 +190,50 @@ describe('StackDetector', () => {
       assert.ok(stack.technologies.some(tech => tech.name === 'Mypy'), 'should detect mypy from pyproject');
     });
   });
+
+  describe('Secrets hygiene detection', () => {
+    test('should capture env hygiene signals for python simulation project', async () => {
+      const fixtureDir = path.join(__dirname, '..', 'fixtures', 'python-sim-project');
+      const detector = new StackDetector({ rootDir: fixtureDir, quiet: true });
+
+      const stack = await detector.detect();
+
+      assert.ok(stack.secrets, 'secrets metadata should exist');
+      assert.ok(stack.secrets.envTemplate.present, 'env template should be detected');
+      assert.ok(stack.secrets.envTemplate.files.includes('.env.example'), 'should record .env.example');
+      assert.ok(stack.secrets.envIgnored, '.env should be ignored via gitignore');
+      assert.ok(
+        stack.secrets.envLoader.tools.includes('python-dotenv'),
+        'python-dotenv should be detected as env loader'
+      );
+      assert.ok(
+        stack.secrets.dependencyAudit.tools.includes('pip-audit'),
+        'pip-audit should be detected from workflows'
+      );
+      assert.ok(
+        stack.secrets.dependencyAudit.tools.includes('bandit'),
+        'bandit should be detected from workflows'
+      );
+    });
+
+    test('should capture env hygiene signals for node project', async () => {
+      const fixtureDir = path.join(__dirname, '..', 'fixtures', 'node-secrets-project');
+      const detector = new StackDetector({ rootDir: fixtureDir, quiet: true });
+
+      const stack = await detector.detect();
+
+      assert.ok(stack.secrets.envTemplate.present, 'node env template should be detected');
+      assert.ok(stack.secrets.envTemplate.files.includes('.env.example'));
+      assert.ok(stack.secrets.envIgnored, 'node project should ignore .env');
+      assert.ok(
+        stack.secrets.envLoader.tools.includes('dotenv'),
+        'dotenv dependency should be recorded as env loader'
+      );
+      assert.ok(
+        stack.secrets.dependencyAudit.tools.includes('npm audit'),
+        'npm audit should be detected in workflows'
+      );
+    });
+  });
 });
 

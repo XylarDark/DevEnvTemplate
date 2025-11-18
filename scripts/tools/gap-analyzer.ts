@@ -282,30 +282,59 @@ class GapAnalyzer {
   }
 
   private analyzeSecurity(): void {
-    if (!this.stack!.quality.security) {
-      if (this.hasProfile('python')) {
-        this.gaps.push({
-          category: 'security',
-          severity: 'high',
-          title: 'Secrets Handling Not Detected',
-          description: 'Python services should ship with .env.example, dotenv loading, and a Bandit/pip-audit step.',
-          impact: 'Sensitive credentials may leak or go unsanitized',
-          recommendation: 'Add `.env.example`, load env vars via pydantic/decouple, and run `pip-audit` in CI',
-          effort: 'medium',
-          files: ['.env.example', '.github/workflows/security.yml']
-        });
-      } else {
-        this.gaps.push({
-          category: 'security',
-          severity: 'high',
-          title: 'Security Measures Not Detected',
-          description: 'Basic security practices like environment variable management and dependency scanning are missing.',
-          impact: 'Potential security vulnerabilities and data exposure',
-          recommendation: 'Add .env files, enable dependency scanning (Dependabot/pip-audit), and enforce secret management guardrails in CI',
-          effort: 'medium',
-          files: ['.env.example', '.github/workflows/security.yml']
-        });
-      }
+    const secrets = this.stack!.secrets || {};
+    const envTemplatePresent = secrets.envTemplate?.present ?? false;
+    const envIgnored = secrets.envIgnored ?? false;
+    const envLoaderPresent = secrets.envLoader?.present ?? false;
+    const auditPresent = secrets.dependencyAudit?.present ?? false;
+    const missingSignals: string[] = [];
+
+    if (!envTemplatePresent) {
+      missingSignals.push('env template (.env.example)');
+    }
+    if (!envIgnored) {
+      missingSignals.push('.env entry in .gitignore');
+    }
+    if (!envLoaderPresent) {
+      missingSignals.push('env loader (python-dotenv / dotenv)');
+    }
+    if (!auditPresent) {
+      missingSignals.push('dependency audit step in CI');
+    }
+
+    const hasPythonProfile = this.hasProfile('python');
+    const hasNodeProfile = this.hasProfile('node');
+
+    if (missingSignals.length > 0 && (hasPythonProfile || hasNodeProfile)) {
+      const severity = missingSignals.length >= 3 ? 'high' : 'medium';
+      const recommendation = hasPythonProfile
+        ? 'Add `.env.example`, ensure `.env` stays in .gitignore, load env vars via python-dotenv or pydantic-settings, and run `pip-audit` + `bandit` inside `.github/workflows/ci.yml`.'
+        : 'Add `.env.example`, ensure `.env` stays in .gitignore, wire up the `dotenv` package (or equivalent), and run `npm audit`/`pnpm audit` inside `.github/workflows/ci.yml`.';
+      const files = hasPythonProfile
+        ? ['.env.example', '.gitignore', 'pyproject.toml', '.github/workflows/ci.yml']
+        : ['.env.example', '.gitignore', 'package.json', '.github/workflows/ci.yml'];
+
+      this.gaps.push({
+        category: 'security',
+        severity,
+        title: 'Secrets Handling Not Detected',
+        description: `Missing secrets hygiene signals: ${missingSignals.join(', ')}.`,
+        impact: 'Sensitive credentials may leak or go unsanitized',
+        recommendation,
+        effort: severity === 'high' ? 'medium' : 'low',
+        files
+      });
+    } else if (!this.stack!.quality.security) {
+      this.gaps.push({
+        category: 'security',
+        severity: 'high',
+        title: 'Security Measures Not Detected',
+        description: 'Basic security practices like environment variable management and dependency scanning are missing.',
+        impact: 'Potential security vulnerabilities and data exposure',
+        recommendation: 'Add .env example files, ignore `.env` in git, and enable dependency scanning (Dependabot/pip-audit) in CI',
+        effort: 'medium',
+        files: ['.env.example', '.github/workflows/security.yml']
+      });
     }
 
     const hasNextJS = this.hasProfile('node') && this.stack!.configurations.some(c => c.type === 'nextjs');

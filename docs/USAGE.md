@@ -54,6 +54,19 @@ For simulation/ML-style Python repos the doctor now:
 - Prefers `pre-commit` hooks over Husky
 - Recommends experiment budgets plus run-tracking observability instead of bundle-size budgets
 
+### Secrets handling checklist
+
+The doctor clears the “Secrets Handling Not Detected” gap when it sees four signals:
+
+1. **Env template** – `.env.example`, `.env.sample`, or `env-example.txt` committed with placeholder values.
+2. **Git ignore** – `.env` (and friends) listed inside `.gitignore`.
+3. **Env loader** – `python-dotenv`, `pydantic-settings`, `dotenv`, `env-cmd`, etc. configured by the runtime.
+4. **Dependency audit** – a CI step that runs `pip-audit`/`bandit` for Python or `npm audit`/`pnpm audit`/`yarn audit` for Node.
+
+When all four are present, the new stack detector metadata flips `quality.security` to ✅ and the gap analyzer stays quiet. The [Python simulator fixture](../tests/fixtures/python-sim-project/) shows a compliant setup: `.env.example`, `.env` inside `.gitignore`, `python-dotenv` in `pyproject.toml`, and a CI workflow that runs `pip-audit` + `bandit`. For Node stacks, add the `dotenv` package (or equivalent) and schedule `npm audit --production` (or `pnpm audit`, `yarn audit`) in `.github/workflows/ci.yml`.
+
+> Tip: projects such as `lunar_mining_sim` keep a tiny helper (`scripts/check_env.py`) that asserts required variables before long-running jobs. You can adopt the same pattern or use `pre-commit` hooks to guard against missing templates.
+
 ### Auto-Fix Issues
 
 ```bash

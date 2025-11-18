@@ -502,5 +502,67 @@ describe('Gap Analyzer', () => {
       );
     });
   });
+
+  describe('Secrets gap heuristics', () => {
+    it('should skip secrets gap when python metadata is complete', async () => {
+      const stackReport = {
+        technologies: [{ name: 'Python' }],
+        configurations: [],
+        quality: { testing: true, security: true, linting: true },
+        ci: { present: true, type: 'github-actions' },
+        profiles: ['python'],
+        languageProfile: 'python',
+        secrets: {
+          envTemplate: { present: true, files: ['.env.example'] },
+          envIgnored: true,
+          envLoader: { present: true, tools: ['python-dotenv'] },
+          dependencyAudit: { present: true, tools: ['pip-audit', 'bandit'] }
+        }
+      };
+
+      await fs.writeFile(
+        path.join(testRoot, '.devenv', 'stack-report.json'),
+        JSON.stringify(stackReport)
+      );
+
+      const analyzer = new GapAnalyzer({ rootDir: testRoot });
+      const report = await analyzer.analyze();
+
+      assert.ok(
+        !report.includes('Secrets Handling Not Detected'),
+        'complete python metadata should prevent secrets gap'
+      );
+    });
+
+    it('should report missing node audit steps as secrets guidance', async () => {
+      const stackReport = {
+        technologies: [{ name: 'Node.js' }],
+        configurations: [],
+        quality: { testing: true, security: false, linting: true },
+        ci: { present: true, type: 'github-actions' },
+        profiles: ['node'],
+        languageProfile: 'node',
+        secrets: {
+          envTemplate: { present: true, files: ['.env.example'] },
+          envIgnored: true,
+          envLoader: { present: true, tools: ['dotenv'] },
+          dependencyAudit: { present: false, tools: [] }
+        }
+      };
+
+      await fs.writeFile(
+        path.join(testRoot, '.devenv', 'stack-report.json'),
+        JSON.stringify(stackReport)
+      );
+
+      const analyzer = new GapAnalyzer({ rootDir: testRoot });
+      const report = await analyzer.analyze();
+
+      assert.ok(
+        report.includes('Missing secrets hygiene signals: dependency audit step in CI'),
+        'node projects missing audit steps should get actionable message'
+      );
+    });
+  });
 });
 

@@ -44,6 +44,7 @@ class StackDetector {
     this.projectManifest = null;
     this.pyprojectContent = null;
     this.requirementsContent = null;
+    this.packageJsonDeps = null;
     this.stack = {
       technologies: [],
       configurations: [],
@@ -76,6 +77,12 @@ class StackDetector {
         present: false,
         type: null
       },
+      secrets: {
+        envTemplate: { present: false, files: [] },
+        envIgnored: false,
+        envLoader: { present: false, tools: [] },
+        dependencyAudit: { present: false, tools: [] }
+      },
       profiles: [],
       primaryProfile: null,
       languageProfile: 'agnostic',
@@ -102,6 +109,7 @@ class StackDetector {
     await this.detectFormatting();
     await this.detectCI();
     await this.detectSecurity();
+    await this.detectSecretsHygiene();
     this.assignProfiles();
 
     return this.stack;
@@ -146,6 +154,7 @@ class StackDetector {
 
       // Dependencies
       const deps = { ...packageJson.dependencies, ...packageJson.devDependencies };
+      this.packageJsonDeps = deps;
 
       // React
       if (deps.react) {
@@ -1186,6 +1195,138 @@ class StackDetector {
         }
       } catch (error) {
         // Cannot read Next.js config
+      }
+    }
+  }
+
+  async detectSecretsHygiene() {
+    const secrets = {
+      envTemplate: { present: false, files: [] },
+      envIgnored: false,
+      envLoader: { present: false, tools: [] },
+      dependencyAudit: { present: false, tools: [] }
+    };
+
+    const templateCandidates = [
+      '.env.example',
+      '.env.sample',
+      '.env.template',
+      'env.example',
+      'env-example.txt',
+      'env-example.env'
+    ];
+
+    for (const candidate of templateCandidates) {
+      const candidatePath = path.join(this.rootDir, candidate);
+      try {
+        await fs.access(candidatePath);
+        secrets.envTemplate.files.push(candidate);
+      } catch (error) {
+        // File missing - skip
+      }
+    }
+    secrets.envTemplate.present = secrets.envTemplate.files.length > 0;
+
+    try {
+      const gitignore = await fs.readFile(path.join(this.rootDir, '.gitignore'), 'utf8');
+      const gitignoreLower = gitignore.toLowerCase();
+      if (gitignoreLower.includes('.env')) {
+        secrets.envIgnored = true;
+      }
+    } catch (error) {
+      // No .gitignore
+    }
+
+    const loaderTools = new Set();
+    if (this.packageJsonDeps) {
+      const nodeLoaders = ['dotenv', 'dotenv-flow', 'dotenv-expand', 'env-cmd', '@next/env'];
+      for (const loader of nodeLoaders) {
+        if (this.packageJsonDeps[loader]) {
+          loaderTools.add(loader);
+        }
+      }
+    }
+    const pythonLoaderPatterns = ['python-dotenv', 'pydantic-settings', 'django-environ', 'dynaconf'];
+    if (this.pyprojectContent) {
+      const lower = this.pyprojectContent.toLowerCase();
+      for (const pattern of pythonLoaderPatterns) {
+        if (lower.includes(pattern)) {
+          loaderTools.add(pattern);
+        }
+      }
+    }
+    if (this.requirementsContent) {
+      const lower = this.requirementsContent.toLowerCase();
+      for (const pattern of pythonLoaderPatterns) {
+        if (lower.includes(pattern)) {
+          loaderTools.add(pattern);
+        }
+      }
+    }
+    secrets.envLoader.tools = Array.from(loaderTools);
+    secrets.envLoader.present = secrets.envLoader.tools.length > 0;
+
+    const auditTools = new Set();
+    const workflowFiles = await this.collectWorkflowFiles();
+    if (workflowFiles.length > 0) {
+      const auditPatterns = [
+        { tool: 'pip-audit', patterns: ['pip-audit'] },
+        { tool: 'bandit', patterns: ['bandit'] },
+        { tool: 'safety', patterns: ['safety check', 'pip install safety'] },
+        { tool: 'npm audit', patterns: ['npm audit'] },
+        { tool: 'pnpm audit', patterns: ['pnpm audit'] },
+        { tool: 'yarn audit', patterns: ['yarn audit'] }
+      ];
+
+      for (const workflowFile of workflowFiles) {
+        try {
+          const content = await fs.readFile(workflowFile, 'utf8');
+          const lowerContent = content.toLowerCase();
+          for (const { tool, patterns } of auditPatterns) {
+            if (patterns.some(pattern => lowerContent.includes(pattern))) {
+              auditTools.add(tool);
+            }
+          }
+        } catch (error) {
+          // Cannot read workflow file
+        }
+      }
+    }
+    secrets.dependencyAudit.tools = Array.from(auditTools);
+    secrets.dependencyAudit.present = secrets.dependencyAudit.tools.length > 0;
+
+    const hasCompleteHygiene =
+      secrets.envTemplate.present &&
+      secrets.envIgnored &&
+      secrets.envLoader.present &&
+      secrets.dependencyAudit.present;
+
+    if (hasCompleteHygiene) {
+      this.stack.quality.security = true;
+    }
+
+    this.stack.secrets = secrets;
+  }
+
+  async collectWorkflowFiles() {
+    const workflowDir = path.join(this.rootDir, '.github', 'workflows');
+    const yamlFiles = [];
+    try {
+      await this.collectYamlFiles(workflowDir, yamlFiles);
+    } catch (error) {
+      // No workflows directory
+    }
+    return yamlFiles;
+  }
+
+  async collectYamlFiles(directory, results) {
+    const entries = await fs.readdir(directory, { withFileTypes: true });
+    for (const entry of entries) {
+      const entryPath = path.join(directory, entry.name);
+      if (entry.isDirectory()) {
+        await this.collectYamlFiles(entryPath, results);
+      } else if (entry.isFile() && (entry.name.endsWith('.yml') || entry.name.endsWith('.yaml'))) {
+        results.push(entryPath);
       }
     }
   }
