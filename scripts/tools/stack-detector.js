@@ -1263,6 +1263,23 @@ class StackDetector {
         }
       }
     }
+
+    let envLoaderPresent = loaderTools.size > 0;
+    if (!envLoaderPresent) {
+      const helperCandidates = [
+        'scripts/check_env.py',
+        'scripts/check-env.py',
+        'scripts/check_env.js',
+        'scripts/check-env.js'
+      ];
+      for (const helper of helperCandidates) {
+        if (await this.fileExists(helper)) {
+          loaderTools.add('env-check-script');
+          envLoaderPresent = true;
+          break;
+        }
+      }
+    }
     secrets.envLoader.tools = Array.from(loaderTools);
     secrets.envLoader.present = secrets.envLoader.tools.length > 0;
 
@@ -1328,6 +1345,15 @@ class StackDetector {
       } else if (entry.isFile() && (entry.name.endsWith('.yml') || entry.name.endsWith('.yaml'))) {
         results.push(entryPath);
       }
+    }
+  }
+
+  async fileExists(relativePath) {
+    try {
+      await fs.access(path.join(this.rootDir, relativePath));
+      return true;
+    } catch (error) {
+      return false;
     }
   }
 
