@@ -10,6 +10,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import { createLogger } from '../utils/logger';
+import { createJsonParseError } from '../utils/error-helpers';
 import type {
   StackReport,
   SecretsMetadata,
@@ -230,9 +231,8 @@ class StackDetector {
       return JSON.parse(content);
     } catch (error: any) {
       if (error instanceof SyntaxError) {
-        const parseError = new Error(`Invalid JSON in ${absPath}: ${error.message}`) as NodeJS.ErrnoException;
-        parseError.code = 'JSON_PARSE_ERROR';
-        throw parseError;
+        // Use improved error helper for better error messages
+        throw createJsonParseError(error, absPath);
       }
       throw error;
     }

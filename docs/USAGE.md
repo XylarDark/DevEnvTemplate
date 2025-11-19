@@ -73,7 +73,7 @@ node .github/tools/gap-analyzer.js --debug
 
 ### Secrets handling checklist
 
-The doctor clears the “Secrets Handling Not Detected” gap when it sees four signals:
+The doctor clears the "Secrets Handling Not Detected" gap when it sees four signals:
 
 1. **Env template** – `.env.example`, `.env.sample`, or `env-example.txt` committed with placeholder values.
 2. **Git ignore** – `.env` (and friends) listed inside `.gitignore`.
@@ -83,6 +83,44 @@ The doctor clears the “Secrets Handling Not Detected” gap when it sees four 
 When all four are present, the new stack detector metadata flips `quality.security` to ✅ and the gap analyzer stays quiet. The [Python simulator fixture](../tests/fixtures/python-sim-project/) shows a compliant setup: `.env.example`, `.env` inside `.gitignore`, `python-dotenv` in `pyproject.toml`, and a CI workflow that runs `pip-audit` + `bandit`. For Node stacks, add the `dotenv` package (or equivalent) and schedule `npm audit --production` (or `pnpm audit`, `yarn audit`) in `.github/workflows/ci.yml`.
 
 > Tip: projects such as `lunar_mining_sim` keep a tiny helper (`scripts/check_env.py`) that asserts required variables before long-running jobs. You can adopt the same pattern or use `pre-commit` hooks to guard against missing templates.
+
+### Environment Variable Validation
+
+DevEnvTemplate provides utilities for validating environment variables and encryption keys:
+
+```typescript
+import { requireEnvVar, requireEncryptionKey } from './scripts/utils/env-validator';
+
+// Check for required environment variable
+const apiKey = requireEnvVar('API_KEY', {
+  hint: 'Set API_KEY in your .env file'
+});
+
+// Validate encryption key format
+const encryptionKey = requireEncryptionKey('ENCRYPTION_KEY', 32);
+```
+
+For more information, see [Best Practices Guide](BEST-PRACTICES.md#environment-variable-management).
+
+### Generating Encryption Keys
+
+Use the built-in key generation tool to create properly formatted encryption keys:
+
+```bash
+# Generate a 32-byte key (default)
+node dist/scripts/tools/generate-key.js
+
+# Generate a 64-byte key
+node dist/scripts/tools/generate-key.js --length 64
+
+# Generate in hex format
+node dist/scripts/tools/generate-key.js --format hex
+
+# Quiet output (just the key)
+node dist/scripts/tools/generate-key.js --quiet
+```
+
+For more information, see [Best Practices Guide](BEST-PRACTICES.md#encryption-key-generation).
 
 ### Auto-Fix Issues
 

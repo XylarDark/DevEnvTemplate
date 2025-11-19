@@ -62,6 +62,36 @@ npm run build
 npm run doctor
 ```
 
+### JSON Parsing Errors
+
+**Problem:** Stack detector or gap analyzer fails with JSON parsing errors like `Expected ',' or ']' after array element in JSON at position 5`.
+
+**Cause:** Invalid JSON syntax in configuration files (e.g., `package.json`, `tsconfig.json`, `pyproject.toml`).
+
+**Solution:**
+1. Check the file mentioned in the error message for syntax errors
+2. Validate JSON using a JSON validator (e.g., jsonlint.com)
+3. Common issues:
+   - Trailing commas
+   - Unclosed brackets or braces
+   - Invalid characters
+   - Unquoted strings
+
+**Example Error Message:**
+```
+Failed to parse JSON in package.json
+
+Possible solutions:
+  1. Check package.json for syntax errors
+  2. Validate JSON using a JSON validator (e.g., jsonlint.com)
+  3. Check for trailing commas, unclosed brackets, or invalid characters
+  4. Ensure all strings are properly quoted
+
+See docs/TROUBLESHOOTING.md#json-parsing-errors for more information.
+```
+
+For more information, see [Best Practices Guide](BEST-PRACTICES.md#error-handling-patterns).
+
 ### No Technologies Detected
 
 **Problem:** Stack detector finds no technologies in your project.

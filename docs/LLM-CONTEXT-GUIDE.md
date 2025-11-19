@@ -2456,6 +2456,162 @@ For additional guidance on platform-specific shell behavior, dependency manageme
 
 ---
 
+## Technology-Agnostic Best Practices
+
+DevEnvTemplate includes utilities for common development patterns that apply across all frameworks. When helping users, leverage these utilities to prevent common mistakes.
+
+### Encryption Key Generation
+
+**Problem:** Base64 encoding errors are common when generating encryption keys manually.
+
+**Solution:** Use DevEnvTemplate utilities:
+
+```typescript
+import { generateEncryptionKey, validateBase64Key } from './scripts/utils/crypto-helpers';
+
+// Generate a key
+const key = generateEncryptionKey(32); // 32 bytes for AES-256
+
+// Validate the key
+const validation = validateBase64Key(key, 32);
+if (!validation.valid) {
+  console.error(validation.error);
+}
+```
+
+**CLI Tool:**
+```bash
+node dist/scripts/tools/generate-key.js --length 32
+```
+
+**When to Use:**
+- User needs to generate encryption keys
+- User reports base64 encoding errors
+- Setting up environment variables for encryption
+
+### Environment Variable Validation
+
+**Problem:** Missing or invalid environment variables cause runtime errors.
+
+**Solution:** Use validation utilities:
+
+```typescript
+import { requireEnvVar, requireEncryptionKey } from './scripts/utils/env-validator';
+
+// Check for required variable
+const apiKey = requireEnvVar('API_KEY', {
+  hint: 'Set API_KEY in your .env file'
+});
+
+// Validate encryption key format
+const encryptionKey = requireEncryptionKey('ENCRYPTION_KEY', 32);
+```
+
+**When to Use:**
+- User reports "environment variable not set" errors
+- Setting up new project with environment variables
+- Validating configuration before deployment
+
+### Error Handling
+
+**Problem:** Generic error messages don't help users fix issues.
+
+**Solution:** Use error helpers for actionable messages:
+
+```typescript
+import { createActionableError, createJsonParseError } from './scripts/utils/error-helpers';
+
+// JSON parsing errors
+try {
+  JSON.parse(content);
+} catch (error) {
+  throw createJsonParseError(error as Error, 'package.json');
+}
+
+// General errors with hints
+throw createActionableError(
+  'Invalid encryption key format',
+  {
+    hints: [
+      'Key must be 44 characters for a 32-byte key',
+      'Generate a new key using: node dist/scripts/tools/generate-key.js'
+    ],
+    docs: 'docs/BEST-PRACTICES.md#encryption-key-generation'
+  }
+);
+```
+
+**When to Use:**
+- Catching and re-throwing errors with better context
+- JSON parsing failures
+- Configuration validation errors
+
+### Verification Procedures
+
+**Problem:** No standardized way to verify project setup before commit/deploy.
+
+**Solution:** Use verification utilities:
+
+```typescript
+import { verifyPreCommit, verifyPreDeployment } from './scripts/utils/verification';
+
+// Pre-commit checks
+const result = await verifyPreCommit(projectRoot);
+if (!result.passed) {
+  console.error('Pre-commit checks failed:', result.errors);
+}
+
+// Pre-deployment checks
+const deployResult = await verifyPreDeployment(projectRoot);
+if (!deployResult.passed) {
+  console.error('Pre-deployment checks failed:', deployResult.errors);
+}
+```
+
+**When to Use:**
+- Before committing code
+- Before deploying to production
+- Setting up CI/CD pipelines
+
+### Cross-Platform Compatibility
+
+**Problem:** Shell commands differ between Windows PowerShell and Bash.
+
+**Solution:** Use shell helpers:
+
+```typescript
+import { formatCommand, getShellExample } from './scripts/utils/shell-helpers';
+
+// Auto-format for current shell
+const commands = ['cd /path', 'npm run build'];
+const formatted = formatCommand(commands);
+
+// Get shell-specific example
+const bashExample = 'cd /path && npm run build';
+const psExample = getShellExample(bashExample); // Converts to PowerShell
+```
+
+**When to Use:**
+- Writing documentation with command examples
+- Creating scripts that work cross-platform
+- User reports shell compatibility issues
+
+### Best Practices Documentation
+
+For complete guidance on these patterns, see:
+- [Best Practices Guide](BEST-PRACTICES.md) - Complete guide to all best practices
+- [Troubleshooting Guide](TROUBLESHOOTING.md) - Common errors and solutions
+- [Usage Guide](USAGE.md) - How to use DevEnvTemplate utilities
+
+**Key Principles:**
+1. Always validate encryption keys before use
+2. Provide actionable error messages with hints
+3. Verify environment setup before commit/deploy
+4. Use cross-platform compatible commands in documentation
+5. Leverage utilities to prevent common mistakes
+
+---
+
 **End of LLM Context Guide**
 
 *This guide enables AI assistants to autonomously help developers with DevEnvTemplate by providing complete command context, decision-making frameworks, and automated workflows.*
