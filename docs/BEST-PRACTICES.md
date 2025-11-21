@@ -815,6 +815,82 @@ npm run doctor --fix
 
 See [`docs/guides/docs-organization.md`](guides/docs-organization.md) for complete documentation.
 
+## Commit Message Best Practices
+
+### Line Length Requirements
+
+DevEnvTemplate uses `@commitlint/config-conventional` which enforces:
+- **Header max length**: 72 characters
+- **Body max line length**: 100 characters (default from conventional config)
+
+**Common Mistake:** Writing long commit message body lines that exceed 100 characters.
+
+**Prevention:**
+- Break long lines into multiple `-m` flags
+- Keep each body line under 100 characters
+- Use line continuation with proper indentation
+
+**Examples:**
+```bash
+# ❌ Wrong: Body line exceeds 100 characters
+git commit -m "docs: organize markdown files" \
+  -m "- Move IMPLEMENTATION_SUMMARY.md, MISTAKE_PATTERNS.md, REPOSITORY_STRUCTURE.md, and STRUCTURE.md to docs/"
+
+# ✅ Correct: Break into shorter lines
+git commit \
+  -m "docs: organize markdown files" \
+  -m "- Move IMPLEMENTATION_SUMMARY.md, MISTAKE_PATTERNS.md," \
+  -m "  REPOSITORY_STRUCTURE.md, and STRUCTURE.md to docs/" \
+  -m "- Update STRUCTURE.md to reflect documentation organization" \
+  -m "- Keep root directory clean with only essential files"
+```
+
+### Commit Message Format
+
+Follow conventional commits format:
+- **Type**: `feat`, `fix`, `docs`, `chore`, `refactor`, `test`, etc.
+- **Scope** (optional): Affected area
+- **Subject**: Lowercase, no period, imperative mood
+- **Body** (optional): Detailed explanation, wrapped to 100 chars
+
+## npm Script Flag Passing
+
+### Common Issue: Flags Not Passing Through
+
+When using npm scripts, flags must be passed with double dash `--` separator:
+
+```bash
+# Syntax: npm run <script> -- --flag
+npm run organize-docs -- --auto-fix
+```
+
+**Problem:** Some scripts may not properly forward flags, causing flags to be ignored.
+
+**Solution:**
+1. **Test flag passing**: Verify `npm run script -- --flag` works
+2. **If it fails**: Run the compiled script directly
+3. **Ensure build is current**: Run `npm run build` first
+
+**Examples:**
+```bash
+# ✅ Method 1: Through npm (if it works)
+npm run organize-docs -- --auto-fix
+
+# ✅ Method 2: Direct execution (if npm passing fails)
+npm run build  # Ensure dist/ is up to date
+node dist/scripts/tools/docs-organizer.js --auto-fix
+
+# ✅ Method 3: Check script implementation
+# Verify package.json script can accept flags:
+# "organize-docs": "node dist/scripts/tools/docs-organizer.js"
+```
+
+**Best Practice:**
+- Document flag passing behavior in script README
+- Test both npm and direct execution methods
+- Provide both options in documentation
+- Fix npm script if flag passing doesn't work
+
 ## Summary
 
 These best practices help prevent common mistakes and improve developer experience:
@@ -825,6 +901,8 @@ These best practices help prevent common mistakes and improve developer experien
 4. **Verify before commit/deploy**: Run verification checks before committing or deploying
 5. **Cross-platform**: Consider shell compatibility when writing documentation or scripts
 6. **Python-specific**: Avoid sys.path hacks, use pathlib.Path, install packages properly
+7. **Commit messages**: Keep body lines under 100 characters, use multiple `-m` flags for long messages
+8. **npm scripts**: Test flag passing, use direct script execution if npm forwarding fails
 
 For more information, see:
 - [Troubleshooting Guide](TROUBLESHOOTING.md)

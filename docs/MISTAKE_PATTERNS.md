@@ -464,6 +464,99 @@ except Exception as e:
 
 ---
 
+## 11. Commit Message Formatting Issues
+
+### Pattern: Commit Message Body Line Length Violations
+
+**Description:** Commit message body lines exceed the maximum length limit enforced by commitlint (default 100 characters).
+
+**Root Cause:**
+- Not aware of commitlint body-max-line-length rule
+- Writing long descriptive lines without line breaks
+- Using `@commitlint/config-conventional` which enforces 100-character limit
+- Not wrapping commit message body lines
+
+**Impact:**
+- Commit fails with commitlint error
+- Developer frustration and wasted time
+- Need to rewrite commit message
+- Breaks CI/CD if commit hooks are enforced
+
+**Prevention Strategy:**
+- Keep commit message body lines under 100 characters
+- Use multiple `-m` flags for separate body lines
+- Wrap long lines manually
+- Check commitlint configuration for line length rules
+- Use commit message templates or helpers
+
+**Fix Examples:**
+```bash
+# ❌ Before: Body line too long (over 100 chars)
+git commit -m "docs: organize markdown files" \
+  -m "- Move IMPLEMENTATION_SUMMARY.md, MISTAKE_PATTERNS.md, REPOSITORY_STRUCTURE.md, and STRUCTURE.md to docs/"
+
+# ✅ After: Break into shorter lines
+git commit -m "docs: organize markdown files" \
+  -m "- Move IMPLEMENTATION_SUMMARY.md, MISTAKE_PATTERNS.md," \
+  -m "  REPOSITORY_STRUCTURE.md, and STRUCTURE.md to docs/"
+
+# ✅ Better: Use separate -m flags for each line
+git commit \
+  -m "docs: organize markdown files" \
+  -m "- Move IMPLEMENTATION_SUMMARY.md, MISTAKE_PATTERNS.md," \
+  -m "  REPOSITORY_STRUCTURE.md, and STRUCTURE.md to docs/" \
+  -m "- Update STRUCTURE.md to reflect documentation organization" \
+  -m "- Keep root directory clean with only essential files"
+```
+
+---
+
+## 12. npm Script Flag Passing Issues
+
+### Pattern: Flags Not Passed Through npm Scripts
+
+**Description:** Flags passed to npm scripts using `--` separator don't reach the underlying command correctly.
+
+**Root Cause:**
+- npm script syntax: `npm run <script> -- --flag` requires double dash
+- Some scripts may not properly handle flag forwarding
+- Running scripts directly vs through npm can have different behavior
+- Missing or incorrect flag parsing in script entry points
+
+**Impact:**
+- Flags ignored, script runs with wrong options
+- Dry-run mode doesn't work when expected
+- Auto-fix flags don't apply changes
+- Confusing behavior where flags appear to be ignored
+
+**Prevention Strategy:**
+- Test flag passing through npm scripts
+- Use double dash `--` to separate npm flags from script flags
+- Run scripts directly if npm flag passing fails: `node dist/scripts/tool.js --flag`
+- Document flag passing behavior in script documentation
+- Consider using explicit flag parsing in CLI tools
+
+**Fix Examples:**
+```bash
+# ❌ Before: Flag may not pass through correctly
+npm run organize-docs -- --auto-fix
+
+# ✅ After: Run script directly if npm passing fails
+node dist/scripts/tools/docs-organizer.js --auto-fix
+
+# ✅ Better: Verify flag passing works, document if it doesn't
+# If npm run script -- --flag doesn't work, use direct execution
+npm run build  # Ensure dist/ is up to date
+node dist/scripts/tools/docs-organizer.js --auto-fix
+
+# ✅ Best: Fix npm script to properly forward flags
+# In package.json, ensure scripts can accept flags:
+# "organize-docs": "node dist/scripts/tools/docs-organizer.js"
+# Then: npm run organize-docs -- --auto-fix
+```
+
+---
+
 ## Prevention Checklist
 
 Before committing code, verify:
@@ -478,6 +571,8 @@ Before committing code, verify:
 - [ ] Environment variables used for configuration
 - [ ] Imports follow style guide
 - [ ] Specific exceptions with context
+- [ ] Commit message body lines under 100 characters
+- [ ] npm script flags tested and working, or use direct script execution
 
 ---
 
@@ -490,5 +585,5 @@ Before committing code, verify:
 
 ---
 
-**Last Updated:** 2025-01-17
+**Last Updated:** 2025-01-21
 
