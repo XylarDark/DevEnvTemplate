@@ -18,11 +18,20 @@ The following files and directories are project-specific additions to the base D
 
 ### Root-Level Project-Specific Files
 
-- **`IMPLEMENTATION_SUMMARY.md`** - Project-specific implementation notes
-- **`MISTAKE_PATTERNS.md`** - Common mistakes specific to this project
-- **`REPOSITORY_STRUCTURE.md`** - Project-specific repository structure documentation
+- **`BOOTSTRAP.md`** - Single-file-loads-all for LLM sessions (extends DevEnvTemplate template)
+- **`README.md`** - Human-readable overview (standard location)
 
-These files document project-specific patterns and should remain at the root level.
+### Documentation Files (in docs/)
+
+Project-specific documentation files can be organized in the `docs/` directory:
+
+- **`docs/STRUCTURE.md`** - Structure alignment documentation
+- **`docs/REPOSITORY_STRUCTURE.md`** - Project-specific repository structure documentation
+- **`docs/MISTAKE_PATTERNS.md`** - Common mistakes specific to this project
+- **`docs/archive/IMPLEMENTATION_SUMMARY.md`** - Historical implementation notes
+- **`docs/archive/RESTRUCTURE-SUMMARY.md`** - Historical restructuring notes
+
+These files document project-specific patterns and can be organized in the `docs/` directory using the automatic documentation organization feature, or kept at the root level if preferred.
 
 ### Project-Specific Directories
 
@@ -91,12 +100,14 @@ To keep `.devenv/` aligned with DevEnvTemplate:
 - `scripts/` - Standard DevEnvTemplate scripts
 
 ### Project-Specific Files (Keep Separate)
+- `BOOTSTRAP.md` - Single-file-loads-all for LLMs (root level)
 - `best-practices/` - Project-specific best practices
 - `config/python-best-practices.json` - Python-specific config
 - `config/shell-aliases.*` - Shell-specific aliases
 - `scripts/check-env.*` - Project-specific environment validation
 - `scripts/validate-paths.py` - Project-specific path validation
-- Root-level project docs: `IMPLEMENTATION_SUMMARY.md`, `MISTAKE_PATTERNS.md`, `REPOSITORY_STRUCTURE.md`
+- Documentation files: `docs/STRUCTURE.md`, `docs/MISTAKE_PATTERNS.md`, `docs/REPOSITORY_STRUCTURE.md`
+- Historical files: `docs/archive/IMPLEMENTATION_SUMMARY.md`, `docs/archive/RESTRUCTURE-SUMMARY.md`
 
 ---
 
