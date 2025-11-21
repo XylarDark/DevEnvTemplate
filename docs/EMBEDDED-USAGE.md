@@ -194,9 +194,41 @@ cat .devenv/health-report.json
 npm run doctor --prefix .devenv -- --fix
 ```
 
+## Syncing with Template Updates
+
+To keep your `.devenv` up to date with the latest DevEnvTemplate improvements:
+
+```bash
+# Bash/Linux/macOS
+cd .devenv
+./scripts/sync-from-template.sh
+
+# PowerShell/Windows
+cd .devenv
+.\scripts\sync-from-template.ps1
+```
+
+The sync scripts will:
+- Preserve project-specific files (health reports, gap analysis, etc.)
+- Pull updates from the template repository
+- Rebuild the project after syncing
+
+See [SYNC.md](SYNC.md) for detailed sync documentation and troubleshooting.
+
+## Project-Specific Customizations
+
+You can customize `.devenv` for your project by adding:
+
+- **Best Practices**: Add technology-specific guides in `best-practices/`
+- **Configuration**: Add project-specific configs in `config/project/`
+- **Documentation**: Add project-specific docs in `docs/` (they won't conflict with template updates)
+
+These customizations are preserved during sync operations.
+
 ## Related Documentation
 
 - **[SETUP-GUIDE.md](SETUP-GUIDE.md)** - Initial one-time setup (embedding DevEnvTemplate)
+- **[SYNC.md](SYNC.md)** - Syncing with template updates
 - **[USAGE.md](USAGE.md)** - General DevEnvTemplate usage and day-to-day workflows
 - **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - Common issues and solutions (includes embedded usage issues)
 - **[BEST-PRACTICES.md](BEST-PRACTICES.md)** - Development best practices

@@ -135,13 +135,28 @@ CI will now be able to run `npm run doctor --strict` (optional) plus your existi
 
 ---
 
+## Git Remote Configuration (Optional)
+
+For easier syncing with template updates, configure a `template` remote:
+
+```bash
+cd .devenv
+# If DevEnvTemplate is a local directory
+git remote add template ../DevEnvTemplate
+# Or if it's a remote repository
+git remote add template https://github.com/XylarDark/DevEnvTemplate.git
+```
+
+This allows you to use the sync scripts to pull template updates. See [SYNC.md](SYNC.md) for details.
+
 ## Next Steps
 
 After completing this setup:
 
 1. **Read [EMBEDDED-USAGE.md](EMBEDDED-USAGE.md)** - Learn how to use DevEnvTemplate in your daily workflow
-2. **Read [USAGE.md](USAGE.md)** - Day-to-day doctor/cleanup workflows
-3. **Read [TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - Common issues and solutions
+2. **Read [SYNC.md](SYNC.md)** - How to sync with template updates
+3. **Read [USAGE.md](USAGE.md)** - Day-to-day doctor/cleanup workflows
+4. **Read [TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - Common issues and solutions
 
 ---
 

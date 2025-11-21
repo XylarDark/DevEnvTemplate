@@ -285,6 +285,7 @@ Encountering issues?
 - **[USAGE.md](docs/USAGE.md)** - Day-to-day workflows
 - **[SETUP-GUIDE.md](docs/SETUP-GUIDE.md)** - Initial setup instructions
 - **[EMBEDDED-USAGE.md](docs/EMBEDDED-USAGE.md)** - Ongoing usage guide
+- **[SYNC.md](docs/SYNC.md)** - Syncing with template updates
 - **[TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)** - Problem solutions
 - **[PROJECTRULES-UPDATE-v3.0.md](docs/PROJECTRULES-UPDATE-v3.0.md)** - Engineering rules
 - **[BEST-PRACTICES.md](docs/BEST-PRACTICES.md)** - Best practices
