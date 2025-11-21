@@ -224,6 +224,100 @@ npx tsc --noEmit
 # Push after fixing
 ```
 
+## Embedded Usage Issues
+
+### Doctor Analyzes DevEnvTemplate Instead of Parent Project
+
+**Problem:** Running `npm run doctor` from `.devenv/` analyzes DevEnvTemplate itself instead of the parent project.
+
+**Symptoms:**
+- Stack detection shows DevEnvTemplate's stack
+- Generated reports end up in `.devenv/.devenv/`
+- No analysis of actual project
+
+**Solution:**
+```bash
+# Run from project root with explicit project root
+npm run doctor --prefix .devenv -- --project-root ..
+
+# Or set environment variable
+DEVENV_PROJECT_ROOT=.. npm run doctor --prefix .devenv
+
+# Or run from project root (auto-detection works)
+cd ..
+npm run doctor --prefix .devenv
+```
+
+**Prevention:** Always run doctor from the project root, not from `.devenv/`.
+
+### PowerShell Command Chaining Fails
+
+**Problem:** Commands copied from documentation use `&&` which fails in PowerShell.
+
+**Symptoms:**
+```
+&& : The term '&&' is not recognized as the name of a cmdlet
+```
+
+**Solution:**
+```powershell
+# ❌ Wrong
+cd .devenv && npm run doctor
+
+# ✅ Correct
+Set-Location .devenv; npm run doctor
+
+# Or use separate commands
+Set-Location .devenv
+npm run doctor
+```
+
+**Prevention:** Use DevEnvTemplate's shell helper utilities that auto-detect shell type.
+
+### Build Artifacts Not Found When Embedded
+
+**Problem:** `npm run doctor` fails with "Cannot find module" when DevEnvTemplate is embedded.
+
+**Symptoms:**
+```
+Cannot find module '...scripts/doctor/cli.js'
+```
+
+**Solution:**
+```bash
+# Build TypeScript first
+cd .devenv
+npm install
+npm run build
+npm run doctor
+```
+
+**Prevention:** Always run `npm run build` after cloning DevEnvTemplate into `.devenv/`.
+
+### JSON Parsing Errors from Stack Detector
+
+**Problem:** Stack detector output includes logs mixed with JSON, causing parse errors.
+
+**Symptoms:**
+```
+Expected ',' or ']' after array element in JSON at position 5
+```
+
+**Solution:**
+```bash
+# Use --json flag for clean output
+npm run doctor --prefix .devenv -- --json
+
+# Or use environment variable
+LOG_LEVEL=ERROR npm run doctor --prefix .devenv -- --json
+```
+
+**Prevention:** Stack detector should be called with `--json` flag when output is parsed programmatically.
+
+See [Embedded Usage Guide](EMBEDDED-USAGE.md) for complete workflow.
+
+---
+
 ### Free Tier Minutes Exceeded
 
 **Problem:** GitHub Actions disabled due to usage limits.

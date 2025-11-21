@@ -1,6 +1,7 @@
 /**
  * Path resolver utility for dual-path loading during migration.
  * Supports new paths (config/, packs/) with fallback to old paths (root, presets/).
+ * Enhanced with project root detection for embedded usage.
  */
 
 import * as fs from 'fs';
@@ -97,5 +98,69 @@ export function configExists(configName: string, workingDir: string = process.cw
   const oldPath = path.join(workingDir, configName);
 
   return fs.existsSync(newPath) || fs.existsSync(oldPath);
+}
+
+/**
+ * Resolve project root by walking up directory tree
+ * Detects embedded .devenv usage and finds actual project root
+ * @param startDir - Starting directory (defaults to cwd)
+ * @returns Project root path or startDir if not found
+ */
+export function resolveProjectRoot(startDir: string = process.cwd()): string {
+  let current = path.resolve(startDir);
+  
+  // Check if we're in .devenv subdirectory
+  if (path.basename(current) === '.devenv') {
+    const parent = path.dirname(current);
+    if (parent && parent !== current) {
+      current = parent;
+    }
+  }
+  
+  // Walk up to find project root (has package.json, pyproject.toml, or .git)
+  const rootMarkers = ['package.json', 'pyproject.toml', '.git', 'Cargo.toml', 'go.mod'];
+  const maxDepth = 10; // Prevent infinite loops
+  let depth = 0;
+  
+  while (depth < maxDepth && current !== path.dirname(current)) {
+    // Check for root markers
+    for (const marker of rootMarkers) {
+      if (fs.existsSync(path.join(current, marker))) {
+        return current;
+      }
+    }
+    
+    // Check if this is DevEnvTemplate itself (package.json name is devenv-template)
+    try {
+      const packageJsonPath = path.join(current, 'package.json');
+      if (fs.existsSync(packageJsonPath)) {
+        const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+        if (packageJson.name === 'devenv-template') {
+          // This is DevEnvTemplate, walk up one more level
+          const parent = path.dirname(current);
+          if (parent && parent !== current) {
+            return parent;
+          }
+        }
+      }
+    } catch {
+      // Ignore JSON parse errors
+    }
+    
+    current = path.dirname(current);
+    depth++;
+  }
+  
+  // Fallback to start directory
+  return startDir;
+}
+
+/**
+ * Normalize path for cross-platform compatibility
+ * @param filePath - Path to normalize
+ * @returns Normalized path
+ */
+export function normalizePath(filePath: string): string {
+  return path.normalize(filePath);
 }
 

@@ -290,20 +290,20 @@ Different shells use different command separators:
 ### Using DevEnvTemplate Utilities
 
 ```typescript
-import { formatCommand, getShellExample, detectShell } from './scripts/utils/shell-helpers';
+import { runCommand, chainCommands, detectShell } from './scripts/utils/shell-helper';
 
-// Auto-detect shell and format command
-const commands = ['cd /path', 'npm run build'];
-const formatted = formatCommand(commands); // Uses detected shell
-
-// Get shell-specific example
-const bashExample = 'cd /path && npm run build';
-const psExample = getShellExample(bashExample); // Converts to PowerShell syntax
-
-// Detect shell
+// Auto-detect shell and execute command
 const shell = detectShell();
-if (shell === 'powershell') {
+const command = chainCommands(['cd /path', 'npm run build'], shell);
+runCommand(command);
+
+// Detect shell and adapt
+if (detectShell() === 'powershell') {
   // Use PowerShell-specific syntax
+  runCommand('Set-Location C:\\path; npm run build', { shell: 'powershell' });
+} else {
+  // Use bash syntax
+  runCommand('cd /path && npm run build', { shell: 'bash' });
 }
 ```
 
@@ -319,8 +319,44 @@ cd /path && npm run build
 
 **PowerShell:**
 ```powershell
-cd C:\path; npm run build
+Set-Location C:\path; npm run build
 ```
+```
+
+### Project Root Detection
+
+When DevEnvTemplate is embedded in `.devenv/`, it automatically detects the parent project root:
+
+```typescript
+import { resolveProjectRoot } from './scripts/utils/path-resolver';
+
+// Auto-detect project root
+const projectRoot = resolveProjectRoot();
+// Returns parent directory if running from .devenv/
+// Otherwise returns current directory or walks up to find root markers
+```
+
+**Root markers** (checked in order):
+- `package.json` (Node.js projects)
+- `pyproject.toml` (Python projects)
+- `.git` (Git repositories)
+- `Cargo.toml` (Rust projects)
+- `go.mod` (Go projects)
+
+### Embedded Usage Pattern
+
+```typescript
+// scripts/doctor/cli.ts
+import { resolveProjectRoot } from '../utils/path-resolver';
+
+const { projectRoot, autoDetected } = await resolveProjectRoot(
+  process.cwd(),
+  options.projectRoot || process.env.DEVENV_PROJECT_ROOT
+);
+
+if (autoDetected) {
+  console.log(`Detected embedded mode. Analyzing: ${projectRoot}`);
+}
 ```
 
 ## Python-Specific Best Practices

@@ -13,6 +13,7 @@
 import { promises as fs, existsSync } from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
+import { resolveProjectRoot as enhancedResolveProjectRoot } from '../utils/path-resolver';
 
 interface HealthScore {
   overall: number;
@@ -126,7 +127,19 @@ async function runDoctor(options: CliOptions = {}) {
     const stderr = error?.stderr?.toString()?.trim();
     const stdout = error?.stdout?.toString()?.trim();
     const details = stderr || stdout || error.message;
-    console.error('❌ Failed to detect stack:', details);
+    
+    // Check if it's a JSON parsing error
+    if (error instanceof SyntaxError || details.includes('JSON') || details.includes('parse')) {
+      console.error('❌ Failed to parse stack detector output as JSON');
+      console.error('   This usually means the stack detector output includes log messages.');
+      console.error('   Try running with --json flag or check LOG_LEVEL environment variable.');
+      if (stdout) {
+        console.error(`   Output preview: ${stdout.substring(0, 200)}...`);
+      }
+    } else {
+      console.error('❌ Failed to detect stack:', details);
+      console.error('   Make sure you are running from the project root or use --project-root flag.');
+    }
     process.exit(1);
   }
 
@@ -705,6 +718,18 @@ async function resolveProjectRoot(cwd: string, override?: string): Promise<{ pro
   const requested = override || envOverride;
   let candidate = requested ? path.resolve(cwd, requested) : cwd;
 
+  // Use enhanced path resolver for better detection
+  try {
+    const resolved = enhancedResolveProjectRoot(candidate);
+    if (resolved !== candidate) {
+      await ensurePathExists(resolved);
+      return { projectRoot: resolved, autoDetected: true };
+    }
+  } catch {
+    // Fallback to original logic if enhanced resolver fails
+  }
+
+  // Original fallback logic
   if (!requested && path.basename(candidate) === '.devenv') {
     const parent = path.dirname(candidate);
     if (parent && parent !== candidate) {

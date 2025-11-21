@@ -180,12 +180,32 @@ Use the ["New Project" flow in the Setup Guide](SETUP-GUIDE.md#quick-reference) 
 
 Follow the ["Existing Project" flow in the Setup Guide](SETUP-GUIDE.md#quick-reference) to clone `.devenv/`, build it once, and run the first doctor. The rest of this Usage guide assumes setup is complete and focuses on health checks, fixes, and automation.
 
+### Cross-Platform Commands
+
+**Windows PowerShell**: Use `;` instead of `&&` for command chaining, or use separate commands:
+
+```powershell
+# PowerShell - Use semicolon
+Set-Location .devenv; npm run doctor
+
+# Or separate commands
+Set-Location .devenv
+npm run doctor
+```
+
+**Bash/Linux/macOS**: Use `&&` for command chaining:
+
+```bash
+# Bash - Use && for chaining
+cd .devenv && npm run doctor
+```
+
 > 💡 **Windows PowerShell**: replace chained commands (`&&`) with two lines:
 > `Set-Location .\your-project\.devenv` then `npm run doctor`.
 
-### Running DevEnvTemplate from `.devenv/`
+### Running DevEnvTemplate from `.devenv/` (Embedded Usage)
 
-Once `.devenv/` exists, you can run the doctor directly from that folder and it will analyze the parent project automatically:
+Once `.devenv/` exists, you can run the doctor directly from that folder and it will analyze the parent project automatically. See [Embedded Usage Guide](EMBEDDED-USAGE.md) for complete details.
 
 ```powershell
 # Windows PowerShell
