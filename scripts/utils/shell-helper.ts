@@ -38,30 +38,42 @@ export function detectShell(): ShellType {
  */
 export function runCommand(
   command: string,
-  options: ExecSyncOptions & { shell?: ShellType } = {}
+  options: ExecSyncOptions & { shellType?: ShellType } = {}
 ): string {
-  const shellType = options.shell || detectShell();
-  const { shell: _, ...execOptions } = options;
+  const shellType = options.shellType || detectShell();
+  const { shellType: _, ...execOptions } = options;
 
   // Normalize command for the detected shell
   let normalizedCommand = command;
+  let shellPath: string | undefined;
 
   if (shellType === 'powershell') {
     // Replace && with ; for PowerShell
     normalizedCommand = command.replace(/&&/g, ';');
-    // Use PowerShell as shell
-    execOptions.shell = 'powershell.exe';
+    // Use PowerShell as shell (Windows only)
+    if (process.platform === 'win32') {
+      shellPath = 'powershell.exe';
+    }
   } else {
     // Use bash/sh for Unix-like systems
-    execOptions.shell = '/bin/bash';
+    if (process.platform !== 'win32') {
+      shellPath = '/bin/bash';
+    }
   }
 
   try {
-    return execSync(normalizedCommand, {
+    const execOpts: ExecSyncOptions = {
       encoding: 'utf8',
       stdio: 'pipe',
       ...execOptions,
-    }).toString();
+    };
+    
+    // Add shell option if specified (Node.js supports this)
+    if (shellPath) {
+      (execOpts as any).shell = shellPath;
+    }
+    
+    return execSync(normalizedCommand, execOpts).toString();
   } catch (error: any) {
     throw new Error(
       `Command failed: ${normalizedCommand}\n` +
@@ -86,9 +98,9 @@ export function chainCommands(commands: string[], shell?: ShellType): string {
 export function commandExists(command: string): boolean {
   try {
     if (detectShell() === 'powershell') {
-      runCommand(`Get-Command ${command} -ErrorAction SilentlyContinue`, { shell: 'powershell' });
+      runCommand(`Get-Command ${command} -ErrorAction SilentlyContinue`, { shellType: 'powershell' });
     } else {
-      runCommand(`which ${command}`, { shell: 'bash' });
+      runCommand(`which ${command}`, { shellType: 'bash' });
     }
     return true;
   } catch {
