@@ -1,11 +1,22 @@
-# Sync script to pull updates from DevEnvTemplate while preserving project-specific files
-# Usage: .\scripts\sync-from-template.ps1 [template-path]
+# Sync script to pull updates from template repository while preserving project-specific files
+# Usage: .\scripts\sync-from-template.ps1 <template-path>
+#   template-path: Path to the template repository (required)
 
 param(
-    [string]$TemplatePath = "..\..\DevEnvTemplate"
+    [Parameter(Mandatory=$true)]
+    [string]$TemplatePath
 )
 
 $ErrorActionPreference = "Stop"
+
+# Check if template path is provided
+if ([string]::IsNullOrWhiteSpace($TemplatePath)) {
+    Write-Host "[ERROR] Template path is required" -ForegroundColor Red
+    Write-Host "Usage: .\scripts\sync-from-template.ps1 <template-path>"
+    Write-Host "Example: .\scripts\sync-from-template.ps1 C:\dev\DevEnvTemplate"
+    Write-Host "         .\scripts\sync-from-template.ps1 ..\..\DevEnvTemplate"
+    exit 1
+}
 
 # Get the directory where this script is located
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -14,19 +25,15 @@ $ProjectRoot = Split-Path -Parent $DevenvDir
 
 # Resolve absolute path
 if (-not [System.IO.Path]::IsPathRooted($TemplatePath)) {
-    # Resolve relative path from .devenv directory
-    # ..\..\DevEnvTemplate from .devenv goes to C:\dev\DevEnvTemplate
-    Push-Location $DevenvDir
+    # If relative path, resolve from project root
+    Push-Location $ProjectRoot
     try {
         $resolved = Resolve-Path $TemplatePath -ErrorAction SilentlyContinue
         if ($resolved) {
             $TemplatePath = $resolved.Path
-        } else {
-            # Fallback: construct path manually
-            # ..\..\DevEnvTemplate from C:\dev\lunar_mining_sim\.devenv = C:\dev\DevEnvTemplate
-            $basePath = Split-Path -Parent (Split-Path -Parent $DevenvDir)
-            $TemplatePath = Join-Path $basePath "DevEnvTemplate"
         }
+    } catch {
+        # Path doesn't exist, keep original for error message
     } finally {
         Pop-Location
     }
@@ -42,7 +49,7 @@ $ProjectFiles = @(
     "input.txt"
 )
 
-Write-Host "[SYNC] Syncing .devenv from DevEnvTemplate" -ForegroundColor Green
+Write-Host "[SYNC] Syncing .devenv from template" -ForegroundColor Green
 Write-Host "Template path: $TemplatePath"
 Write-Host "Devenv path: $DevenvDir"
 Write-Host ""

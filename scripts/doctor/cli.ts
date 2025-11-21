@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * DevEnvTemplate Doctor Mode
+ * Development Environment Doctor Mode
  * 
  * Acts as a "doctor" for your development environment:
  * - Diagnoses issues (stack-detector)
@@ -51,17 +51,32 @@ interface CliOptions {
   mode?: 'fast' | 'full';
   debug?: boolean;
   integrateCursorRules?: boolean;
+  offline?: boolean;
 }
 
 /**
  * Main doctor command
  */
 async function runDoctor(options: CliOptions = {}) {
+  // Set offline mode to prevent network operations that might interfere with VPN
+  if (options.offline) {
+    // Disable npm registry lookups
+    process.env.NPM_CONFIG_OFFLINE = 'true';
+    process.env.npm_config_offline = 'true';
+    // Prevent DNS lookups for module resolution
+    process.env.NODE_OPTIONS = (process.env.NODE_OPTIONS || '') + ' --no-warnings';
+    // Set offline flag for any child processes
+    process.env.DEVENV_OFFLINE = 'true';
+    if (!options.json) {
+      console.log('📴 Offline mode enabled: network operations disabled\n');
+    }
+  }
+  
   if (options.debug && !process.env.LOG_LEVEL) {
     process.env.LOG_LEVEL = 'DEBUG';
   }
   if (!options.json) {
-    console.log('🏥 DevEnvTemplate Health Check\n');
+    console.log('🏥 Development Environment Health Check\n');
     if (options.debug) {
       console.log('🪲 Debug logging enabled (LOG_LEVEL=DEBUG)\n');
     }
@@ -70,7 +85,7 @@ async function runDoctor(options: CliOptions = {}) {
   const currentDir = process.cwd();
   const { projectRoot, autoDetected } = await resolveProjectRoot(currentDir, options.projectRoot);
   if (autoDetected && !options.json) {
-    console.log(`ℹ️ Detected embedded DevEnvTemplate folder. Analyzing parent project: ${projectRoot}\n`);
+    console.log(`ℹ️ Detected embedded .devenv folder. Analyzing parent project: ${projectRoot}\n`);
   }
   if (projectRoot !== currentDir) {
     process.chdir(projectRoot);
@@ -111,11 +126,15 @@ async function runDoctor(options: CliOptions = {}) {
     if (options.debug) {
       stackArgs.push('--debug');
     }
+    if (options.offline) {
+      stackArgs.push('--offline');
+    }
     const stackCommand = `node "${stackDetectorPath}" ${stackArgs.join(' ')}`;
     const stackOutput = execSync(stackCommand, {
       cwd: workingDir,
       encoding: 'utf8',
-      stdio: ['pipe', 'pipe', 'pipe']
+      stdio: ['pipe', 'pipe', 'pipe'],
+      env: { ...process.env }
     });
     stackData = JSON.parse(stackOutput);
     const profiles = Array.isArray(stackData.profiles) && stackData.profiles.length > 0
@@ -151,12 +170,11 @@ async function runDoctor(options: CliOptions = {}) {
     }
     
     try {
-      // Find DevEnvTemplate .cursor/rules path
-      // Try multiple locations: .devenv, ../DevEnvTemplate, or __dirname relative
+      // Find .cursor/rules path within .devenv (self-contained)
+      // Check .devenv/.cursor/rules relative to project root and __dirname relative paths
       let templateRulesPath: string | null = null;
       const possiblePaths = [
         path.join(workingDir, '.devenv', '.cursor', 'rules'),
-        path.join(workingDir, '..', 'DevEnvTemplate', '.cursor', 'rules'),
         path.join(__dirname, '../../../.cursor/rules')
       ];
 
@@ -195,8 +213,8 @@ async function runDoctor(options: CliOptions = {}) {
         }
       } else {
         if (!options.json) {
-          console.log('  ⚠️  DevEnvTemplate .cursor/rules/ not found. Skipping integration.');
-          console.log('     To integrate rules, ensure DevEnvTemplate is available.');
+          console.log('  ⚠️  .devenv/.cursor/rules/ not found. Skipping integration.');
+          console.log('     Ensure .devenv/.cursor/rules/ exists for cursor rules integration.');
         }
       }
     } catch (error: any) {
@@ -226,6 +244,9 @@ async function runDoctor(options: CliOptions = {}) {
     if (options.debug) {
       gapArgs.push('--debug');
     }
+    if (options.offline) {
+      gapArgs.push('--offline');
+    }
     const gapCommand =
       gapArgs.length > 0
         ? `node "${gapAnalyzerPath}" ${gapArgs.join(' ')}`
@@ -233,7 +254,8 @@ async function runDoctor(options: CliOptions = {}) {
     execSync(gapCommand, {
       cwd: workingDir,
       encoding: 'utf8',
-      stdio: 'inherit'
+      stdio: 'inherit',
+      env: { ...process.env }
     });
     
     // Read the generated report
@@ -688,6 +710,9 @@ function parseArgs(): CliOptions {
       case '--integrate-cursor-rules':
         options.integrateCursorRules = true;
         break;
+      case '--offline':
+        options.offline = true;
+        break;
       case '--fast':
       case '--shallow':
         options.mode = 'fast';
@@ -745,7 +770,7 @@ function parseArgs(): CliOptions {
 
 function printHelp() {
   console.log(`
-DevEnvTemplate Doctor - Health check and auto-fix tool
+Development Environment Doctor - Health check and auto-fix tool
 
 USAGE:
   npm run doctor [options]
@@ -761,6 +786,7 @@ OPTIONS:
   --full             Force a full scan (default)
   --mode <fast|full> Equivalent to --fast/--full for scripting
   --debug            Enable verbose logging (writes to stdout; avoid with --json)
+  --offline          Disable network operations (prevents VPN interference)
   --project-root     Explicitly set the project root to analyze
   -h, --help         Show this help message
 
@@ -774,6 +800,7 @@ EXAMPLES:
   npm run doctor --strict                 # Fail CI on any warnings
   npm run doctor --fast                   # Quick feedback loop (reduced coverage)
   npm run doctor --debug                  # Verbose logging for troubleshooting
+  npm run doctor --offline                # Disable network operations (prevents VPN issues)
   npm run doctor --project-root ..        # Run from .devenv folder
 
 WORKFLOW:

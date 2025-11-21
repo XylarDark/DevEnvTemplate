@@ -26,7 +26,7 @@ export interface RuleSelectionResult {
 }
 
 /**
- * Standard DevEnvTemplate rule files
+ * Standard core rule files
  */
 const STANDARD_CORE_FILES = [
   '00-core-principles.mdc',

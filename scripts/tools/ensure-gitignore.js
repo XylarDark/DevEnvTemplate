@@ -30,7 +30,7 @@ function ensureGitignore() {
     }
 
     const needsLeadingNewline = existing.length > 0 && !existing.endsWith('\n');
-    const addition = `${needsLeadingNewline ? '\n' : ''}# DevEnvTemplate workspace (auto-added)\n${entry}`;
+    const addition = `${needsLeadingNewline ? '\n' : ''}# .devenv workspace (auto-added)\n${entry}`;
 
     fs.writeFileSync(gitignorePath, existing + addition);
     console.log('✓ Added ".devenv/" to parent .gitignore');

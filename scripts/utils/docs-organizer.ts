@@ -71,7 +71,7 @@ export async function loadDocsConfig(projectRoot: string): Promise<DocsOrganizat
   // Try project-specific config first (.devenv/config/ or project root)
   const projectConfigPath = resolveConfigPath('docs-organization.yaml', projectRoot);
   
-  // Try DevEnvTemplate default config
+  // Try .devenv default config
   const devenvRoot = path.resolve(__dirname, '../../');
   const defaultConfigPath = path.join(devenvRoot, 'config', 'docs-organization.yaml');
   

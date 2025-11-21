@@ -4,7 +4,7 @@
  * Stack Detector - CI-only utility
  *
  * Analyzes a repository to detect technology stack and configuration.
- * Used by DevEnvTemplate drop-in to understand the current project setup.
+ * Used by .devenv to understand the current project setup.
  */
 
 import { promises as fs } from 'fs';

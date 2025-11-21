@@ -388,11 +388,10 @@ export const QUICK_WINS: QuickWin[] = [
         const path = await import('path');
         const { existsSync } = await import('fs');
         
-        // Find DevEnvTemplate .cursor/rules path
+        // Find .cursor/rules path within .devenv (self-contained)
         let templateRulesPath: string | null = null;
         const possiblePaths = [
           path.join(ctx.rootDir, '.devenv', '.cursor', 'rules'),
-          path.join(ctx.rootDir, '..', 'DevEnvTemplate', '.cursor', 'rules'),
           path.join(__dirname, '../../../.cursor/rules')
         ];
 
@@ -406,8 +405,8 @@ export const QUICK_WINS: QuickWin[] = [
         if (!templateRulesPath) {
           return {
             success: false,
-            message: 'DevEnvTemplate .cursor/rules/ not found',
-            error: 'Cannot locate template rules directory'
+            message: '.devenv/.cursor/rules/ not found',
+            error: 'Cannot locate cursor rules directory in .devenv'
           };
         }
 

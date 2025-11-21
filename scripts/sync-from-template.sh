@@ -1,6 +1,7 @@
 #!/bin/bash
-# Sync script to pull updates from DevEnvTemplate while preserving project-specific files
-# Usage: ./scripts/sync-from-template.sh [template-path]
+# Sync script to pull updates from template repository while preserving project-specific files
+# Usage: ./scripts/sync-from-template.sh <template-path>
+#   template-path: Path to the template repository (required)
 
 set -e
 
@@ -10,17 +11,27 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
+# Check if template path is provided
+if [ -z "$1" ]; then
+  echo -e "${RED}❌ Error: Template path is required${NC}"
+  echo "Usage: ./scripts/sync-from-template.sh <template-path>"
+  echo "Example: ./scripts/sync-from-template.sh /path/to/DevEnvTemplate"
+  echo "         ./scripts/sync-from-template.sh ../../DevEnvTemplate"
+  exit 1
+fi
+
 # Get the directory where this script is located
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DEVENV_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 PROJECT_ROOT="$(cd "$DEVENV_DIR/.." && pwd)"
 
-# Default template path (relative to project root)
-TEMPLATE_PATH="${1:-../../DevEnvTemplate}"
+# Template path (required argument)
+TEMPLATE_PATH="$1"
 
 # Resolve absolute path
 if [[ ! "$TEMPLATE_PATH" = /* ]]; then
-  TEMPLATE_PATH="$(cd "$PROJECT_ROOT/$TEMPLATE_PATH" && pwd)"
+  # If relative path, resolve from project root
+  TEMPLATE_PATH="$(cd "$PROJECT_ROOT/$TEMPLATE_PATH" && pwd 2>/dev/null || echo "$PROJECT_ROOT/$TEMPLATE_PATH")"
 fi
 
 # Project-specific files to preserve (relative to .devenv)
@@ -33,7 +44,7 @@ PROJECT_FILES=(
   "input.txt"
 )
 
-echo -e "${GREEN}🔄 Syncing .devenv from DevEnvTemplate${NC}"
+echo -e "${GREEN}🔄 Syncing .devenv from template${NC}"
 echo "Template path: $TEMPLATE_PATH"
 echo "Devenv path: $DEVENV_DIR"
 echo ""

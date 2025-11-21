@@ -1,7 +1,7 @@
 /**
  * Git Hook Installer
  * 
- * Installs git hooks for DevEnvTemplate features.
+ * Installs git hooks for development environment features.
  */
 
 import { promises as fs } from 'fs';
@@ -79,7 +79,7 @@ export async function installPreCommitDocsHook(options: HookInstallOptions): Pro
       return true;
     }
     
-    const combinedHook = existingHook + '\n\n# DevEnvTemplate: Documentation Organization Check\n' + templateContent;
+    const combinedHook = existingHook + '\n\n# .devenv: Documentation Organization Check\n' + templateContent;
     await fs.writeFile(preCommitHook, combinedHook, 'utf8');
     
     // Make executable

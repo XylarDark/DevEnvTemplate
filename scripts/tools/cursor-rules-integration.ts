@@ -3,7 +3,7 @@
 /**
  * Cursor Rules Integration
  * 
- * Handles copying and merging cursor rules from DevEnvTemplate to project.
+ * Handles copying and merging cursor rules from .devenv/.cursor/rules to project.
  */
 
 import { promises as fs } from 'fs';

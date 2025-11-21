@@ -130,23 +130,6 @@ export function resolveProjectRoot(startDir: string = process.cwd()): string {
       }
     }
     
-    // Check if this is DevEnvTemplate itself (package.json name is devenv-template)
-    try {
-      const packageJsonPath = path.join(current, 'package.json');
-      if (fs.existsSync(packageJsonPath)) {
-        const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
-        if (packageJson.name === 'devenv-template') {
-          // This is DevEnvTemplate, walk up one more level
-          const parent = path.dirname(current);
-          if (parent && parent !== current) {
-            return parent;
-          }
-        }
-      }
-    } catch {
-      // Ignore JSON parse errors
-    }
-    
     current = path.dirname(current);
     depth++;
   }
