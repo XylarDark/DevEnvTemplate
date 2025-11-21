@@ -247,6 +247,9 @@ Use:
 - `cmd1; cmd2` for sequencing
 - `Write-Output` or `echo "..."` without `-e`
 
+**NEVER use `Select-Object -First N` in terminal commands**  
+The pattern `command | Select-Object -First N` causes VPN/network connection issues in some environments. Use direct commands without limiting, command-specific flags (e.g., `--maxfail=1`), or redirect to file first: `command > output.txt; Get-Content output.txt -TotalCount N`. See [BEST-PRACTICES.md](BEST-PRACTICES.md#powershell-output-limiting-anti-pattern) for details.
+
 **One logical command per automation step**  
 In DevEnvTemplate scripts or AI-driven tooling, avoid chaining multiple shell features in one call. Prefer `cd <dir>; <single command>` per invocation to avoid OS-specific parsing issues.
 

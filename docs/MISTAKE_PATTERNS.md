@@ -54,6 +54,50 @@ npm run doctor --project-root lunar_mining_sim
 
 ---
 
+### Pattern: PowerShell Output Limiting with Select-Object
+
+**Description:** Using `Select-Object -First N` in PowerShell terminal commands to limit output, which causes VPN/network connection issues.
+
+**Root Cause:**
+- PowerShell pipeline operations with `Select-Object -First N` can interfere with network connections
+- Pattern was used repeatedly: `command | Select-Object -First 30`
+- Attempted to limit verbose output without considering network implications
+- Pipeline operations in terminal commands during development sessions trigger the issue
+
+**Impact:**
+- VPN connection drops or becomes unstable
+- Network connectivity issues during development
+- Repeated failures when same pattern is used multiple times
+- Disrupts development workflow
+
+**Prevention Strategy:**
+- Never use `Select-Object -First N` in terminal commands
+- Accept full output - modern terminals handle large output well
+- Use command-specific flags for output control when available (e.g., `--maxfail=1`)
+- If limiting is absolutely necessary, redirect to file first, then read with limits
+- Use `Select-String` for filtering if needed, not `Select-Object -First N`
+
+**Fix Examples:**
+```powershell
+# ❌ AVOID: Causes VPN connection issues
+python -m pytest --collect-only -q 2>&1 | Select-Object -First 30
+
+# ✅ SAFE: Use direct command without limiting
+python -m pytest --collect-only -q
+
+# ✅ SAFE: Use command's built-in limiting flags
+python -m pytest --collect-only -q --maxfail=1
+
+# ✅ SAFE: Redirect to file if limiting is needed
+python -m pytest --collect-only -q > output.txt
+Get-Content output.txt -TotalCount 30
+
+# ✅ SAFE: Use Select-String for filtering
+python -m pytest --collect-only -q | Select-String "test_"
+```
+
+---
+
 ## 2. Python Path Resolution Issues
 
 ### Pattern: sys.path Hacks
