@@ -657,7 +657,8 @@ npx husky add .husky/pre-commit "npm run lint"`
     let md = '## 📚 Additional Resources\n\n';
     md += '- [Stack Report](.devenv/stack-report.json) - Current project stack detection\n';
     md += '- [Gap Analysis](.devenv/gaps-report.md) - Detailed gap analysis\n';
-    md += '- [Engineering Handbook](../docs/engineering-handbook.md) - Best practices guide\n';
+    md += '- [Architecture Guide](../docs/ARCHITECTURE.md) - Project structure and design\n';
+    md += '- [Best Practices](../docs/BEST-PRACTICES.md) - Technology-agnostic best practices\n';
     md += '- [Cursor Plan Integration](../docs/guides/cursor-plan-integration.md) - Plan mode guide\n';
     md += '- [DevEnvTemplate README](../README.md) - Template documentation\n\n';
 

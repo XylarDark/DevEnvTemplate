@@ -46,7 +46,7 @@ PROJECT CONTEXT (from CI artifacts):
 - Current Gaps: [paste relevant sections from .devenv/gaps-report.md]
 
 REQUIREMENTS:
-- Follow DevEnvTemplate patterns from docs/engineering-handbook.md
+- Follow DevEnvTemplate patterns from docs/ARCHITECTURE.md and docs/BEST-PRACTICES.md
 - Address gaps identified in CI analysis
 - Include comprehensive error handling and TypeScript types
 - Write tests for new functionality

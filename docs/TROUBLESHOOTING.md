@@ -226,6 +226,8 @@ npx tsc --noEmit
 
 ## Embedded Usage Issues
 
+> **Note:** This section documents issues specific to using DevEnvTemplate when embedded as `.devenv/` inside another project. For general embedded usage guidance, see [EMBEDDED-USAGE.md](EMBEDDED-USAGE.md).
+
 ### Doctor Analyzes DevEnvTemplate Instead of Parent Project
 
 **Problem:** Running `npm run doctor` from `.devenv/` analyzes DevEnvTemplate itself instead of the parent project.
@@ -313,6 +315,55 @@ LOG_LEVEL=ERROR npm run doctor --prefix .devenv -- --json
 ```
 
 **Prevention:** Stack detector should be called with `--json` flag when output is parsed programmatically.
+
+### Script Entrypoints vs Build Artifacts
+
+**Problem:** After cloning `.devenv`, `npm run doctor` points to `node scripts/doctor/cli.js`, but only `.ts` sources exist (no compiled `.js`).
+
+**Symptoms:**
+```
+Cannot find module '...scripts\doctor\cli.js'
+```
+
+**Solution:**
+```bash
+# Build TypeScript first
+cd .devenv
+npm install
+npm run build
+npm run doctor
+```
+
+**Prevention:** Always run `npm run build` after cloning DevEnvTemplate into `.devenv/`.
+
+### Stack Detector Logs Mask Target Project Errors
+
+**Problem:** Even after manually running stack detector, logs show it's inspecting the wrong directory (`.devenv/.devenv/` instead of the actual project).
+
+**Symptoms:**
+```
+Stack report saved to ...\.devenv\.devenv\stack-report.json
+```
+
+**Cause:** Running from `.devenv/` directory without specifying project root.
+
+**Solution:**
+```bash
+# Run from project root
+cd ..
+npm run doctor --prefix .devenv
+
+# Or explicitly set project root
+npm run doctor --prefix .devenv -- --project-root ..
+```
+
+**Prevention:** Always run doctor from the project root, not from `.devenv/`.
+
+### Missing Documentation for Embedded Workflow
+
+**Problem:** No guidance on how to run doctor when DevEnvTemplate is vendored into `.devenv/`.
+
+**Solution:** See [EMBEDDED-USAGE.md](EMBEDDED-USAGE.md) for complete embedded workflow documentation.
 
 See [Embedded Usage Guide](EMBEDDED-USAGE.md) for complete workflow.
 

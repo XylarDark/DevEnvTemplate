@@ -9,6 +9,7 @@ This document outlines technology-agnostic best practices for development, deriv
 3. [Error Handling Patterns](#error-handling-patterns)
 4. [Verification Procedures](#verification-procedures)
 5. [Cross-Platform Compatibility](#cross-platform-compatibility)
+6. [Documentation Organization](#documentation-organization)
 
 ## Encryption Key Generation
 
@@ -705,6 +706,114 @@ def get_config_dir() -> Path:
     root = get_project_root()
     return root / 'config'
 ```
+
+## Documentation Organization
+
+### The Problem
+
+Markdown files often accumulate in the project root, making it difficult to find relevant documentation and cluttering the repository structure.
+
+### Correct Pattern
+
+**Organize documentation files into appropriate directories based on their purpose:**
+
+```
+project-root/
+├── README.md              # Stays in root
+├── CHANGELOG.md           # Stays in root
+├── CONTRIBUTING.md        # Stays in root
+├── LICENSE.md             # Stays in root
+└── docs/                  # All other documentation
+    ├── deployment/
+    │   ├── RAILWAY_DEPLOYMENT.md
+    │   └── VERCEL_DEPLOYMENT.md
+    ├── api/
+    │   └── API_GUIDE.md
+    ├── guides/
+    │   └── GETTING_STARTED_GUIDE.md
+    └── ...
+```
+
+### Using DevEnvTemplate
+
+DevEnvTemplate automatically detects and organizes misplaced documentation:
+
+```bash
+# Check what needs organization
+devenv organize-docs --dry-run
+
+# Automatically organize
+devenv organize-docs --auto-fix
+```
+
+The tool uses configurable rules in `config/docs-organization.yaml`:
+- **Root exceptions**: Files that should stay in root (README.md, CHANGELOG.md, etc.)
+- **Directory rules**: Pattern-based organization (e.g., `*_DEPLOYMENT.md` → `docs/deployment/`)
+- **Default target**: Fallback directory for unmatched files
+
+### Naming Conventions
+
+Follow consistent naming patterns for automatic organization:
+
+- **Deployment docs**: `*_DEPLOYMENT.md`, `*DEPLOYMENT*.md`
+- **API docs**: `*_API*.md`, `API*.md`
+- **Guides**: `*_GUIDE.md`, `GUIDE*.md`
+- **Quick starts**: `*_QUICK_START.md`, `QUICK_START*.md`
+
+### Pre-commit Hook
+
+Install a pre-commit hook to prevent committing misplaced docs:
+
+```bash
+# Manual installation
+cp .devenv/scripts/doctor/templates/pre-commit-docs-check.sh .git/hooks/pre-commit
+chmod +x .git/hooks/pre-commit
+```
+
+The hook will:
+- Check for new markdown files in root
+- Warn if files should be organized
+- Optionally auto-organize (set `DEVENV_AUTO_ORGANIZE_DOCS=true`)
+
+### Common Mistakes to Avoid
+
+**❌ Wrong - All docs in root:**
+```
+project-root/
+├── README.md
+├── DEPLOYMENT.md
+├── API_GUIDE.md
+├── QUICK_START.md
+└── CONTRIBUTING.md
+```
+
+**✅ Correct - Organized structure:**
+```
+project-root/
+├── README.md
+├── CONTRIBUTING.md
+└── docs/
+    ├── deployment/DEPLOYMENT.md
+    ├── api/API_GUIDE.md
+    └── QUICK_START.md
+```
+
+### Integration with Doctor
+
+The doctor automatically detects misplaced documentation files and includes them in health checks:
+
+```bash
+npm run doctor
+# Shows: "Misplaced Documentation Files" in warnings
+```
+
+Fix automatically:
+```bash
+npm run doctor --fix
+# Automatically organizes misplaced docs
+```
+
+See [`docs/guides/docs-organization.md`](guides/docs-organization.md) for complete documentation.
 
 ## Summary
 

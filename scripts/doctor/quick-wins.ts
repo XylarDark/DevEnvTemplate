@@ -285,6 +285,54 @@ export const QUICK_WINS: QuickWin[] = [
   },
 
   // ========================================
+  // DOCUMENTATION
+  // ========================================
+  {
+    id: 'organize-docs',
+    title: 'Organize documentation files',
+    description: 'Move misplaced markdown files from project root to appropriate directories',
+    estimatedTime: '2 min',
+    autoFixable: true,
+    category: 'env-hygiene',
+    detectCondition: async (ctx) => {
+      try {
+        const { detectMisplacedDocs } = await import('../utils/docs-organizer');
+        const misplaced = await detectMisplacedDocs(ctx.rootDir);
+        return misplaced.length > 0;
+      } catch {
+        return false;
+      }
+    },
+    fixAction: async (ctx) => {
+      try {
+        const { organizeDocumentation } = await import('../utils/docs-organizer');
+        const result = await organizeDocumentation(ctx.rootDir, false);
+        
+        if (result.errors.length > 0) {
+          return {
+            success: false,
+            message: `Failed to organize docs: ${result.errors.join(', ')}`,
+            error: result.errors.join('; ')
+          };
+        }
+        
+        const filesMoved = result.filesToMove.map((m: { source: string }) => m.source);
+        return {
+          success: result.success,
+          message: `Organized ${result.filesToMove.length} documentation file(s)`,
+          filesModified: filesMoved
+        };
+      } catch (error: any) {
+        return {
+          success: false,
+          message: `Failed to organize docs: ${error.message}`,
+          error: error.message
+        };
+      }
+    }
+  },
+
+  // ========================================
   // CI/CD
   // ========================================
   {

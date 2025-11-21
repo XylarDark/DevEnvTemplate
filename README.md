@@ -1,116 +1,234 @@
-# Lunar Mining Simulator - Development Environment
+# DevEnvTemplate
 
-This directory contains project-specific development environment configuration, best practices, and utilities.
+[![CI](https://github.com/XylarDark/DevEnvTemplate/actions/workflows/indie-ci.yml/badge.svg)](https://github.com/XylarDark/DevEnvTemplate/actions/workflows/indie-ci.yml)
+[![Version](https://img.shields.io/github/package-json/v/XylarDark/DevEnvTemplate)](https://github.com/XylarDark/DevEnvTemplate)
+[![License](https://img.shields.io/github/license/XylarDark/DevEnvTemplate)](LICENSE)
 
-## Quick Start
+**Your AI coding companion's health checker.** DevEnvTemplate acts as a doctor for your development environment - diagnosing issues, prescribing solutions, and keeping your codebase healthy while you code with LLMs.
 
-1. **Install the package in development mode:**
-   ```bash
-   pip install -e .
-   ```
+## For Indie Developers & Solo Founders
 
-2. **Check your environment:**
-   ```bash
-   # Bash/zsh
-   ./.devenv/scripts/check-env.sh
-   
-   # PowerShell
-   .\.devenv\scripts\check-env.ps1
-   ```
+Building with AI assistants like Cursor, GitHub Copilot, or ChatGPT? Your dev environment needs to be **rock solid** so the AI can focus on features, not fighting broken tooling.
 
-3. **Review best practices:**
-   - [Python Best Practices](best-practices/python.md)
-   - [Next.js Best Practices](best-practices/nextjs.md)
-   - [FastAPI Best Practices](best-practices/fastapi.md)
-   - [Deployment Best Practices](best-practices/deployment.md)
+**DevEnvTemplate is your dev environment doctor:**
 
-## Directory Structure
+- **Diagnose** → Scans your project stack and quality setup
+- **Prescribe** → Identifies gaps (missing tests, CI, security)
+- **Cure** → Auto-fixes common issues in seconds
+- **Monitor** → Continuous health checks on every push
 
-This `.devenv/` directory is based on DevEnvTemplate with project-specific additions. See [STRUCTURE.md](STRUCTURE.md) for detailed alignment information.
+**From diagnosis to deployment in < 10 minutes.** Quality by default, not by overtime.
 
-```
-.devenv/
-├── README.md                    # This file (DevEnvTemplate base + project-specific)
-├── STRUCTURE.md                 # Structure alignment documentation
-├── MISTAKE_PATTERNS.md          # Project-specific: Common mistakes and prevention
-├── IMPLEMENTATION_SUMMARY.md    # Project-specific: Implementation notes
-├── REPOSITORY_STRUCTURE.md      # Project-specific: Repository structure
-├── best-practices/              # Project-specific: Technology-specific guidelines
-│   ├── python.md
-│   ├── nextjs.md
-│   ├── fastapi.md
-│   └── deployment.md
-├── config/                      # Configuration files
-│   ├── cleanup.config.yaml      # DevEnvTemplate standard
-│   ├── quality-budgets.json     # DevEnvTemplate standard
-│   ├── python-best-practices.json  # Project-specific: Python config
-│   ├── shell-aliases.sh         # Project-specific: Bash aliases
-│   └── shell-aliases.ps1        # Project-specific: PowerShell aliases
-├── docs/                        # Documentation
-│   ├── LLM-REFERENCE.md         # ✅ Project-specific extension (aligned location)
-│   └── [other DevEnvTemplate docs]
-├── scripts/                     # Scripts and utilities
-│   ├── [DevEnvTemplate scripts]
-│   ├── check-env.sh            # Project-specific: Environment checker (bash)
-│   ├── check-env.ps1           # Project-specific: Environment checker (PowerShell)
-│   └── validate-paths.py        # Project-specific: Path validation
-└── [other DevEnvTemplate directories: tests/, etc.]
+## Quick Start (2 Minutes)
+
+### Install & Diagnose
+
+```bash
+# Install
+npm init -y  # if needed
+npx devenv-init
+
+# Run health check
+npm run doctor
 ```
 
-**Note:** Core structure aligns with DevEnvTemplate. Project-specific files are clearly marked and documented in [STRUCTURE.md](STRUCTURE.md).
+**Output:**
+```
+🏥 DevEnvTemplate Health Check
+
+🟢 Project Health: 75/100
+
+📊 Health Breakdown:
+   Security:      🟢 ██████████ 85/100
+   Code Quality:  🟡 ███████░░░ 70/100
+   Testing:       🔴 ████░░░░░░ 40/100
+   CI/CD:         🟢 ████████░░ 80/100
+   Documentation: 🟡 ███████░░░ 70/100
+
+🔴 Critical Issues (2):
+   - No testing framework detected
+   - Missing .env.example (secrets at risk)
+
+💡 Quick Wins (can fix in < 10 min):
+   1. Add .env.example → 2 min
+   2. Enable TypeScript strict → 1 min
+   3. Add ESLint config → 5 min
+
+📋 Full Report: .devenv/health-report.json
+```
+
+### Auto-Fix Issues
+
+```bash
+# Apply automatic fixes
+npm run doctor:fix
+```
+
+Auto-fixes:
+- ✅ Creates `.env.example`
+- ✅ Adds `.env` to `.gitignore`
+- ✅ Enables TypeScript strict mode
+- ✅ And more...
+
+## What You Get
+
+### Instant Quality Stack
+- **Testing**: Node.js test runner (no heavy frameworks)
+- **CI/CD**: GitHub Actions (optimized for 2000 free min/month)
+- **Type Safety**: TypeScript support with smart defaults
+- **Linting**: ESLint configured for modern JavaScript/TypeScript
+- **Security**: Automated dependency scanning
+
+### Works With Your Stack
+- **Node.js**: Express, Fastify, NestJS
+- **Frontend**: React, Vue, Svelte, vanilla JS
+- **Full-Stack**: Next.js, Remix, Astro
+- **Python**: Flask, Django, FastAPI (coming soon)
+
+### Free-Tier Friendly
+All recommendations use free tiers:
+- GitHub Actions (2000 min/month)
+- Vercel / Railway / Fly.io deployments
+- GitHub security scanning
+- No paid services required
+
+## How It Works: The Doctor Workflow
+
+DevEnvTemplate follows a medical diagnostic approach:
+
+### 1. Diagnose (Stack Detection)
+Scans your project to understand your tech stack:
+```bash
+node .github/tools/stack-detector.js
+```
+- Detects frameworks (React, Next.js, Express, etc.)
+- Identifies tooling (TypeScript, ESLint, testing frameworks)
+- Finds configurations and quality setup
+
+### 2. Prescribe (Gap Analysis)
+Identifies what's missing or misconfigured:
+```bash
+node .github/tools/gap-analyzer.js
+```
+- Security gaps (exposed secrets, vulnerable dependencies)
+- Quality gaps (missing tests, no linting, weak TypeScript)
+- CI/CD gaps (no pipeline, missing quality gates)
+- Documentation gaps (incomplete README, no contribution guide)
+
+### 3. Cure (Auto-Fix + Cleanup)
+Applies fixes automatically:
+```bash
+npm run doctor:fix      # Auto-fix simple issues
+npm run cleanup:apply   # Remove template boilerplate
+```
+- Creates missing config files
+- Enables strict mode
+- Removes template-only code
+- Sets up CI/CD
+
+### 4. Monitor (Continuous Health)
+On every push, CI runs health checks:
+- ✅ Tests run automatically
+- ✅ Code is linted for consistency
+- ✅ Security scan checks dependencies
+- ✅ Health score tracked over time
+
+**See [docs/USAGE.md](docs/USAGE.md) for detailed commands and workflows.**
 
 ## Common Tasks
 
-### Environment Setup
-
+### Check Project Health
 ```bash
-# Install dependencies
-pip install -e .[all]
-
-# Verify installation
-python -c "import lunar_mining_sim; print('OK')"
+npm run doctor           # Full health check
+npm run doctor:fix       # Apply auto-fixes
+npm run doctor -- --json # JSON output
 ```
 
-### Running Tests
-
+### Run Tests Locally
 ```bash
-# Run all tests
-pytest
-
-# Run with coverage
-pytest --cov=lunar_mining_sim --cov-report=html
-
-# Run specific test file
-pytest tests/test_simulator.py -v
+npm test              # Run all tests
+npm run test:fast     # Run unit tests only (< 5sec)
+npm run test:slow     # Run integration tests
 ```
 
-### Development Workflow
-
-1. **Never use sys.path hacks** - Always install package with `pip install -e .`
-2. **Use path resolution utilities** - See `lunar_mining_sim.utils.path_resolver`
-3. **Follow import ordering** - PEP 8: stdlib, third-party, local
-4. **Use custom exceptions** - See `lunar_mining_sim.utils.exceptions`
-5. **Test cross-platform** - Test scripts in both bash and PowerShell
-
-## Shell Aliases
-
-Load aliases for convenient commands:
-
+### Check Code Quality
 ```bash
-# Bash/zsh
-source .devenv/config/shell-aliases.sh
-
-# PowerShell
-. .\.devenv\config\shell-aliases.ps1
+npm run cleanup       # See what would be cleaned (dry run)
+npm run cleanup:apply # Apply cleanup rules
 ```
 
-## Troubleshooting
+### View Reports
+After running doctor or pushing to GitHub:
+- `.devenv/health-report.json` - Overall health scores
+- `.devenv/stack-report.json` - Detected technologies  
+- `.devenv/gaps-report.md` - Detailed gap analysis
+- `plans/hardening-plan.md` - Generated action plan
 
-See [MISTAKE_PATTERNS.md](MISTAKE_PATTERNS.md) for common issues and solutions.
+## Why Indie Devs Love It
 
-## Related Documentation
+**Fast Setup** → 5 minutes vs 4 hours of configuration  
+**Quality by Default** → Testing, CI, security included  
+**Free Tier** → Everything runs on GitHub's free 2000 min/month  
+**No Lock-In** → Standard tools (Jest, GitHub Actions, ESLint)  
+**Solo-Friendly** → No team jargon, no complex workflows
 
-- [Main README](../README.md)
-- [Development Guide](../docs/DEVELOPMENT.md)
-- [Error Audit](../docs/ERROR_AUDIT.md)
-- [DevEnvTemplate](../../DevEnvTemplate/README.md)
+## Use Cases
+
+**Building a SaaS?**  
+→ Get testing + CI + deployment in one command
+
+**Side Project?**  
+→ Ship with confidence, no technical debt
+
+**Client Work?**  
+→ Professional setup without the setup time
+
+**Learning?**  
+→ See how pros structure projects
+
+## Advanced Features
+
+For power users, DevEnvTemplate includes:
+- **Parallel file processing** (2-5x speedup on large codebases)
+- **Performance tracking** (identify slow build steps)
+- **Cursor Plan Mode integration** (AI-guided development workflow)
+
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [docs/BEST-PRACTICES.md](docs/BEST-PRACTICES.md) for advanced usage.
+
+## Benefits
+
+- **⚡ Fast**: Setup in minutes, not hours
+- **🆓 Free**: Optimized for GitHub free tier
+- **🎯 Focused**: Solo dev-friendly, no enterprise bloat
+- **🔒 Secure**: Automated security scanning
+- **📈 Quality**: Testing and linting by default
+- **🚀 Deploy**: CI/CD ready for Vercel, Railway, Fly.io
+
+## Documentation
+
+- **[BOOTSTRAP.md](BOOTSTRAP.md)** - Single-file-loads-all for LLM-assisted development (load this first)
+- **[docs/USAGE.md](docs/USAGE.md)** - Common commands and workflows
+- **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** - Project structure and design principles
+- **[docs/LLM-CONTEXT-GUIDE.md](docs/LLM-CONTEXT-GUIDE.md)** - Context guide for AI assistants
+- **[docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)** - Troubleshooting guide
+- **[docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)** - Build/test loop for editing the doctor
+- **[docs/RFC-standalone-doctor.md](docs/RFC-standalone-doctor.md)** - Research notes on future binary tooling
+- **[docs/PERF-BASELINE.md](docs/PERF-BASELINE.md)** - Current doctor runtimes (fast vs. full) and goals
+- **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** - Project structure and design principles
+- **[docs/BEST-PRACTICES.md](docs/BEST-PRACTICES.md)** - Technology-agnostic best practices
+
+## Contributing
+
+Found a bug? Have a feature idea? PRs welcome!
+
+See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) for guidelines.
+
+## License
+
+MIT License - see [LICENSE](LICENSE) for details.
+
+---
+
+**Built for indie developers who want to ship quality code without the setup tax.**
+
+Star ⭐ this repo if DevEnvTemplate saves you time!

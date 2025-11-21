@@ -24,6 +24,7 @@
     "cleanup": "node dist/scripts/cleanup/cli.js",
     "cleanup:dry-run": "node dist/scripts/cleanup/cli.js --dry-run",
     "cleanup:apply": "node dist/scripts/cleanup/cli.js --apply",
+    "organize-docs": "node dist/scripts/tools/docs-organizer.js",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },

@@ -264,8 +264,8 @@ Secondary: "See [USAGE.md](../USAGE.md) for examples"
 - Focus: Get started fast, minimal jargon
 
 **Tier 2: Intermediate (Power Users)**
-- IMPLEMENTATION_GUIDE.md: Advanced features, customization
-- docs/engineering-handbook.md: Architecture, patterns
+- docs/ARCHITECTURE.md: Project structure and design principles
+- docs/BEST-PRACTICES.md: Technology-agnostic best practices
 - Focus: Deeper understanding, optimization
 
 **Tier 3: Advanced (Contributors)**

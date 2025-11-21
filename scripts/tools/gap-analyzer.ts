@@ -502,6 +502,27 @@ class GapAnalyzer {
   // Enhanced analysis methods
 
   private async analyzeDocumentation(): Promise<void> {
+    // Check for misplaced documentation files
+    try {
+      const { detectMisplacedDocs } = await import('../utils/docs-organizer');
+      const misplaced = await detectMisplacedDocs(this.rootDir);
+      if (misplaced.length > 0) {
+        this.gaps.push({
+          severity: 'medium',
+          category: 'documentation',
+          title: 'Misplaced Documentation Files',
+          description: `${misplaced.length} markdown file(s) in project root should be organized into docs/ directory`,
+          impact: 'Documentation is harder to find and project root becomes cluttered',
+          recommendation: `Move misplaced files to appropriate directories: ${misplaced.join(', ')}. Run 'devenv organize-docs --auto-fix' to automatically organize.`,
+          effort: 'low',
+          files: misplaced,
+          resources: ['https://github.com/XylarDark/DevEnvTemplate']
+        });
+      }
+    } catch (error: any) {
+      // Silently fail if docs-organizer is not available
+      logger.debug('Could not check for misplaced docs', { error: error.message });
+    }
     try {
       const readmePath = path.join(this.rootDir, 'README.md');
       const readme = await fs.readFile(readmePath, 'utf8');

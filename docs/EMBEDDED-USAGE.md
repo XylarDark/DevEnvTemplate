@@ -1,50 +1,47 @@
 # Embedded Usage Guide
 
-This guide explains how to use DevEnvTemplate when it's embedded as a `.devenv/` folder inside another project.
+**Purpose:** Ongoing usage workflows for DevEnvTemplate when embedded as `.devenv/` inside a project.
+
+> **Before You Start:** If you haven't embedded DevEnvTemplate yet, see [SETUP-GUIDE.md](SETUP-GUIDE.md) for initial setup instructions.
+
+This guide covers **ongoing usage** after DevEnvTemplate is already embedded. For the initial one-time setup process, see [SETUP-GUIDE.md](SETUP-GUIDE.md).
 
 ## Overview
 
-When DevEnvTemplate is cloned into a project's `.devenv/` directory, it can analyze and improve the parent project. This is useful for:
-- Adding DevEnvTemplate capabilities to existing projects
-- Keeping DevEnvTemplate as a submodule
-- Maintaining project-specific configurations
+When DevEnvTemplate is embedded as `.devenv/` in your project, you can use it to:
+- Analyze and improve your project's health
+- Run doctor commands from project root or `.devenv/` directory
+- Maintain project-specific configurations
+- Integrate with CI/CD workflows
 
-## Setup
+## Quick Start (After Setup)
 
-### 1. Clone DevEnvTemplate into `.devenv/`
-
-```bash
-# From your project root
-git clone https://github.com/your-org/DevEnvTemplate.git .devenv
-```
-
-Or add as a submodule:
+If DevEnvTemplate is already embedded and built:
 
 ```bash
-git submodule add https://github.com/your-org/DevEnvTemplate.git .devenv
-```
+# From project root (recommended)
+npm run doctor --prefix .devenv
 
-### 2. Install Dependencies
-
-```bash
-# Bash/zsh
+# Or from .devenv directory
 cd .devenv
-npm install
-npm run build
-
-# PowerShell
-Set-Location .devenv
-npm install
-npm run build
+npm run doctor
 ```
 
-### 3. Run Doctor from Project Root
+> **First Time Setup?** If you haven't embedded DevEnvTemplate yet, see [SETUP-GUIDE.md](SETUP-GUIDE.md) for complete setup instructions.
+
+## Running Doctor Commands
 
 The doctor command automatically detects when it's running from `.devenv/` and analyzes the parent project:
 
 ```bash
 # From project root (recommended)
 npm run doctor --prefix .devenv
+
+# With auto-fix
+npm run doctor --prefix .devenv -- --fix
+
+# JSON output for automation
+npm run doctor --prefix .devenv -- --json
 
 # Or with explicit project root
 npm run doctor --prefix .devenv -- --project-root ..
@@ -199,7 +196,8 @@ npm run doctor --prefix .devenv -- --fix
 
 ## Related Documentation
 
-- [Usage Guide](USAGE.md) - General DevEnvTemplate usage
-- [Troubleshooting](TROUBLESHOOTING.md) - Common issues and solutions
-- [Best Practices](BEST-PRACTICES.md) - Development best practices
+- **[SETUP-GUIDE.md](SETUP-GUIDE.md)** - Initial one-time setup (embedding DevEnvTemplate)
+- **[USAGE.md](USAGE.md)** - General DevEnvTemplate usage and day-to-day workflows
+- **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - Common issues and solutions (includes embedded usage issues)
+- **[BEST-PRACTICES.md](BEST-PRACTICES.md)** - Development best practices
 

@@ -88,6 +88,40 @@ node .github/tools/stack-detector.js --debug --json
 node .github/tools/gap-analyzer.js --debug
 ```
 
+### Organize Documentation Files
+
+Automatically organize markdown files into appropriate directories:
+
+```bash
+# Check what needs to be organized (dry-run)
+devenv organize-docs --dry-run
+
+# Automatically organize files
+devenv organize-docs --auto-fix
+```
+
+This tool:
+- Detects markdown files in project root that should be moved
+- Organizes them based on filename patterns (e.g., `*_DEPLOYMENT.md` → `docs/deployment/`)
+- Preserves root-level files (README.md, CHANGELOG.md, CONTRIBUTING.md, LICENSE.md, BOOTSTRAP.md)
+- Stages moves in git if files are tracked
+
+**Example:**
+```
+📚 Documentation Organization
+
+Found 2 file(s) that need organization:
+
+  • RAILWAY_DEPLOYMENT.md
+    → docs/deployment/
+  • API_GUIDE.md
+    → docs/api/
+```
+
+The doctor automatically detects misplaced documentation files and includes them in the health check. Use `npm run doctor --fix` to automatically organize them.
+
+See [`docs/guides/docs-organization.md`](guides/docs-organization.md) for complete documentation.
+
 ### Secrets handling checklist
 
 The doctor clears the "Secrets Handling Not Detected" gap when it sees four signals:
@@ -617,7 +651,7 @@ Most issues: Missing environment variables.
 - Deploy! 🚀
 
 **Need Help?**
-- See [IMPLEMENTATION_GUIDE.md](IMPLEMENTATION_GUIDE.md) for advanced features
+- See [docs/ARCHITECTURE.md](ARCHITECTURE.md) and [docs/BEST-PRACTICES.md](BEST-PRACTICES.md) for advanced features
 - Check [docs/](docs/) for detailed guides
 - Open an issue on GitHub
 
@@ -632,7 +666,7 @@ For power users, DevEnvTemplate includes:
 - **Custom Rules**: Define your own cleanup rules
 - **Cursor Integration**: AI-guided development workflow
 
-See [IMPLEMENTATION_GUIDE.md](IMPLEMENTATION_GUIDE.md) for details.
+See [docs/ARCHITECTURE.md](ARCHITECTURE.md) for details.
 
 ---
 

@@ -1,6 +1,10 @@
 # DevEnvTemplate Setup Guide
 
-Step-by-step instructions for embedding DevEnvTemplate into any project before you start day-to-day workflows.
+**Purpose:** One-time initial setup instructions for embedding DevEnvTemplate into a project.
+
+> **After Setup:** Once DevEnvTemplate is embedded, see [EMBEDDED-USAGE.md](EMBEDDED-USAGE.md) for ongoing usage workflows and day-to-day operations.
+
+This guide covers the **initial embedding process** (steps 1-6). For ongoing usage after setup is complete, refer to the [Embedded Usage Guide](EMBEDDED-USAGE.md).
 
 ---
 
@@ -128,6 +132,16 @@ git push
 ```
 
 CI will now be able to run `npm run doctor --strict` (optional) plus your existing tests.
+
+---
+
+## Next Steps
+
+After completing this setup:
+
+1. **Read [EMBEDDED-USAGE.md](EMBEDDED-USAGE.md)** - Learn how to use DevEnvTemplate in your daily workflow
+2. **Read [USAGE.md](USAGE.md)** - Day-to-day doctor/cleanup workflows
+3. **Read [TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - Common issues and solutions
 
 ---
 

@@ -1,0 +1,60 @@
+# Documentation Organization Configuration
+# Defines rules for automatically organizing markdown files into appropriate directories
+
+# Files that should remain in project root
+rootExceptions:
+  - README.md
+  - CHANGELOG.md
+  - BOOTSTRAP.md  # DevEnvTemplate specific
+  - CONTRIBUTING.md
+  - LICENSE.md
+
+# Directory mapping rules based on filename patterns
+directoryRules:
+  deployment:
+    patterns:
+      - "*_DEPLOYMENT.md"
+      - "*DEPLOYMENT*.md"
+      - "DEPLOYMENT*.md"
+      - "*_DEPLOY*.md"
+    target: "docs/deployment"
+  
+  guides:
+    patterns:
+      - "*_GUIDE.md"
+      - "*GUIDE*.md"
+      - "GUIDE*.md"
+    target: "docs/guides"
+  
+  api:
+    patterns:
+      - "*_API*.md"
+      - "API*.md"
+      - "*API_*.md"
+    target: "docs/api"
+  
+  quickstart:
+    patterns:
+      - "*_QUICK_START.md"
+      - "*QUICK_START*.md"
+      - "QUICK_START*.md"
+      - "*_QUICKSTART.md"
+    target: "docs"
+  
+  railway:
+    patterns:
+      - "*RAILWAY*.md"
+      - "RAILWAY*.md"
+      - "*_RAILWAY.md"
+    target: "docs/deployment"
+  
+  vercel:
+    patterns:
+      - "*VERCEL*.md"
+      - "VERCEL*.md"
+      - "*_VERCEL.md"
+    target: "docs/deployment"
+
+# Default target directory for files that don't match any pattern
+defaultTarget: "docs"
+
