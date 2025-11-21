@@ -324,6 +324,52 @@ Set-Location C:\path; npm run build
 ```
 ```
 
+### PowerShell Output Limiting Anti-Pattern
+
+**NEVER use `Select-Object -First N` in terminal commands** - this causes VPN/network connection issues in some environments.
+
+**The Problem:**
+PowerShell pipeline operations with `Select-Object -First N` can interfere with network connections, especially when used repeatedly in terminal commands during development sessions.
+
+**Anti-Pattern:**
+```powershell
+# ❌ AVOID: Causes VPN connection issues
+python -m pytest --collect-only -q 2>&1 | Select-Object -First 30
+```
+
+**Safe Alternatives:**
+
+1. **Use direct command without limiting:**
+   ```powershell
+   # ✅ SAFE: Accept full output
+   python -m pytest --collect-only -q
+   ```
+
+2. **Use command's built-in limiting flags:**
+   ```powershell
+   # ✅ SAFE: Use command-specific flags
+   python -m pytest --collect-only -q --maxfail=1
+   ```
+
+3. **Redirect to file if limiting is absolutely necessary:**
+   ```powershell
+   # ✅ SAFE: File-based filtering
+   python -m pytest --collect-only -q > output.txt
+   Get-Content output.txt -TotalCount 30
+   ```
+
+4. **Use Select-String for filtering (not Select-Object -First N):**
+   ```powershell
+   # ✅ SAFE: Filter with Select-String
+   python -m pytest --collect-only -q | Select-String "test_"
+   ```
+
+**Key Principles:**
+- Modern terminals handle large output well - accept full output when possible
+- Use command-specific flags for output control when available
+- If limiting is needed, redirect to file first, then read with limits
+- Never use `Select-Object -First N` in piped terminal commands
+
 ### Project Root Detection
 
 When DevEnvTemplate is embedded in `.devenv/`, it automatically detects the parent project root:
