@@ -5,3 +5,9 @@ health-report.json
 *.log
 
 # Keep structure but ignore generated content
+
+# Build artifacts
+dist/
+node_modules/
+tsconfig.tsbuildinfo
+*.tsbuildinfo
