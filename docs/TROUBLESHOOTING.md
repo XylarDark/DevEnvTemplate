@@ -375,6 +375,193 @@ npm run doctor
 
 Other issues require manual fixes.
 
+## Python-Specific Issues
+
+### Import Errors
+
+**Problem:** `ModuleNotFoundError: No module named 'my_package'`
+
+**Cause:** Package not installed or using sys.path hacks.
+
+**Solution:**
+```bash
+# Install package in development mode
+pip install -e .
+
+# Verify installation
+python -c "import my_package; print(my_package.__file__)"
+```
+
+**Prevention:** Never use `sys.path.insert()` or `sys.path.append()`. Always install package properly.
+
+### sys.path Hacks in Scripts
+
+**Problem:** Scripts use `sys.path.insert(0, str(project_root))` to add project to path.
+
+**Symptoms:**
+```python
+# ❌ Bad pattern
+import sys
+from pathlib import Path
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
+from my_package import something
+```
+
+**Cause:** Package not installed, trying to work around import errors.
+
+**Solution:**
+1. Remove all `sys.path` modifications
+2. Install package: `pip install -e .`
+3. Use proper imports: `from my_package import something`
+
+**Prevention:** Always install package before running scripts. Document installation in README.
+
+### Path Resolution Issues
+
+**Problem:** Scripts can't find config files or data directories after reorganization.
+
+**Symptoms:**
+```
+FileNotFoundError: [Errno 2] No such file or directory: '../data/results.json'
+```
+
+**Cause:** Hardcoded paths relative to `__file__` or current working directory.
+
+**Solution:**
+```python
+# ❌ Wrong - hardcoded path
+data_file = Path(__file__).parent.parent / 'data' / 'results.json'
+
+# ✅ Correct - use path resolver
+from my_package.utils.path_resolver import get_data_dir
+data_file = get_data_dir() / 'results.json'
+```
+
+**Prevention:** Create centralized path resolution utility. See [Python Best Practices Guide](guides/python-best-practices.md#path-resolution).
+
+### Virtual Environment Problems
+
+**Problem:** Package imports work in one environment but not another.
+
+**Cause:** Package installed in different virtual environment or system Python.
+
+**Solution:**
+```bash
+# Create fresh virtual environment
+python -m venv venv
+
+# Activate (Windows PowerShell)
+.\venv\Scripts\Activate.ps1
+
+# Activate (Linux/macOS)
+source venv/bin/activate
+
+# Install package
+pip install -e .
+```
+
+**Prevention:** Always use virtual environments. Document setup in README.
+
+### PowerShell Script Failures
+
+**Problem:** Python scripts fail when run from PowerShell with path or encoding errors.
+
+**Symptoms:**
+```
+UnicodeDecodeError: 'charmap' codec can't decode byte
+```
+
+**Cause:** File operations without explicit encoding, or path issues.
+
+**Solution:**
+```python
+# ✅ Always specify encoding
+with open(file_path, 'r', encoding='utf-8') as f:
+    content = f.read()
+
+# ✅ Use pathlib.Path for paths
+from pathlib import Path
+data_file = Path('data') / 'results.json'
+```
+
+**Prevention:** Always use `encoding='utf-8'` for file operations. Use `pathlib.Path` for cross-platform paths.
+
+### Test Import Errors
+
+**Problem:** Tests fail with `ModuleNotFoundError` even though package is installed.
+
+**Cause:** Tests using `sys.path` hacks or running from wrong directory.
+
+**Solution:**
+```python
+# ❌ Wrong - sys.path hack in test
+import sys
+sys.path.insert(0, '../')
+from my_package.core import config
+
+# ✅ Correct - package should be installed
+from my_package.core import config
+```
+
+**Prevention:** Install package before running tests. Never modify `sys.path` in tests.
+
+### Script Entry Point Issues
+
+**Problem:** Scripts work in development but fail when package is installed.
+
+**Cause:** Scripts assume specific directory structure or use relative imports.
+
+**Solution:**
+```python
+#!/usr/bin/env python3
+"""
+Script that works when package is installed.
+"""
+
+import sys
+
+# Check if package is installed
+try:
+    from my_package import main_function
+    from my_package.utils.path_resolver import get_project_root
+except ImportError as e:
+    print(f"Error: Package not installed: {e}")
+    print("Install with: pip install -e .")
+    sys.exit(1)
+
+def main():
+    project_root = get_project_root()
+    # Script logic...
+
+if __name__ == "__main__":
+    main()
+```
+
+**Prevention:** Test scripts after installing package. Use path resolver utilities.
+
+### Cross-Platform Path Issues
+
+**Problem:** Scripts work on Linux but fail on Windows (or vice versa).
+
+**Cause:** Using hardcoded path separators (`/` or `\`) or `os.path.join` incorrectly.
+
+**Solution:**
+```python
+# ❌ Wrong - hardcoded separator
+data_file = 'data/results.json'  # Fails on Windows
+
+# ❌ Wrong - os.path without proper handling
+import os
+path = os.path.join('data', 'results.json')  # Works but less modern
+
+# ✅ Correct - pathlib.Path
+from pathlib import Path
+data_file = Path('data') / 'results.json'  # Works everywhere
+```
+
+**Prevention:** Always use `pathlib.Path` for path operations. Test on both Windows and Linux.
+
 ## Common Recovery Steps
 
 ### Complete Reset

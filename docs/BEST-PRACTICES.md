@@ -323,6 +323,353 @@ cd C:\path; npm run build
 ```
 ```
 
+## Python-Specific Best Practices
+
+### The Problem
+
+Python projects often suffer from import errors, path resolution issues, and cross-platform compatibility problems. Common mistakes include using `sys.path` hacks, hardcoded paths, and improper package installation.
+
+### Import Patterns
+
+**Never use sys.path hacks**:
+
+```python
+# ❌ Wrong - sys.path hack
+import sys
+from pathlib import Path
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
+from my_package import something
+
+# ✅ Correct - proper package installation
+# Install package: pip install -e .
+from my_package import something
+```
+
+**Use absolute imports from installed package**:
+
+```python
+# ❌ Wrong - relative import in script
+from ..core import config
+
+# ✅ Correct - absolute import
+from my_package.core import config
+```
+
+**Follow PEP 8 import ordering**:
+
+```python
+# Standard library
+import os
+import sys
+from pathlib import Path
+from typing import Optional, Dict
+
+# Third-party
+import numpy as np
+import pandas as pd
+
+# Local application
+from my_package.core import config
+from my_package.utils import helpers
+```
+
+### Path Resolution
+
+**Always use pathlib.Path for cross-platform paths**:
+
+```python
+# ❌ Wrong - os.path (works but less modern)
+import os
+data_dir = os.path.join(base_dir, 'data', 'results.json')
+
+# ✅ Correct - pathlib.Path
+from pathlib import Path
+data_dir = Path(base_dir) / 'data' / 'results.json'
+```
+
+**Use centralized path resolution utilities**:
+
+```python
+# Create utils/path_resolver.py
+from pathlib import Path
+import sys
+
+def get_project_root() -> Path:
+    """Get project root directory."""
+    # Try to find project root by looking for pyproject.toml or setup.py
+    current = Path(__file__).resolve()
+    while current != current.parent:
+        if (current / 'pyproject.toml').exists() or (current / 'setup.py').exists():
+            return current
+        current = current.parent
+    # Fallback to current working directory
+    return Path.cwd()
+
+def get_data_dir() -> Path:
+    """Get data directory."""
+    root = get_project_root()
+    data_dir = root / 'data'
+    data_dir.mkdir(exist_ok=True)
+    return data_dir
+```
+
+**Never hardcode paths relative to __file__**:
+
+```python
+# ❌ Wrong - hardcoded path
+config_file = Path(__file__).parent.parent / 'config' / 'settings.yaml'
+
+# ✅ Correct - use resolver
+from my_package.utils.path_resolver import get_project_root
+config_file = get_project_root() / 'config' / 'settings.yaml'
+```
+
+### Package Installation
+
+**Always install package in development mode**:
+
+```bash
+# Install package in editable mode
+pip install -e .
+
+# Verify installation
+python -c "import my_package; print(my_package.__file__)"
+```
+
+**Scripts should work when package is installed**:
+
+```python
+#!/usr/bin/env python3
+"""
+Script that works when package is installed.
+"""
+
+# ✅ Correct - import from installed package
+from my_package import main_function
+from my_package.utils.path_resolver import get_data_dir
+
+def main():
+    data_dir = get_data_dir()
+    # Use data_dir...
+
+if __name__ == "__main__":
+    main()
+```
+
+### Virtual Environment Management
+
+**Always use virtual environments**:
+
+```bash
+# Create virtual environment
+python -m venv venv
+
+# Activate (Windows PowerShell)
+.\venv\Scripts\Activate.ps1
+
+# Activate (Linux/macOS)
+source venv/bin/activate
+
+# Install dependencies
+pip install -e .
+```
+
+**Document virtual environment setup**:
+
+```markdown
+## Development Setup
+
+1. Create virtual environment:
+   ```bash
+   python -m venv venv
+   ```
+
+2. Activate virtual environment:
+   - Windows PowerShell: `.\venv\Scripts\Activate.ps1`
+   - Linux/macOS: `source venv/bin/activate`
+
+3. Install package:
+   ```bash
+   pip install -e .
+   ```
+```
+
+### Testing Patterns
+
+**Tests should not modify sys.path**:
+
+```python
+# ❌ Wrong - sys.path hack in test
+import sys
+sys.path.insert(0, '../')
+
+# ✅ Correct - package should be installed
+from my_package.core import config
+```
+
+**Use pytest for better features**:
+
+```python
+# tests/test_example.py
+import pytest
+from my_package.core import config
+
+def test_config_loading():
+    assert config.DEFAULT_VALUE == 42
+```
+
+### Script Organization
+
+**Entry point patterns**:
+
+```python
+#!/usr/bin/env python3
+"""
+Script entry point that works in both development and installed modes.
+"""
+
+# Check if package is installed
+try:
+    from my_package import main_function
+    from my_package.utils.path_resolver import get_project_root
+except ImportError:
+    print("Error: Package not installed. Run: pip install -e .")
+    sys.exit(1)
+
+def main():
+    project_root = get_project_root()
+    # Use project_root...
+
+if __name__ == "__main__":
+    main()
+```
+
+### Common Mistakes to Avoid
+
+**❌ Wrong - sys.path hacks**:
+```python
+sys.path.insert(0, str(Path(__file__).parent.parent))
+```
+
+**❌ Wrong - hardcoded paths**:
+```python
+data_file = '../data/results.json'
+```
+
+**❌ Wrong - os.path instead of pathlib**:
+```python
+import os
+path = os.path.join(base, 'data', 'file.json')
+```
+
+**✅ Correct - proper patterns**:
+```python
+from pathlib import Path
+from my_package.utils.path_resolver import get_data_dir
+
+data_dir = get_data_dir()
+data_file = data_dir / 'results.json'
+```
+
+### PowerShell Compatibility
+
+**Command chaining in PowerShell**:
+
+```powershell
+# ❌ Fails in PowerShell
+cd project && python script.py
+
+# ✅ Correct for PowerShell
+cd project; python script.py
+
+# Or separate commands
+cd project
+python script.py
+```
+
+**Path handling in PowerShell**:
+
+```powershell
+# PowerShell uses backslashes but pathlib handles it
+python -c "from pathlib import Path; print(Path('data') / 'file.json')"
+```
+
+## Script Organization
+
+### Entry Point Patterns
+
+Scripts should work in both development and installed modes:
+
+```python
+#!/usr/bin/env python3
+"""
+Example script that works when package is installed.
+"""
+
+import sys
+from pathlib import Path
+
+# Check package installation
+try:
+    from my_package import main_function
+    from my_package.utils.path_resolver import get_project_root
+except ImportError as e:
+    print(f"Error: Package not installed: {e}")
+    print("Install with: pip install -e .")
+    sys.exit(1)
+
+def main():
+    project_root = get_project_root()
+    # Script logic here...
+
+if __name__ == "__main__":
+    main()
+```
+
+### Path Resolution Utilities
+
+Create a centralized path resolver:
+
+```python
+# my_package/utils/path_resolver.py
+from pathlib import Path
+import os
+
+def get_project_root() -> Path:
+    """Get project root directory."""
+    # Check if we're in an installed package
+    try:
+        import my_package
+        package_path = Path(my_package.__file__).parent.parent
+        if (package_path / 'pyproject.toml').exists():
+            return package_path
+    except ImportError:
+        pass
+    
+    # Fallback: search from current file
+    current = Path(__file__).resolve()
+    while current != current.parent:
+        if (current / 'pyproject.toml').exists():
+            return current
+        current = current.parent
+    
+    # Last resort: current working directory
+    return Path.cwd()
+
+def get_data_dir() -> Path:
+    """Get data directory, creating if needed."""
+    root = get_project_root()
+    data_dir = root / 'data'
+    data_dir.mkdir(exist_ok=True)
+    return data_dir
+
+def get_config_dir() -> Path:
+    """Get config directory."""
+    root = get_project_root()
+    return root / 'config'
+```
+
 ## Summary
 
 These best practices help prevent common mistakes and improve developer experience:
@@ -332,9 +679,11 @@ These best practices help prevent common mistakes and improve developer experien
 3. **Provide context**: Include helpful hints and documentation links in error messages
 4. **Verify before commit/deploy**: Run verification checks before committing or deploying
 5. **Cross-platform**: Consider shell compatibility when writing documentation or scripts
+6. **Python-specific**: Avoid sys.path hacks, use pathlib.Path, install packages properly
 
 For more information, see:
 - [Troubleshooting Guide](TROUBLESHOOTING.md)
 - [Usage Guide](USAGE.md)
 - [LLM Context Guide](LLM-CONTEXT-GUIDE.md)
+- [Python Best Practices Guide](guides/python-best-practices.md)
 

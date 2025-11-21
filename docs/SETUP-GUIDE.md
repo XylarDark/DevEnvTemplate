@@ -52,6 +52,50 @@ The first run is intentionally technology-agnostic and writes `.devenv/stack-rep
 | **Python-only** | Doctor pivots to Pytest + Ruff + Black + Mypy once `pyproject.toml` / `requirements.txt` are present. | Add `pyproject.toml` or `requirements.txt`, then re-run `npm run doctor`. No ESLint/TypeScript guidance will appear after the first detection. |
 | **Polyglot** | Multiple profiles can be active. Doctor outputs one section per profile. | Run `npm run doctor --json` if you need to programmatically separate profile-specific issues. |
 
+### Python Project Setup Example
+
+For a Python project like `lunar_mining_sim`:
+
+1. **Create virtual environment:**
+   ```powershell
+   # Windows PowerShell
+   python -m venv venv
+   .\venv\Scripts\Activate.ps1
+   ```
+   ```bash
+   # Linux/macOS
+   python -m venv venv
+   source venv/bin/activate
+   ```
+
+2. **Install package:**
+   ```bash
+   pip install -e .
+   ```
+
+3. **Add DevEnvTemplate:**
+   ```bash
+   git clone https://github.com/XylarDark/DevEnvTemplate .devenv
+   cd .devenv
+   npm install
+   npm run build
+   ```
+
+4. **Run doctor:**
+   ```bash
+   cd ..
+   npm run doctor  # From project root
+   ```
+
+The doctor will detect Python stack and recommend:
+- Pytest for testing
+- Ruff for linting
+- Black for formatting
+- Mypy for type checking
+- Removal of sys.path hacks (use proper package installation)
+
+See [Python Best Practices Guide](guides/python-best-practices.md) for detailed guidelines.
+
 ## 5. Running from `.devenv/`
 
 Once `.devenv/` exists you can drive doctor from there while pointing at the parent project:

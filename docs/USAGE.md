@@ -49,6 +49,23 @@ Once `.devenv/stack-report.json` exists, the doctor prints the detected profile(
 | `python` | Pytest + Ruff + Black + Mypy + pip/poetry lockfile hygiene + pre-commit hooks + experiment/run tracking |
 | `node + python` | Separate sections for each profile (doctor prints both) |
 
+**Python Project Example:**
+
+For a Python project like `lunar_mining_sim`, the doctor detects:
+- Package structure (`pyproject.toml` or `setup.py`)
+- Testing framework (pytest, unittest)
+- Linting tools (ruff, black, flake8)
+- Type checking (mypy)
+- Virtual environment setup
+- Import patterns (checks for sys.path hacks)
+
+Quick wins for Python projects:
+- Add `pytest` configuration
+- Set up `ruff` for linting
+- Configure `black` for formatting
+- Add type hints gradually
+- Remove `sys.path` hacks (use `pip install -e .`)
+
 For simulation/ML-style Python repos the doctor now:
 - Accepts existing `env-example*` templates but nudges you to rename them to `.env.example`
 - Prefers `pre-commit` hooks over Husky
