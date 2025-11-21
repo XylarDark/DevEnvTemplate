@@ -14,6 +14,9 @@ priority: 9
 - Use semantic search for understanding codebase
 - Batch related operations when possible
 - Verify changes with linter/tests
+- **Avoid PowerShell output limiting in terminal commands** - never use `Select-Object -First N` as it causes VPN/network issues
+  - Prefer direct commands or command-specific flags for output control
+  - Accept full output - modern terminals handle large output well
 
 ## When to Ask for Confirmation
 

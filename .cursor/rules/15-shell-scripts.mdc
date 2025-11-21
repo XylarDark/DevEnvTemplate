@@ -24,6 +24,12 @@ priority: 15
 - Use `Push-Location`/`Pop-Location` for temporary navigation
 - Avoid emoji in output (PowerShell parsing issues)
 - Use `-ErrorAction SilentlyContinue` for optional operations
+- **NEVER use `Select-Object -First N` in terminal commands** - causes VPN/network connection issues
+  - ❌ Avoid: `command | Select-Object -First 30`
+  - ✅ Safe: Use direct command without limiting
+  - ✅ Safe: Use command's built-in limiting flags (e.g., `--maxfail=1`)
+  - ✅ Safe: Redirect to file if limiting needed: `command > output.txt; Get-Content output.txt -TotalCount 30`
+  - See [BEST-PRACTICES.md](../docs/BEST-PRACTICES.md#powershell-output-limiting-anti-pattern) for details
 
 ## Bash-Specific
 
