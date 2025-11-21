@@ -1,0 +1,145 @@
+{
+  "version": "1.0.0",
+  "description": "Python-specific best practices and rules for lunar_mining_sim project",
+  "rules": {
+    "imports": {
+      "avoid_sys_path_hacks": {
+        "severity": "error",
+        "description": "Never use sys.path.insert() or sys.path.append(). Package should be properly installed.",
+        "fix": "Install package with 'pip install -e .' and use proper imports",
+        "example_bad": "sys.path.insert(0, str(project_root))",
+        "example_good": "from lunar_mining_sim import simulate"
+      },
+      "use_absolute_imports": {
+        "severity": "warning",
+        "description": "Prefer absolute imports from installed package over relative imports",
+        "fix": "Use 'from lunar_mining_sim.core import ...' instead of 'from ..core import ...' in scripts"
+      },
+      "import_organization": {
+        "severity": "info",
+        "description": "Follow PEP 8 import ordering: standard library, third-party, local",
+        "order": ["stdlib", "third_party", "local"]
+      }
+    },
+    "path_resolution": {
+      "use_pathlib": {
+        "severity": "error",
+        "description": "Always use pathlib.Path for path operations, never os.path",
+        "example_bad": "os.path.join(base, 'data')",
+        "example_good": "Path(base) / 'data'"
+      },
+      "use_centralized_resolver": {
+        "severity": "warning",
+        "description": "Use path_resolver utility for project root, data dir, config dir",
+        "fix": "from lunar_mining_sim.utils.path_resolver import get_project_root, get_data_dir"
+      },
+      "avoid_hardcoded_paths": {
+        "severity": "error",
+        "description": "Never hardcode paths relative to __file__ or cwd",
+        "fix": "Use path_resolver utilities or environment variables"
+      }
+    },
+    "package_structure": {
+      "proper_installation": {
+        "severity": "error",
+        "description": "Package must be installable via 'pip install -e .'",
+        "check": "Run 'pip install -e .' and verify imports work without sys.path hacks"
+      },
+      "script_entry_points": {
+        "severity": "info",
+        "description": "Scripts should work when package is installed, not just in development",
+        "fix": "Use entry points in pyproject.toml or ensure scripts can import from installed package"
+      }
+    },
+    "testing": {
+      "no_sys_path_in_tests": {
+        "severity": "error",
+        "description": "Tests should not modify sys.path. Package should be installed.",
+        "fix": "Install package before running tests: 'pip install -e .'"
+      },
+      "use_pytest": {
+        "severity": "info",
+        "description": "Prefer pytest over unittest for better features and plugins",
+        "note": "Current tests use unittest, migration to pytest is optional"
+      }
+    },
+    "cross_platform": {
+      "shell_compatibility": {
+        "severity": "warning",
+        "description": "Documentation and scripts should work on both Windows (PowerShell) and Linux (bash)",
+        "fix": "Use ';' for PowerShell, '&&' for bash, or provide both examples"
+      },
+      "path_separators": {
+        "severity": "error",
+        "description": "Always use pathlib.Path or os.path.join, never hardcode '/' or '\\'",
+        "example_bad": "'data/results.json'",
+        "example_good": "Path('data') / 'results.json'"
+      }
+    },
+    "code_quality": {
+      "remove_todos": {
+        "severity": "info",
+        "description": "Remove outdated TODO comments. Create GitHub issues for future work.",
+        "note": "TODOs from reorganization are outdated and should be removed"
+      },
+      "type_hints": {
+        "severity": "info",
+        "description": "Add type hints to function signatures for better IDE support",
+        "note": "Gradually add type hints, not required immediately"
+      },
+      "docstrings": {
+        "severity": "info",
+        "description": "All public functions should have docstrings",
+        "format": "Google or NumPy style"
+      }
+    }
+  },
+  "common_mistakes": {
+    "sys_path_hacks": {
+      "pattern": "sys\\.path\\.(insert|append)",
+      "description": "Using sys.path hacks instead of proper package installation",
+      "impact": "Fragile, breaks on reorganization, code smell"
+    },
+    "hardcoded_paths": {
+      "pattern": "(os\\.path\\.join|Path)\\(.*__file__.*\\)",
+      "description": "Hardcoding paths relative to __file__",
+      "impact": "Breaks when files are moved or package is installed"
+    },
+    "powerShell_commands": {
+      "pattern": "&&",
+      "context": "documentation or scripts",
+      "description": "Using && in commands that will run in PowerShell",
+      "impact": "Fails on Windows PowerShell"
+    }
+  },
+  "tools": {
+    "linting": {
+      "ruff": {
+        "description": "Fast Python linter and formatter",
+        "config": "pyproject.toml [tool.ruff]"
+      },
+      "mypy": {
+        "description": "Static type checker",
+        "config": "pyproject.toml [tool.mypy]",
+        "note": "Optional, for gradual typing"
+      }
+    },
+    "formatting": {
+      "black": {
+        "description": "Code formatter",
+        "config": "pyproject.toml [tool.black]"
+      },
+      "isort": {
+        "description": "Import sorter",
+        "config": "pyproject.toml [tool.isort]"
+      }
+    }
+  },
+  "references": {
+    "pep8": "https://pep8.org/",
+    "pathlib": "https://docs.python.org/3/library/pathlib.html",
+    "packaging": "https://packaging.python.org/",
+    "error_audit": "../docs/ERROR_AUDIT.md"
+  }
+}
+
