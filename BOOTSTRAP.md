@@ -81,6 +81,15 @@ npm run format --prefix .devenv
 | `npm run format` | Format code with Prettier | `npm run format --prefix .devenv` |
 | `npm run format:check` | Check code formatting | `npm run format:check --prefix .devenv` |
 
+### Maintenance Tools (Embedded Usage)
+
+| Command | Purpose | Usage |
+|---------|---------|-------|
+| `./scripts/sync-from-template.sh` | Sync with template updates (Bash) | `cd .devenv && ./scripts/sync-from-template.sh` |
+| `.\scripts\sync-from-template.ps1` | Sync with template updates (PowerShell) | `cd .devenv && .\scripts\sync-from-template.ps1` |
+
+**Note:** Sync scripts preserve project-specific files (health reports, gap analysis, etc.) while pulling template updates. See [SYNC.md](docs/SYNC.md) for detailed documentation.
+
 ### Doctor Command Flags
 
 | Flag | Purpose | Example |
@@ -107,6 +116,7 @@ npm run format --prefix .devenv
 | `docs/USAGE.md` | Day-to-day workflows | Daily operations |
 | `docs/SETUP-GUIDE.md` | Initial embedding instructions | First-time setup |
 | `docs/EMBEDDED-USAGE.md` | Ongoing embedded usage | Using DevEnvTemplate after setup |
+| `docs/SYNC.md` | Syncing with template updates | Maintaining sync with DevEnvTemplate |
 | `docs/TROUBLESHOOTING.md` | Problem-solution guide | Encountering issues |
 | `docs/PROJECTRULES-UPDATE-v3.0.md` | Engineering rules and guidelines | Need coding standards |
 | `docs/BEST-PRACTICES.md` | Technology-agnostic best practices | General development patterns |
@@ -212,6 +222,25 @@ npm run test --prefix .devenv
 npm run doctor --prefix .devenv -- --strict --json
 ```
 
+### Workflow 5: Sync with Template Updates
+
+```bash
+# Bash/Linux/macOS
+cd .devenv
+./scripts/sync-from-template.sh
+
+# PowerShell/Windows
+cd .devenv
+.\scripts\sync-from-template.ps1
+```
+
+The sync script will:
+- Preserve project-specific files (health reports, gap analysis, etc.)
+- Pull updates from the template repository
+- Rebuild the project after syncing
+
+See [SYNC.md](docs/SYNC.md) for detailed sync documentation and troubleshooting.
+
 ---
 
 ## File Organization
@@ -260,6 +289,10 @@ Working on project-specific code?
   → Yes: Load project's extended docs/LLM-REFERENCE.md
   → No: Continue with BOOTSTRAP.md
   ↓
+Need to sync with template updates?
+  → Yes: Use sync-from-template.sh/ps1 (see Workflow 5)
+  → No: Continue with current workflow
+  ↓
 Encountering issues?
   → Yes: Load docs/TROUBLESHOOTING.md
   → No: Continue with current workflow
@@ -272,6 +305,7 @@ Encountering issues?
 3. **Check Health First**: Run `doctor` before making changes
 4. **Verify After Changes**: Run `doctor` again to verify improvements
 5. **Follow Engineering Rules**: See `docs/PROJECTRULES-UPDATE-v3.0.md` for coding standards
+6. **Understand Template Relationship**: When working with embedded `.devenv/`, understand that sync scripts preserve project-specific files while pulling template updates
 
 ---
 
@@ -299,6 +333,7 @@ Encountering issues?
 - **Plan Generator**: `scripts/tools/plan-generator.ts` (source) → `dist/scripts/tools/plan-generator.js` (compiled)
 - **Agent Init**: `scripts/agent/cli-simple.js` (source) → `dist/scripts/agent/cli.js` (compiled)
 - **Cleanup Engine**: `scripts/cleanup/engine.ts` (source) → `dist/scripts/cleanup/engine.js` (compiled)
+- **Sync Scripts**: `scripts/sync-from-template.sh` (Bash) and `scripts/sync-from-template.ps1` (PowerShell) - Template maintenance tools
 
 ### External Resources
 
@@ -321,6 +356,7 @@ Encountering issues?
 | "Set up CI" | `doctor --fix` → create workflow → `doctor --strict` | ✅ Yes |
 | "Check health" | `doctor` | ✅ Yes |
 | "Clean up project" | `cleanup --dry-run` → (ask user) → `cleanup --apply` | ⚠️ Ask first |
+| "Sync with template" | `sync-from-template.sh/ps1` → rebuild | ✅ Yes |
 | "Deploy my app" | Quality Gate → build → deploy command | ✅ Yes |
 
 ### Health Score → Action Matrix
