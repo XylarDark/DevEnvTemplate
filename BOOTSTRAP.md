@@ -1,9 +1,9 @@
 # DevEnvTemplate Bootstrap Guide
 
-**Version:** Technology-Agnostic Template (Project Rules v3.0)  
+**Version:** Technology-Agnostic Template (Cursor Rules v1.0)  
 **Purpose:** Single-file-loads-all reference for LLM-assisted development sessions  
 **Last Updated:** 2025  
-**Project Rules Version:** 3.0 (Last Synced: 2025-11-08)
+**Rules System:** Modern `.cursor/rules/*.mdc` system (replaces legacy `.projectrules`)
 
 > **For LLM Sessions:** Load this file at session start. This file contains all essential DevEnvTemplate information. Do NOT load README.md - this file includes essential README content to avoid redundancy.
 
@@ -569,7 +569,7 @@ Encountering issues?
 
 ## Project Rules & Governance
 
-> **Source:** This section embeds the complete content from `.projectrules` (v3.0) in readable format. The `.projectrules` file is the structured source of truth for tools/CI, while this section provides LLM-friendly context. See "LLM Instructions: Auto-Sync .projectrules" below for automatic synchronization.
+> **Source:** This section embeds governance rules and best practices in readable format. The modern `.cursor/rules/*.mdc` system is the source of truth for Cursor AI, while this section provides LLM-friendly context. See "LLM Instructions: Copy .cursor/rules/" below for setup instructions.
 
 ### Project Goals
 
@@ -615,7 +615,7 @@ Encountering issues?
 
 ### Files
 
-- **Core governance**: `.projectrules`, `docs/rules-changelog.md` - never modify without review
+- **Core governance**: `.cursor/rules/`, `docs/rules-changelog.md` - never modify without review (legacy `.projectrules` is deprecated)
 - **CI/CD**: `.github/workflows/` - lint/test/governance stages
 - **Scripts**: `scripts/` - governance checks, budget tracking, cross-platform
 - **Documentation**: README.md, CONTRIBUTING.md, docs/rules-changelog.md
@@ -821,108 +821,176 @@ Encountering issues?
 
 ---
 
-## LLM Instructions: Auto-Sync .projectrules
+## LLM Instructions: Copy .cursor/rules/
 
-> **When to Execute**: After loading BOOTSTRAP.md, automatically check and sync `.projectrules` file if needed.
+> **When to Execute**: After loading BOOTSTRAP.md, automatically check and copy `.cursor/rules/` directory from DevEnvTemplate to project root if needed.
 
-### Step-by-Step Sync Process
+> **Note**: This replaces the legacy `.projectrules` file system. The modern Cursor rules system uses `.cursor/rules/*.mdc` files with glob patterns and conditional loading for better token efficiency and maintainability.
 
-#### Step 1: Check if .projectrules Exists
+### Step-by-Step Copy Process
+
+#### Step 1: Check if .cursor/rules/ Exists
 
 ```bash
-# Check if .projectrules file exists in project root
-if [ ! -f .projectrules ]; then
-  echo ".projectrules not found - will create from template"
-  CREATE_NEW=true
+# Check if .cursor/rules/ directory exists in project root
+if [ ! -d ".cursor/rules" ]; then
+  echo ".cursor/rules/ not found - will copy from DevEnvTemplate"
+  COPY_NEW=true
 else
-  echo ".projectrules exists - will check for updates"
-  CREATE_NEW=false
+  echo ".cursor/rules/ exists - will check for updates"
+  COPY_NEW=false
 fi
 ```
 
-**LLM Action**: Read the project root directory and check for `.projectrules` file.
+**LLM Action**: Read the project root directory and check for `.cursor/rules/` directory.
 
-#### Step 2: Compare Versions
+#### Step 2: Locate DevEnvTemplate Source
 
-If `.projectrules` exists, extract and compare version numbers:
+The `.cursor/rules/` directory should be copied from the DevEnvTemplate repository:
 
 ```bash
-# Extract version from .projectrules header
-# Look for: "# Version: 3.0" or similar pattern
-VERSION_IN_FILE=$(grep -E "^# Version:" .projectrules | head -1 | sed 's/.*Version: *//' | sed 's/ -.*//')
+# Typical locations:
+# - If DevEnvTemplate is cloned as .devenv: .devenv/.cursor/rules/
+# - If DevEnvTemplate is a sibling directory: ../DevEnvTemplate/.cursor/rules/
+# - If DevEnvTemplate is in a known location: <path>/DevEnvTemplate/.cursor/rules/
 
-# Compare with BOOTSTRAP.md version (v3.0)
-BOOTSTRAP_VERSION="3.0"
+DEVENV_TEMPLATE_PATH=".devenv/.cursor/rules"  # Default location
+# Or: "../DevEnvTemplate/.cursor/rules"
+# Or: "<absolute-path>/DevEnvTemplate/.cursor/rules"
 
-if [ "$VERSION_IN_FILE" != "$BOOTSTRAP_VERSION" ]; then
-  echo "Version mismatch: .projectrules has $VERSION_IN_FILE, BOOTSTRAP.md has $BOOTSTRAP_VERSION"
+if [ ! -d "$DEVENV_TEMPLATE_PATH" ]; then
+  echo "Error: DevEnvTemplate .cursor/rules/ not found at $DEVENV_TEMPLATE_PATH"
+  echo "Please ensure DevEnvTemplate is available"
+  exit 1
+fi
+```
+
+**LLM Action**: Locate the DevEnvTemplate `.cursor/rules/` directory. Check common locations:
+1. `.devenv/.cursor/rules/` (if DevEnvTemplate is embedded as `.devenv`)
+2. `../DevEnvTemplate/.cursor/rules/` (if sibling directory)
+3. Any other known location where DevEnvTemplate exists
+
+#### Step 3: Check for Updates (If Directory Exists)
+
+If `.cursor/rules/` already exists, compare with source:
+
+```bash
+# Count files in source and destination
+SOURCE_COUNT=$(find "$DEVENV_TEMPLATE_PATH" -name "*.mdc" | wc -l)
+DEST_COUNT=$(find ".cursor/rules" -name "*.mdc" | wc -l)
+
+# Check for new files
+if [ "$SOURCE_COUNT" -gt "$DEST_COUNT" ]; then
+  echo "New rule files detected in source (${SOURCE_COUNT} vs ${DEST_COUNT})"
   NEEDS_UPDATE=true
 fi
+
+# Check for missing core files
+CORE_FILES=("00-core-principles.mdc" "01-code-quality.mdc" "02-security.mdc" "03-testing.mdc" "08-project-context.mdc")
+for file in "${CORE_FILES[@]}"; do
+  if [ ! -f ".cursor/rules/$file" ]; then
+    echo "Missing core file: $file"
+    NEEDS_UPDATE=true
+  fi
+done
 ```
 
-**LLM Action**: Parse the version number from `.projectrules` header (line 2: `# Version: 3.0`) and compare with BOOTSTRAP.md version (v3.0).
+**LLM Action**: 
+1. Compare file counts between source and destination
+2. Check for missing core rule files (00-08 series)
+3. Identify any new rule files in source that don't exist in destination
+4. Note: Project-specific customizations in `.cursor/rules/` should be preserved
 
-#### Step 3: Detect Mismatches
+#### Step 4: Copy Files
 
-Compare key sections between `.projectrules` and the embedded rules in BOOTSTRAP.md:
+**For New Directory:**
+- Copy entire `.cursor/rules/` directory from DevEnvTemplate to project root
+- Ensure all `.mdc` files are copied
+- Preserve directory structure
 
-**Key Sections to Compare:**
-- `project_goals` - Should match Project Goals section
-- `guardrails` - Should match Guardrails section
-- `code_style` - Should match Code Style section
-- `patterns` - Should match Patterns section (especially critical ones like Test-Driven Deletions, Fixture Management)
-- `development_environment` - Should match Development Environment section
-- `testing` - Should match Testing section
+**For Existing Directory:**
+- Copy only missing files (don't overwrite existing files)
+- Update core files (00-08 series) if they've changed
+- Preserve project-specific rule files (custom rules, project-specific modifications)
+
+```bash
+# Copy strategy: Preserve existing, add missing, update core
+mkdir -p .cursor/rules
+
+# Copy all files from source
+cp -r "$DEVENV_TEMPLATE_PATH"/* .cursor/rules/ 2>/dev/null || true
+
+# Or, more carefully:
+# Copy only if destination doesn't exist
+for file in "$DEVENV_TEMPLATE_PATH"/*.mdc; do
+  filename=$(basename "$file")
+  if [ ! -f ".cursor/rules/$filename" ]; then
+    cp "$file" ".cursor/rules/$filename"
+    echo "Copied: $filename"
+  elif [[ "$filename" =~ ^0[0-8]- ]]; then
+    # Update core files (00-08) if they've changed
+    cp "$file" ".cursor/rules/$filename"
+    echo "Updated core file: $filename"
+  else
+    echo "Preserved existing: $filename"
+  fi
+done
+
+# Copy README if it exists
+if [ -f "$DEVENV_TEMPLATE_PATH/README.md" ]; then
+  cp "$DEVENV_TEMPLATE_PATH/README.md" ".cursor/rules/README.md"
+fi
+```
 
 **LLM Action**: 
-1. Read `.projectrules` file
-2. Compare each section with the corresponding section in BOOTSTRAP.md
-3. Identify any differences in:
-   - Missing rules
-   - Different rule content
-   - Additional project-specific customizations (preserve these)
+1. Create `.cursor/rules/` directory if it doesn't exist
+2. Copy all `.mdc` files from DevEnvTemplate source
+3. For existing directories: preserve project-specific files, update core files (00-08 series)
+4. Copy README.md if present
 
-#### Step 4: Update if Needed
+#### Step 5: Verify Copy
 
-If mismatches are detected or file doesn't exist:
+After copying, verify the structure:
 
-**For New Files:**
-- Create `.projectrules` using the template below
-- Use the exact YAML-like format shown in the template section
+```bash
+# Check that core files exist
+CORE_FILES=("00-core-principles.mdc" "01-code-quality.mdc" "02-security.mdc" "03-testing.mdc" "04-git-workflow.mdc" "05-error-handling.mdc" "06-documentation.mdc" "07-ai-agent-behavior.mdc" "08-project-context.mdc")
 
-**For Existing Files:**
-- Update only the sections that match the BOOTSTRAP.md template
-- Preserve any project-specific customizations that don't conflict
-- Update the version number in the header
-- Update the "Last Updated" date
+for file in "${CORE_FILES[@]}"; do
+  if [ -f ".cursor/rules/$filename" ]; then
+    echo "✓ $file"
+  else
+    echo "✗ Missing: $file"
+  fi
+done
 
-**LLM Action**: Generate updated `.projectrules` content, preserving project-specific additions while syncing core rules.
+# Count total files
+TOTAL=$(find ".cursor/rules" -name "*.mdc" | wc -l)
+echo "Total rule files: $TOTAL"
+```
 
-#### Step 5: Skip if Aligned
-
-If `.projectrules` exists, version matches, and all key sections align with BOOTSTRAP.md:
-
-**Skip Update**: No action needed. Log: "`.projectrules` is up to date with BOOTSTRAP.md (v3.0)"
-
-**LLM Action**: If version matches and content comparison shows no significant differences, skip the update step.
+**LLM Action**: Verify that all core rule files (00-08) are present and count total rule files.
 
 #### Step 6: Preserve Project-Specific Customizations
 
-When updating, only modify sections that exist in the BOOTSTRAP.md template. If `.projectrules` contains:
-- Additional sections not in template → Keep them
-- Project-specific rules in existing sections → Keep them if they don't conflict
-- Custom patterns or policies → Preserve them
+When copying, preserve any project-specific customizations:
 
-**LLM Action**: Use a merge strategy that:
-1. Updates core sections from BOOTSTRAP.md template
-2. Preserves additional sections
-3. Preserves non-conflicting customizations within core sections
+- **Custom rule files**: If project has custom `.mdc` files (e.g., `99-project-specific.mdc`), keep them
+- **Modified core files**: If project has modified core files, consider merging changes
+- **Additional files**: Preserve any additional files in `.cursor/rules/` (e.g., custom README sections)
+
+**LLM Action**: 
+1. Before copying, identify project-specific files in `.cursor/rules/`
+2. Preserve these files during copy
+3. If core files have project-specific modifications, consider creating a separate project-specific rule file instead of modifying core files
 
 ---
 
-## .projectrules Template
+## .projectrules Template (Legacy)
 
-> **Format**: This is the canonical YAML-like format that tools/CI expect. Use this exact structure when creating or updating `.projectrules`.
+> **⚠️ Legacy Format**: This section is kept for backward compatibility. New projects should use `.cursor/rules/*.mdc` instead (see instructions above). The `.projectrules` file format is deprecated in favor of the modern Cursor rules system.
+
+> **Format**: This is the legacy YAML-like format that some older tools/CI scripts may still expect. For new projects, use `.cursor/rules/` instead.
 
 ```yaml
 # Development Best Practices for Indie Developers
@@ -1204,188 +1272,182 @@ cycle_closeout:
 
 ---
 
-## Relationship Between BOOTSTRAP.md and .projectrules
+## Relationship Between BOOTSTRAP.md and .cursor/rules/
 
 ### File Purposes
 
-- **`.projectrules`**: Structured YAML-like source of truth for tools/CI scripts. This is the canonical format that automated tools read and parse.
-- **`BOOTSTRAP.md`**: Human/LLM-readable reference guide that embeds the same rules in markdown format for easy consumption.
+- **`.cursor/rules/*.mdc`**: Modern Cursor rules system with composable, technology-agnostic rules. Uses glob patterns for conditional loading and better token efficiency. This is the recommended format for all new projects.
+- **`BOOTSTRAP.md`**: Human/LLM-readable reference guide that provides context and instructions for setting up `.cursor/rules/`.
+- **`.projectrules`** (Legacy): Deprecated YAML-like format kept for backward compatibility. New projects should not use this.
 
 ### How They Work Together
 
-1. **For LLMs**: Load `BOOTSTRAP.md` to get complete context including all project rules. Then automatically sync `.projectrules` using the instructions above.
-2. **For Tools/CI**: Scripts read `.projectrules` directly in its structured format. They don't read `BOOTSTRAP.md`.
-3. **For Humans**: Can read either file, but `BOOTSTRAP.md` is more readable while `.projectrules` shows the exact format tools expect.
+1. **For LLMs**: Load `BOOTSTRAP.md` to get complete context including all project information. Then automatically copy `.cursor/rules/` from DevEnvTemplate to project root using the instructions above.
+2. **For Cursor**: Cursor automatically loads `.cursor/rules/*.mdc` files based on glob patterns. Always-applied rules (00-08 series) load for every session, while conditional rules (10+) load only when editing matching file types.
+3. **For Humans**: Can read `BOOTSTRAP.md` for context, and `.cursor/rules/README.md` for rules structure. The rules themselves are in `.mdc` files.
 
-### Sync Process
+### Copy Process
 
-- **When BOOTSTRAP.md is updated**: The embedded rules section should be updated to match any changes in `.projectrules`.
-- **When .projectrules is updated**: `BOOTSTRAP.md` should be updated to reflect the new version and rules.
-- **For new projects**: LLMs should create `.projectrules` from the template in `BOOTSTRAP.md` when setting up a new project.
+- **When setting up new project**: Copy `.cursor/rules/` directory from DevEnvTemplate to project root.
+- **When updating existing project**: Copy missing files and update core files (00-08 series), preserving project-specific customizations.
+- **For legacy projects**: Projects using `.projectrules` can migrate to `.cursor/rules/` by copying the directory structure.
 
 ### Key Principle
 
-Both files should stay in sync. `BOOTSTRAP.md` is the LLM-friendly wrapper, `.projectrules` is the tool-friendly structured format. They contain the same information in different formats.
+`BOOTSTRAP.md` provides the setup instructions and context. `.cursor/rules/` contains the actual rules that Cursor uses. The rules are technology-agnostic and composable, allowing for better maintainability and token efficiency compared to the monolithic `.projectrules` format.
 
 ---
 
-## Comparison Logic Examples
+## Working with .cursor/rules/
 
-### Example 1: Reading and Parsing .projectrules
+### Example 1: Copying .cursor/rules/ Directory
 
 ```python
-# Python example for reading .projectrules
-import re
+# Python example for copying .cursor/rules/ from DevEnvTemplate
+from pathlib import Path
+import shutil
+
+def copy_cursor_rules(project_root: str, devenv_template_path: str) -> dict:
+    """Copy .cursor/rules/ directory from DevEnvTemplate to project root."""
+    source_dir = Path(devenv_template_path) / ".cursor" / "rules"
+    dest_dir = Path(project_root) / ".cursor" / "rules"
+    
+    if not source_dir.exists():
+        return {"success": False, "error": "Source .cursor/rules/ not found"}
+    
+    # Create destination directory
+    dest_dir.parent.mkdir(parents=True, exist_ok=True)
+    
+    # Copy files, preserving existing project-specific files
+    copied = []
+    skipped = []
+    
+    for source_file in source_dir.glob("*.mdc"):
+        dest_file = dest_dir / source_file.name
+        
+        # Always copy core files (00-08 series)
+        if source_file.name.startswith(("00-", "01-", "02-", "03-", "04-", "05-", "06-", "07-", "08-")):
+            shutil.copy2(source_file, dest_file)
+            copied.append(source_file.name)
+        # For other files, only copy if they don't exist (preserve project customizations)
+        elif not dest_file.exists():
+            shutil.copy2(source_file, dest_file)
+            copied.append(source_file.name)
+        else:
+            skipped.append(source_file.name)
+    
+    # Copy README if it exists
+    readme_source = source_dir / "README.md"
+    if readme_source.exists():
+        shutil.copy2(readme_source, dest_dir / "README.md")
+        copied.append("README.md")
+    
+    return {
+        "success": True,
+        "copied": copied,
+        "skipped": skipped,
+        "destination": str(dest_dir)
+    }
+```
+
+### Example 2: Checking .cursor/rules/ Status
+
+```python
 from pathlib import Path
 
-def read_project_rules(project_root: str) -> dict:
-    """Read and parse .projectrules file."""
-    rules_path = Path(project_root) / ".projectrules"
+def check_cursor_rules_status(project_root: str) -> dict:
+    """Check if .cursor/rules/ exists and has required core files."""
+    rules_dir = Path(project_root) / ".cursor" / "rules"
     
-    if not rules_path.exists():
-        return {"exists": False}
+    if not rules_dir.exists():
+        return {"exists": False, "status": "missing"}
     
-    content = rules_path.read_text(encoding="utf-8")
+    # Required core files
+    core_files = [
+        "00-core-principles.mdc",
+        "01-code-quality.mdc",
+        "02-security.mdc",
+        "03-testing.mdc",
+        "04-git-workflow.mdc",
+        "05-error-handling.mdc",
+        "06-documentation.mdc",
+        "07-ai-agent-behavior.mdc",
+        "08-project-context.mdc"
+    ]
     
-    # Extract version
-    version_match = re.search(r"^# Version:\s*([\d.]+)", content, re.MULTILINE)
-    version = version_match.group(1) if version_match else None
-    
-    # Extract last updated
-    updated_match = re.search(r"^# Last Updated:\s*(.+)", content, re.MULTILINE)
-    last_updated = updated_match.group(1).strip() if updated_match else None
+    existing_files = [f.name for f in rules_dir.glob("*.mdc")]
+    missing_files = [f for f in core_files if f not in existing_files]
     
     return {
         "exists": True,
-        "version": version,
-        "last_updated": last_updated,
-        "content": content
+        "status": "complete" if not missing_files else "incomplete",
+        "total_files": len(existing_files),
+        "core_files": len([f for f in existing_files if f in core_files]),
+        "missing_core_files": missing_files,
+        "all_files": existing_files
     }
 ```
 
-### Example 2: Comparing Versions
+### Example 3: Simple Copy Script (Bash)
 
-```python
-def compare_versions(bootstrap_version: str, rules_version: str) -> bool:
-    """Compare version numbers. Returns True if they match."""
-    # Normalize versions (remove 'v' prefix, handle '3.0' vs '3.0.0')
-    bootstrap_clean = bootstrap_version.replace("v", "").strip()
-    rules_clean = rules_version.replace("v", "").strip()
-    
-    # Split and compare major.minor
-    bootstrap_parts = bootstrap_clean.split(".")[:2]
-    rules_parts = rules_clean.split(".")[:2]
-    
-    return bootstrap_parts == rules_parts
+```bash
+#!/bin/bash
+# Simple script to copy .cursor/rules/ from DevEnvTemplate
+
+DEVENV_PATH="${1:-.devenv}"
+SOURCE_DIR="$DEVENV_PATH/.cursor/rules"
+DEST_DIR=".cursor/rules"
+
+if [ ! -d "$SOURCE_DIR" ]; then
+    echo "Error: Source directory not found: $SOURCE_DIR"
+    exit 1
+fi
+
+# Create destination directory
+mkdir -p "$DEST_DIR"
+
+# Copy all .mdc files
+cp "$SOURCE_DIR"/*.mdc "$DEST_DIR/" 2>/dev/null || true
+
+# Copy README if it exists
+if [ -f "$SOURCE_DIR/README.md" ]; then
+    cp "$SOURCE_DIR/README.md" "$DEST_DIR/"
+fi
+
+echo "Copied .cursor/rules/ to project root"
+ls -la "$DEST_DIR"
 ```
 
-### Example 3: Detecting Section Mismatches
+### Example 4: PowerShell Copy Script
 
-```python
-def extract_section(content: str, section_name: str) -> list:
-    """Extract a section from .projectrules format."""
-    # Find section start
-    pattern = rf"^{section_name}:"
-    match = re.search(pattern, content, re.MULTILINE)
-    
-    if not match:
-        return []
-    
-    start = match.end()
-    lines = content[start:].split("\n")
-    items = []
-    current_item = ""
-    
-    for line in lines:
-        line = line.strip()
-        if not line or line.startswith("#"):
-            continue
-        if line.startswith("- "):
-            if current_item:
-                items.append(current_item)
-            current_item = line[2:]  # Remove "- "
-        elif line.startswith("  - "):
-            # Nested item
-            current_item += " " + line[4:]
-        elif not line.startswith("-") and line:
-            # Continuation of current item
-            current_item += " " + line
-        else:
-            # End of section
-            break
-    
-    if current_item:
-        items.append(current_item)
-    
-    return items
+```powershell
+# PowerShell script to copy .cursor/rules/ from DevEnvTemplate
+param(
+    [string]$DevenvPath = ".devenv"
+)
 
-def compare_sections(bootstrap_section: list, rules_section: list) -> dict:
-    """Compare two sections and return differences."""
-    bootstrap_set = set(bootstrap_section)
-    rules_set = set(rules_section)
-    
-    missing_in_rules = bootstrap_set - rules_set
-    extra_in_rules = rules_set - bootstrap_set
-    
-    return {
-        "match": len(missing_in_rules) == 0 and len(extra_in_rules) == 0,
-        "missing_in_rules": list(missing_in_rules),
-        "extra_in_rules": list(extra_in_rules)
-    }
+$SourceDir = Join-Path $DevenvPath ".cursor\rules"
+$DestDir = ".cursor\rules"
+
+if (-not (Test-Path $SourceDir)) {
+    Write-Error "Source directory not found: $SourceDir"
+    exit 1
+}
+
+# Create destination directory
+New-Item -ItemType Directory -Path $DestDir -Force | Out-Null
+
+# Copy all .mdc files
+Copy-Item "$SourceDir\*.mdc" -Destination $DestDir -Force
+
+# Copy README if it exists
+if (Test-Path "$SourceDir\README.md") {
+    Copy-Item "$SourceDir\README.md" -Destination $DestDir -Force
+}
+
+Write-Host "Copied .cursor/rules/ to project root"
+Get-ChildItem $DestDir
 ```
-
-### Example 4: Generating Updated .projectrules
-
-```python
-def generate_project_rules(template: str, customizations: dict = None) -> str:
-    """Generate .projectrules content from template with optional customizations."""
-    content = template
-    
-    # Update version and date
-    from datetime import date
-    today = date.today().strftime("%Y-%m-%d")
-    content = re.sub(r"^# Last Updated:.*", f"# Last Updated: {today}", content, flags=re.MULTILINE)
-    
-    # Apply customizations if provided
-    if customizations:
-        for section, items in customizations.items():
-            # Insert custom items into appropriate section
-            # (Implementation depends on specific customization format)
-            pass
-    
-    return content
-```
-
-### Example 5: Complete Sync Workflow
-
-```python
-def sync_project_rules(project_root: str, bootstrap_rules: dict) -> dict:
-    """Complete workflow for syncing .projectrules."""
-    result = {
-        "action": "skip",
-        "reason": "",
-        "changes": []
-    }
-    
-    # Step 1: Check if exists
-    rules_info = read_project_rules(project_root)
-    if not rules_info["exists"]:
-        result["action"] = "create"
-        result["reason"] = ".projectrules does not exist"
-        return result
-    
-    # Step 2: Compare versions
-    if not compare_versions("3.0", rules_info["version"]):
-        result["action"] = "update"
-        result["reason"] = f"Version mismatch: {rules_info['version']} vs 3.0"
-        result["changes"].append("version")
-    
-    # Step 3: Compare key sections
-    key_sections = ["project_goals", "guardrails", "code_style", "patterns"]
-    for section in key_sections:
-        rules_section = extract_section(rules_info["content"], section)
-        bootstrap_section = bootstrap_rules.get(section, [])
-        comparison = compare_sections(bootstrap_section, rules_section)
         
         if not comparison["match"]:
             if result["action"] == "skip":

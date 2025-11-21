@@ -87,6 +87,15 @@ export interface StackCIInfo {
   [key: string]: any;
 }
 
+export interface CursorRulesInfo {
+  present: boolean;
+  existingFiles: string[];
+  coreFiles: string[];
+  conditionalFiles: string[];
+  projectSpecificFiles: string[];
+  needsIntegration: boolean;
+}
+
 export interface StackReport {
   technologies: Technology[];
   configurations: Configuration[];
@@ -101,6 +110,7 @@ export interface StackReport {
   primaryProfile?: string | null;
   languageProfile?: string;
   manifest?: Record<string, unknown> | null;
+  cursorRules?: CursorRulesInfo;
   [key: string]: any;
 }
 

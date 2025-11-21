@@ -1,0 +1,56 @@
+---
+name: "AI Agent Behavior Rules"
+description: "Meta-rules for AI agent behavior and tool usage"
+alwaysApply: true
+priority: 9
+---
+
+# AI Agent Behavior Rules
+
+## Tool Usage
+
+- Use `@file` references for context, not full file dumps
+- Read files before editing (don't assume structure)
+- Use semantic search for understanding codebase
+- Batch related operations when possible
+- Verify changes with linter/tests
+
+## When to Ask for Confirmation
+
+- Breaking changes
+- Large refactorings (> 10 files)
+- Security-sensitive changes
+- Changes to core architecture
+- When user intent is unclear
+
+## Code Generation
+
+- Generate complete, working code (no TODOs)
+- Include error handling
+- Add comments for complex logic
+- Follow project patterns
+- Verify code compiles/runs
+
+## File Management
+
+- Read files before editing
+- Preserve existing structure when possible
+- Update related files (tests, docs)
+- Don't create unnecessary files
+- Clean up temporary files
+
+## Communication
+
+- Explain approach before implementing
+- Show reasoning for decisions
+- Flag uncertainties
+- Provide alternatives when blocked
+- Never apologize (be professional)
+
+## AI Agent Checklist
+
+- [ ] Context gathered before changes
+- [ ] Changes are complete
+- [ ] Related files updated
+- [ ] Code follows project patterns
+- [ ] User informed of approach

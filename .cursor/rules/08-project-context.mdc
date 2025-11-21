@@ -1,0 +1,80 @@
+---
+name: "DevEnvTemplate Project Context"
+description: "Project-specific context and conventions for DevEnvTemplate"
+alwaysApply: true
+priority: 8
+---
+
+# DevEnvTemplate Project Context
+
+## Project Purpose
+
+DevEnvTemplate is a "doctor" for development environments - it diagnoses issues, prescribes solutions, and keeps codebases healthy while coding with LLMs. It's optimized for indie developers and solo founders.
+
+## Tech Stack
+
+- TypeScript (strict mode, ES2020, CommonJS)
+- Node.js 20+ LTS
+- Node.js test runner (no heavy frameworks)
+- GitHub Actions for CI/CD
+- Free-tier optimization (2000 min/month)
+
+## Key Principles
+
+- **Free-tier first**: Optimize for GitHub Actions free tier
+- **Solo-friendly**: No team workflows, no approval gates
+- **Quality by default**: Automated testing, linting, CI/CD
+- **Ship fast**: Quick iteration and deployment
+- **Security baseline**: No credentials in repo, dependency scanning
+
+## Project Structure
+
+- `scripts/` - Core tooling (doctor, cleanup, agent)
+- `docs/` - Documentation
+- `config/` - Configuration files
+- `tests/` - Test files
+- `.devenv/` - Generated reports (gitignored)
+
+## Key Commands
+
+- `npm run doctor` - Health check
+- `npm run doctor:fix` - Auto-fix issues
+- `npm run test` - Run tests
+- `npm run build` - Compile TypeScript
+
+## Important Files
+
+- `.projectrules` - Project rules (legacy, being migrated)
+- `BOOTSTRAP.md` - Single-file-loads-all for LLMs
+- `README.md` - Human-readable overview
+- `package.json` - Dependencies and scripts
+
+## Conventions
+
+- Conventional commits (feat/fix/docs/etc.)
+- TypeScript strict mode
+- Tests in `tests/` directory
+- Documentation in `docs/` directory
+- Cross-platform compatibility (Windows/macOS/Linux)
+
+## PowerShell Compatibility
+
+- Use `;` not `&&` for command chaining
+- Test paths before navigation
+- Avoid emoji in commit messages
+- Use `Join-Path` for path construction
+
+## Testing Standards
+
+- Unit tests: < 5 seconds
+- Integration tests: < 60 seconds
+- All tests must have timeouts
+- Use real temp directories (not mock-fs)
+- Test cleanup in afterEach hooks
+
+## Performance
+
+- Parallel processing for I/O-bound operations
+- Caching enabled by default
+- Performance tracking with `--performance` flag
+- Memory efficiency (process in chunks)

@@ -1,0 +1,101 @@
+---
+name: "Error Handling Standards"
+description: "Defensive programming and error handling patterns"
+alwaysApply: true
+priority: 6
+---
+
+# Defensive Programming
+
+## Error Handling Philosophy
+
+- Assume all external inputs can be invalid, null, undefined, or malicious
+- Assume all network calls can fail, timeout, or return unexpected data
+- Assume all file operations can fail (permissions, disk full, path doesn't exist)
+- Assume all user input needs validation and sanitization
+
+## Patterns
+
+### 1. Null/Undefined Checks
+
+```typescript
+// Good: Explicit null check
+if (!data || !data.user) {
+  throw new Error('User data is required');
+}
+
+// Bad: Assumes data exists
+const name = data.user.name;
+```
+
+### 2. Try-Catch with Context
+
+```typescript
+// Good: Error includes context
+try {
+  await processFile(path);
+} catch (error) {
+  throw new Error(`Failed to process ${path}: ${error.message}`);
+}
+
+// Bad: Generic error
+try {
+  await processFile(path);
+} catch (error) {
+  throw error;
+}
+```
+
+### 3. Validation at Boundaries
+
+- Validate at function entry points
+- Validate at API boundaries
+- Validate at data transformation boundaries
+- Never trust data from external sources
+
+### 4. Graceful Degradation
+
+- Provide fallbacks for non-critical features
+- Log errors but don't crash the application
+- Return meaningful error messages to users
+- Use default values when safe
+
+### 5. Edge Cases to Always Consider
+
+- Empty arrays/strings/objects
+- Very large numbers (overflow)
+- Negative numbers where unexpected
+- Special characters in strings
+- Unicode/emoji in text
+- Concurrent access/modification
+- Network timeouts
+- Partial failures in batch operations
+
+## Concurrency & Async Patterns
+
+**Async/Await:**
+- Prefer async/await over callbacks
+- Handle errors with try-catch
+- Don't forget `await` (use linter rules)
+- Use `Promise.all()` for parallel operations
+- Use `Promise.allSettled()` when some failures are acceptable
+
+**Concurrency Control:**
+- Limit concurrent operations (worker pools)
+- Use semaphores/locks when needed
+- Handle race conditions
+- Test concurrent code thoroughly
+- Use atomic operations when possible
+
+**Error Handling:**
+- Always handle async errors
+- Don't swallow errors silently
+- Propagate errors appropriately
+- Use error boundaries (frontend)
+
+**Concurrency Checklist:**
+- [ ] Async errors are handled
+- [ ] Concurrent operations are controlled
+- [ ] Race conditions prevented
+- [ ] Timeouts configured
+- [ ] Resource cleanup on errors

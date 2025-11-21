@@ -1,0 +1,55 @@
+---
+name: "Python Standards"
+description: "Python-specific rules and best practices"
+alwaysApply: false
+glob: ["**/*.py"]
+priority: 12
+---
+
+# Python Standards
+
+## Type Safety
+
+**Python-Specific:**
+- Use type hints for all function signatures
+- Enable `mypy --strict` or `pyright --strictmode`
+- Use `TypedDict` for dictionary structures
+- Use `Literal` types for string constants
+- Prefer `Protocol` over ABC for structural typing
+
+## Code Style
+
+- Follow PEP 8 style guide
+- Use 4 spaces for indentation (no tabs)
+- Limit line length to 88-100 characters (Black formatter)
+- Use descriptive variable names (snake_case)
+- Use type hints for all functions
+
+## Best Practices
+
+- Use virtual environments (venv, poetry, pipenv)
+- Use `pathlib` for file paths (not `os.path`)
+- Use f-strings for string formatting
+- Use context managers (`with` statements)
+- Handle exceptions explicitly
+
+## Dependencies
+
+- Pin exact versions in requirements.txt
+- Use poetry or pip-tools for dependency management
+- Separate dev dependencies
+- Document version requirements
+
+## Testing
+
+- Use pytest for testing
+- Use fixtures for test data
+- Mock external dependencies
+- Test edge cases and error conditions
+
+## Security
+
+- Never use `eval()` or `exec()` with user input
+- Use parameterized queries for databases
+- Validate and sanitize all inputs
+- Use secrets management for credentials

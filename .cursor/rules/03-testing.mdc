@@ -1,0 +1,74 @@
+---
+name: "Testing Standards"
+description: "Testing philosophy and standards"
+alwaysApply: true
+priority: 4
+---
+
+# Testing Standards
+
+## Testing Philosophy
+
+- Tests are documentation of expected behavior
+- Tests should be fast, isolated, and repeatable
+- Prefer many small tests over few large tests
+- Test behavior, not implementation
+- Aim for high coverage of critical paths (not necessarily 100%)
+
+## Test Pyramid
+
+- **Unit Tests** (70%): Fast, isolated, test individual functions/classes
+- **Integration Tests** (20%): Test interactions between components
+- **E2E Tests** (10%): Test complete user workflows
+
+## Test Structure (AAA Pattern)
+
+```typescript
+test('should calculate total with tax', () => {
+  // Arrange: Set up test data
+  const items = [{ price: 10 }, { price: 20 }];
+  const taxRate = 0.1;
+  
+  // Act: Execute the code being tested
+  const total = calculateTotal(items, taxRate);
+  
+  // Assert: Verify the result
+  expect(total).toBe(33);
+});
+```
+
+## Test Naming
+
+- Describe what is being tested: `should return error when email is invalid`
+- Use "should" or "when" to describe behavior
+- Be specific about the scenario
+
+## Test Coverage
+
+- Test happy paths
+- Test error cases
+- Test edge cases (empty inputs, null values, boundary conditions)
+- Test concurrent access when applicable
+
+## Test Isolation
+
+- Each test should be independent
+- No shared state between tests
+- Clean up after each test
+- Use fixtures for test data
+- Mock external dependencies
+
+## Test Performance
+
+- Unit tests: < 5 seconds total
+- Integration tests: < 60 seconds total
+- E2E tests: < 5 minutes total
+- Cancel tests that exceed timeouts
+
+## Testing Checklist
+
+- [ ] New features have tests
+- [ ] Tests are fast and isolated
+- [ ] Error cases are tested
+- [ ] Edge cases are covered
+- [ ] Tests are readable and maintainable

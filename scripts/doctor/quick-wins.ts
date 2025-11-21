@@ -347,6 +347,93 @@ export const QUICK_WINS: QuickWin[] = [
              !(await ctx.hasFile('.github/workflows/indie-ci.yml'));
     }
   },
+
+  // ========================================
+  // CURSOR RULES
+  // ========================================
+  {
+    id: 'setup-cursor-rules',
+    title: 'Set up Cursor rules',
+    description: 'Integrate DevEnvTemplate cursor rules adapted to your project stack',
+    estimatedTime: '2 min',
+    autoFixable: true,
+    category: 'env-hygiene',
+    detectCondition: async (ctx) => {
+      const cursorRulesDir = '.cursor/rules';
+      const hasRules = await ctx.hasFile(cursorRulesDir);
+      
+      if (!hasRules) {
+        return true; // No rules at all - needs setup
+      }
+      
+      // Check if core rules are missing
+      const coreFiles = [
+        '00-core-principles.mdc',
+        '01-code-quality.mdc',
+        '02-security.mdc',
+        '03-testing.mdc'
+      ];
+      
+      for (const coreFile of coreFiles) {
+        if (!(await ctx.hasFile(`${cursorRulesDir}/${coreFile}`))) {
+          return true; // Missing core files - needs integration
+        }
+      }
+      
+      return false; // Has rules and core files present
+    },
+    fixAction: async (ctx) => {
+      try {
+        const { integrateCursorRules } = await import('../tools/cursor-rules-integration');
+        const path = await import('path');
+        const { existsSync } = await import('fs');
+        
+        // Find DevEnvTemplate .cursor/rules path
+        let templateRulesPath: string | null = null;
+        const possiblePaths = [
+          path.join(ctx.rootDir, '.devenv', '.cursor', 'rules'),
+          path.join(ctx.rootDir, '..', 'DevEnvTemplate', '.cursor', 'rules'),
+          path.join(__dirname, '../../../.cursor/rules')
+        ];
+
+        for (const possiblePath of possiblePaths) {
+          if (existsSync(possiblePath)) {
+            templateRulesPath = possiblePath;
+            break;
+          }
+        }
+
+        if (!templateRulesPath) {
+          return {
+            success: false,
+            message: 'DevEnvTemplate .cursor/rules/ not found',
+            error: 'Cannot locate template rules directory'
+          };
+        }
+
+        const result = await integrateCursorRules({
+          projectRoot: ctx.rootDir,
+          templateRulesPath,
+          stackReport: ctx.stack,
+          overwriteCore: false,
+          dryRun: false
+        });
+
+        const filesCreated = [...result.copied, ...result.updated];
+        return {
+          success: true,
+          message: `Integrated ${filesCreated.length} cursor rule file(s)`,
+          filesCreated
+        };
+      } catch (error: any) {
+        return {
+          success: false,
+          message: `Failed to integrate cursor rules: ${error.message}`,
+          error: error.message
+        };
+      }
+    }
+  },
 ];
 
 /**

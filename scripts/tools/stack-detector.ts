@@ -183,7 +183,15 @@ class StackDetector {
       profiles: [],
       primaryProfile: null,
       languageProfile: 'agnostic',
-      manifest: null
+      manifest: null,
+      cursorRules: {
+        present: false,
+        existingFiles: [],
+        coreFiles: [],
+        conditionalFiles: [],
+        projectSpecificFiles: [],
+        needsIntegration: false
+      }
     } as StackReport;
 
     this.logDebug('StackDetector initialized', {
@@ -259,6 +267,7 @@ class StackDetector {
     await this.detectCI();
     await this.detectSecurity();
     await this.detectSecretsHygiene();
+    await this.detectCursorRules();
     this.assignProfiles();
 
     return this.stack;
@@ -1536,6 +1545,100 @@ class StackDetector {
     await fs.writeFile(reportPath, JSON.stringify(report, null, 2), 'utf8');
     if (!this.quiet) {
       logger.info(`Stack report saved to ${reportPath}`);
+    }
+  }
+
+  async detectCursorRules(): Promise<void> {
+    const cursorRulesDir = path.join(this.rootDir, '.cursor', 'rules');
+    
+    try {
+      await fs.access(cursorRulesDir);
+      this.stack.cursorRules!.present = true;
+      
+      // Read all .mdc files
+      const entries = await fs.readdir(cursorRulesDir, { withFileTypes: true });
+      const mdcFiles: string[] = [];
+      
+      for (const entry of entries) {
+        if (entry.isFile() && entry.name.endsWith('.mdc')) {
+          mdcFiles.push(entry.name);
+        }
+      }
+      
+      this.stack.cursorRules!.existingFiles = mdcFiles.sort();
+      
+      // Categorize files
+      const coreFiles: string[] = [];
+      const conditionalFiles: string[] = [];
+      const projectSpecificFiles: string[] = [];
+      
+      // Standard DevEnvTemplate core files (00-08)
+      const standardCoreFiles = [
+        '00-core-principles.mdc',
+        '01-code-quality.mdc',
+        '02-security.mdc',
+        '03-testing.mdc',
+        '04-git-workflow.mdc',
+        '05-error-handling.mdc',
+        '06-documentation.mdc',
+        '07-ai-agent-behavior.mdc',
+        '08-project-context.mdc'
+      ];
+      
+      // Standard conditional files (10+)
+      const standardConditionalFiles = [
+        '10-typescript.mdc',
+        '11-javascript.mdc',
+        '12-python.mdc',
+        '13-markdown.mdc',
+        '14-json-yaml.mdc',
+        '15-shell-scripts.mdc',
+        '20-frontend-frameworks.mdc'
+      ];
+      
+      for (const file of mdcFiles) {
+        if (standardCoreFiles.includes(file)) {
+          coreFiles.push(file);
+        } else if (standardConditionalFiles.includes(file)) {
+          conditionalFiles.push(file);
+        } else {
+          // Project-specific file
+          projectSpecificFiles.push(file);
+        }
+      }
+      
+      this.stack.cursorRules!.coreFiles = coreFiles;
+      this.stack.cursorRules!.conditionalFiles = conditionalFiles;
+      this.stack.cursorRules!.projectSpecificFiles = projectSpecificFiles;
+      
+      // Determine if integration is needed
+      // Integration needed if:
+      // 1. Missing core files
+      // 2. Has project-specific files (might need merging)
+      // 3. Has conditional files that don't match detected stack
+      const missingCoreFiles = standardCoreFiles.filter(f => !coreFiles.includes(f));
+      const needsIntegration = missingCoreFiles.length > 0 || projectSpecificFiles.length > 0;
+      
+      this.stack.cursorRules!.needsIntegration = needsIntegration;
+      
+      this.logDebug('Cursor rules detection complete', {
+        present: true,
+        totalFiles: mdcFiles.length,
+        coreFiles: coreFiles.length,
+        conditionalFiles: conditionalFiles.length,
+        projectSpecificFiles: projectSpecificFiles.length,
+        needsIntegration
+      });
+    } catch (error: any) {
+      if (error.code === 'ENOENT') {
+        // .cursor/rules/ doesn't exist
+        this.stack.cursorRules!.present = false;
+        this.stack.cursorRules!.needsIntegration = true; // Needs initial setup
+        this.logDebug('Cursor rules directory not found');
+      } else {
+        // Other error - log but don't fail
+        this.logDebug('Error detecting cursor rules', { error: error.message });
+      }
     }
   }
 

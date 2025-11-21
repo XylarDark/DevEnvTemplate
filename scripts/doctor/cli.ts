@@ -50,6 +50,7 @@ interface CliOptions {
   projectRoot?: string;
   mode?: 'fast' | 'full';
   debug?: boolean;
+  integrateCursorRules?: boolean;
 }
 
 /**
@@ -141,6 +142,73 @@ async function runDoctor(options: CliOptions = {}) {
       console.error('   Make sure you are running from the project root or use --project-root flag.');
     }
     process.exit(1);
+  }
+
+  // Step 1.5: Integrate cursor rules if requested or if needed
+  if (options.integrateCursorRules || (stackData.cursorRules && stackData.cursorRules.needsIntegration)) {
+    if (!options.json) {
+      console.log('📋 Integrating Cursor rules...');
+    }
+    
+    try {
+      // Find DevEnvTemplate .cursor/rules path
+      // Try multiple locations: .devenv, ../DevEnvTemplate, or __dirname relative
+      let templateRulesPath: string | null = null;
+      const possiblePaths = [
+        path.join(workingDir, '.devenv', '.cursor', 'rules'),
+        path.join(workingDir, '..', 'DevEnvTemplate', '.cursor', 'rules'),
+        path.join(__dirname, '../../../.cursor/rules')
+      ];
+
+      for (const possiblePath of possiblePaths) {
+        if (existsSync(possiblePath)) {
+          templateRulesPath = possiblePath;
+          break;
+        }
+      }
+
+      if (templateRulesPath) {
+        const { integrateCursorRules } = await import('../tools/cursor-rules-integration');
+        const integrationResult = await integrateCursorRules({
+          projectRoot: workingDir,
+          templateRulesPath,
+          stackReport: stackData,
+          overwriteCore: false,
+          dryRun: options.dryRun || false
+        });
+
+        if (!options.json) {
+          if (integrationResult.copied.length > 0) {
+            console.log(`  ✓ Copied ${integrationResult.copied.length} rule file(s)`);
+          }
+          if (integrationResult.updated.length > 0) {
+            console.log(`  ✓ Updated ${integrationResult.updated.length} rule file(s)`);
+          }
+          if (integrationResult.preserved.length > 0) {
+            console.log(`  ✓ Preserved ${integrationResult.preserved.length} project-specific rule file(s)`);
+          }
+          if (integrationResult.recommendations.length > 0) {
+            integrationResult.recommendations.forEach(rec => {
+              console.log(`  ℹ️  ${rec}`);
+            });
+          }
+        }
+      } else {
+        if (!options.json) {
+          console.log('  ⚠️  DevEnvTemplate .cursor/rules/ not found. Skipping integration.');
+          console.log('     To integrate rules, ensure DevEnvTemplate is available.');
+        }
+      }
+    } catch (error: any) {
+      if (!options.json) {
+        console.error(`  ⚠️  Failed to integrate cursor rules: ${error.message}`);
+      }
+      // Don't fail the entire doctor run if integration fails
+    }
+    
+    if (!options.json) {
+      console.log('');
+    }
   }
 
   // Step 2: Run gap analyzer
@@ -616,6 +684,9 @@ function parseArgs(): CliOptions {
         break;
       case '--debug':
         options.debug = true;
+        break;
+      case '--integrate-cursor-rules':
+        options.integrateCursorRules = true;
         break;
       case '--fast':
       case '--shallow':

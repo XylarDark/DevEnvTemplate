@@ -1,0 +1,68 @@
+---
+name: "Shell Script Standards"
+description: "Standards for shell scripts (bash, PowerShell, etc.)"
+alwaysApply: false
+glob: ["**/*.sh", "**/*.ps1", "**/*.bat"]
+priority: 15
+---
+
+# Shell Script Standards
+
+## Cross-Platform Compatibility
+
+- Test scripts on target platforms
+- Use platform-agnostic commands when possible
+- Handle path separators correctly (`/` vs `\`)
+- Use environment variables for paths
+- Check for command availability before use
+
+## PowerShell-Specific
+
+- Use `;` not `&&` for command chaining
+- Test paths before navigation: `if (Test-Path "path") { ... }`
+- Use `Join-Path` for path construction
+- Use `Push-Location`/`Pop-Location` for temporary navigation
+- Avoid emoji in output (PowerShell parsing issues)
+- Use `-ErrorAction SilentlyContinue` for optional operations
+
+## Bash-Specific
+
+- Use `#!/bin/bash` or `#!/usr/bin/env bash`
+- Enable `set -euo pipefail` for error handling
+- Quote variables to handle spaces
+- Use `[[ ]]` instead of `[ ]` when possible
+- Check command existence before use
+
+## Error Handling
+
+- Check exit codes
+- Handle errors gracefully
+- Provide meaningful error messages
+- Exit with appropriate codes
+- Log errors for debugging
+
+## Best Practices
+
+- Add shebang line (`#!/bin/bash`, `#!/usr/bin/env pwsh`)
+- Make scripts executable
+- Document script purpose and usage
+- Use functions for reusable logic
+- Validate inputs
+- Use meaningful variable names
+
+## Security
+
+- Never execute untrusted scripts
+- Validate user input
+- Avoid `eval` when possible
+- Use parameterized commands
+- Check file permissions
+
+## Script Checklist
+
+- [ ] Cross-platform tested
+- [ ] Error handling implemented
+- [ ] Input validation present
+- [ ] Documented purpose and usage
+- [ ] No hardcoded paths
+- [ ] Security considerations addressed
