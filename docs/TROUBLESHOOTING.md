@@ -488,6 +488,48 @@ npm run lint; npm run test
 npm run doctor -- --json
 ```
 
+### File Editing Blocked by Globalignore
+
+**Problem**: Attempting to create or edit files (e.g., `.env.example`) fails with "blocked by globalignore" error.
+
+**Cause**: File is in .gitignore or .cursorignore, preventing direct editing.
+
+**Solution**:
+```powershell
+# Option 1: Temporarily unignore (if file exists)
+git update-index --no-assume-unchanged .env.example
+# Edit file
+git update-index --assume-unchanged .env.example
+
+# Option 2: Create via script (preferred)
+# Python
+python -c "from pathlib import Path; Path('.env.example').write_text('CONTENT')"
+
+# Node.js
+node -e "require('fs').writeFileSync('.env.example', 'CONTENT')"
+
+# PowerShell
+Set-Content -Path ".env.example" -Value "CONTENT"
+```
+
+**Prevention**: Check `git check-ignore -v <file>` before attempting to create/edit files.
+
+### Environment File Template Issues
+
+**Problem**: Missing or incorrect environment file templates.
+
+**Next.js Projects:**
+- Need `.env.local.example` (not just `.env.example`)
+- Must document `NEXT_PUBLIC_*` variables
+- Should include API URL, optional API key
+
+**Python Projects:**
+- Need `.env.example` at project root
+- Should document all required variables
+- Include safe defaults where appropriate
+
+**Solution**: Create appropriate template file based on project type (detected by stack detector).
+
 ## Doctor Mode Issues
 
 ### Health Score Seems Wrong

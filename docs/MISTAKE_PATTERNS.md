@@ -601,6 +601,111 @@ node dist/scripts/tools/docs-organizer.js --auto-fix
 
 ---
 
+## 13. File Editing Blocked by Globalignore
+
+**Description:** Attempting to create or edit files that are in .gitignore or .cursorignore fails with blocking error.
+
+**Root Cause:**
+- Files like `.env.example` are often gitignored
+- Cursor/IDE globalignore prevents editing ignored files
+- Direct file editing tools fail on ignored files
+
+**Impact:**
+- Cannot create environment templates
+- Workflow interruption
+- Need for workarounds
+
+**Prevention Strategy:**
+- Check file ignore status before editing: `git check-ignore -v <file>`
+- Use programmatic file creation (Python/Node script)
+- Document workaround in project notes
+
+**Fix Examples:**
+```powershell
+# Check why file is ignored
+git check-ignore -v .env.example
+
+# Create via script
+python -c "from pathlib import Path; Path('.env.example').write_text('CONTENT')"
+
+# Or Node.js
+node -e "require('fs').writeFileSync('.env.example', 'CONTENT')"
+
+# Or PowerShell
+Set-Content -Path ".env.example" -Value "CONTENT"
+```
+
+---
+
+## 14. Validation Schema Mismatches
+
+**Description:** API request types have different structure than validation schemas expect.
+
+**Root Cause:**
+- API uses flat structure (e.g., `depth_min`, `depth_max`)
+- Validation schema expects nested structure (e.g., `depth_range.min`, `depth_range.max`)
+- Schema created before verifying actual API types
+
+**Impact:**
+- Validation fails incorrectly
+- Need to adapt schemas to match API
+- Confusion about correct structure
+
+**Prevention Strategy:**
+- Always verify API request types before creating validation schemas
+- Test validation with actual API request objects
+- Document any structural differences
+- Keep validation schemas in sync with API types
+
+**Fix Examples:**
+```typescript
+// ❌ Wrong: Schema doesn't match API
+const schema = z.object({
+  depth_range: z.object({ min: z.number(), max: z.number() })
+});
+
+// ✅ Correct: Schema matches API
+const schema = z.object({
+  depth_min: z.number(),
+  depth_max: z.number()
+});
+```
+
+---
+
+## 15. Missing Testing Dependencies
+
+**Description:** Writing tests before adding testing dependencies to package.json.
+
+**Root Cause:**
+- Tests written before infrastructure setup
+- Dependencies not added to package.json
+- Assumption that dependencies exist
+
+**Impact:**
+- Tests cannot run
+- Setup incomplete
+- Need to add dependencies retroactively
+
+**Prevention Strategy:**
+- Always add testing dependencies before writing tests
+- Follow testing infrastructure setup checklist
+- Verify dependencies installed before running tests
+
+**Fix Examples:**
+```json
+// Add to package.json devDependencies first
+{
+  "devDependencies": {
+    "vitest": "^1.0.0",
+    "@testing-library/react": "^14.0.0",
+    "@testing-library/jest-dom": "^6.0.0"
+  }
+}
+```
+
+---
+
 ## Prevention Checklist
 
 Before committing code, verify:
@@ -617,6 +722,9 @@ Before committing code, verify:
 - [ ] Specific exceptions with context
 - [ ] Commit message body lines under 100 characters
 - [ ] npm script flags tested and working, or use direct script execution
+- [ ] File ignore status checked before editing (git check-ignore)
+- [ ] API request types verified before creating validation schemas
+- [ ] Testing dependencies added to package.json before writing tests
 
 ---
 

@@ -72,6 +72,34 @@ DevEnvTemplate is a "doctor" for development environments - it diagnoses issues,
 - Use real temp directories (not mock-fs)
 - Test cleanup in afterEach hooks
 
+## Import Path Management
+
+**After File Moves or Refactoring:**
+- Always verify import paths after structural changes
+- Run type checker (`tsc --noEmit`) to catch import errors
+- Update path aliases in tsconfig.json if needed
+- Verify test imports resolve correctly
+- Check for circular dependencies after moves
+
+**TypeScript/Next.js Boundaries:**
+- Never import Node.js modules (`fs`, `path`, `os`) in client components (`'use client'`)
+- Use API routes for server-side operations
+- Verify `'use client'` directive is present when needed
+- Check build output for boundary violations
+
+**Import Path Verification:**
+```typescript
+// After refactoring, verify:
+// 1. Type checking passes
+npx tsc --noEmit
+
+// 2. Build succeeds
+npm run build
+
+// 3. Tests pass
+npm test
+```
+
 ## Performance
 
 - Parallel processing for I/O-bound operations

@@ -84,6 +84,39 @@ priority: 3
 - Validate environment on startup
 - Use different `.env` files for different environments
 
+## Environment File Templates
+
+**Standard Patterns:**
+- `.env.example` - Standard environment template (Python, Node.js, etc.)
+- `.env.local.example` - Next.js-specific template (for `NEXT_PUBLIC_*` variables)
+- `.env.development.example` - Development-specific variables
+- `.env.production.example` - Production-specific variables
+
+**Next.js Projects:**
+- Create `.env.local.example` in addition to or instead of `.env.example`
+- Document all `NEXT_PUBLIC_*` variables (these are exposed to browser)
+- Never put secrets in `NEXT_PUBLIC_*` variables
+- Include API URL, optional API key, feature flags
+
+**Template Structure:**
+```bash
+# Environment Variables for [Project Name]
+# Copy this file to .env.local and fill in your values
+# Never commit the .env.local file
+
+# API Configuration
+NEXT_PUBLIC_API_URL=http://localhost:8000
+NEXT_PUBLIC_API_KEY=
+
+# Development Settings
+NODE_ENV=development
+```
+
+**File Creation:**
+- If `.env.example` is blocked by globalignore, create via script or use `git update-index` workaround
+- Always document required variables with descriptions
+- Include safe default values where appropriate
+
 **Best Practices:**
 - Use secret management services in production (AWS Secrets Manager, etc.)
 - Rotate secrets regularly

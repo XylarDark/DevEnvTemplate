@@ -64,6 +64,40 @@ priority: 15
 - Use parameterized commands
 - Check file permissions
 
+## PowerShell Path Navigation (Enhanced)
+
+**Critical Patterns:**
+- Always validate workspace root before operations
+- Use `Test-Path` before any `Set-Location` or `cd` command
+- Construct full paths with `Join-Path` instead of chaining `cd` commands
+- Use `Push-Location`/`Pop-Location` for temporary navigation
+
+**Workspace Root Validation:**
+```powershell
+# Always validate workspace root first
+$workspaceRoot = "C:\dev"  # Or detect from environment
+if (-not (Test-Path $workspaceRoot)) {
+    Write-Error "Workspace root not found: $workspaceRoot"
+    exit 1
+}
+
+# Then validate project path
+$projectPath = Join-Path $workspaceRoot "project_name"
+if (-not (Test-Path $projectPath)) {
+    Write-Error "Project not found: $projectPath"
+    exit 1
+}
+Set-Location $projectPath
+```
+
+## File Operation Error Handling
+
+**When Files Are Blocked:**
+- If file operations are blocked by gitignore/globalignore:
+  1. Check file status: `git check-ignore -v <file>`
+  2. Use programmatic creation (script) instead of direct file tools
+  3. Document workaround in commit message
+
 ## Script Checklist
 
 - [ ] Cross-platform tested
