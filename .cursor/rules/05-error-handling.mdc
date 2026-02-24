@@ -1,8 +1,9 @@
 ---
 name: "Error Handling Standards"
-description: "Defensive programming and error handling patterns"
+description: "Apply defensive programming and error recording when handling failures to prevent regressions and data loss"
 alwaysApply: true
 priority: 6
+version: 1.0
 ---
 
 # Defensive Programming
@@ -70,6 +71,12 @@ try {
 - Concurrent access/modification
 - Network timeouts
 - Partial failures in batch operations
+
+## Learning from Errors
+
+- Document errors and their fixes so the same mistake is not repeated.
+- Prefer a single project-wide place (e.g. `docs/KNOWN_ERRORS.md` or `docs/LESSONS_LEARNED.md`) for recurring or instructive errors.
+- Follow the process in `07-ai-agent-behavior.mdc` (error recurrence prevention) when working in the codebase.
 
 ## Concurrency & Async Patterns
 

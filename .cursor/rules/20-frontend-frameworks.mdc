@@ -1,9 +1,10 @@
 ---
 name: "Frontend Framework Standards"
-description: "Framework-agnostic frontend best practices"
+description: "Apply component architecture and accessibility patterns when editing UI components to ensure quality UX"
 alwaysApply: false
-glob: ["**/components/**", "**/pages/**", "**/app/**"]
+globs: "**/components/**, **/pages/**, **/app/**"
 priority: 20
+version: 1.0
 ---
 
 # Frontend Best Practices

@@ -1,8 +1,9 @@
 ---
 name: "Security Standards"
-description: "OWASP-minded security rules and best practices"
+description: "Apply OWASP-minded security rules when handling input, secrets, or external data to prevent vulnerabilities"
 alwaysApply: true
 priority: 3
+version: 1.0
 ---
 
 # Security-First Development

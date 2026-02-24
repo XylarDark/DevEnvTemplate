@@ -1,9 +1,10 @@
 ---
 name: "Python Standards"
-description: "Python-specific rules and best practices"
+description: "Follow Python style, type hints, and best practices when editing .py files to ensure correctness"
 alwaysApply: false
-glob: ["**/*.py"]
+globs: "**/*.py"
 priority: 12
+version: 1.0
 ---
 
 # Python Standards

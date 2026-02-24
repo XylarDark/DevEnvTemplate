@@ -1,9 +1,10 @@
 ---
 name: "Markdown Documentation Standards"
-description: "Markdown documentation standards and best practices"
+description: "Follow markdown structure and formatting rules when editing .md files to keep docs consistent and navigable"
 alwaysApply: false
-glob: ["**/*.md"]
+globs: "**/*.md"
 priority: 13
+version: 1.0
 ---
 
 # Markdown Documentation Standards

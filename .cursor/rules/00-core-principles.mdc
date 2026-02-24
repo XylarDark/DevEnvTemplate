@@ -1,8 +1,9 @@
 ---
 name: "Core Principles"
-description: "Universal software engineering principles that apply to all code"
+description: "Apply core engineering principles when writing or reviewing any code to ensure quality, safety, and idempotency"
 alwaysApply: true
 priority: 1
+version: 1.0
 ---
 
 # Core Principles
@@ -41,6 +42,22 @@ When making code changes:
 - State the blocker clearly: "This requires user input on X"
 - Suggest alternatives: "We could use Y instead if Z is not available"
 - Never leave partial implementations that break the build
+
+## Idempotency Protocol
+
+All scripts, setup routines, and automated workflows **must be safe to run multiple times** without creating duplicates or destroying manual customizations.
+
+### Requirements
+
+1. **Check before create:** Before creating a file, resource, or configuration, check if it already exists. If it does, reuse or skip — never blindly delete-and-recreate.
+2. **Reuse over recreate:** Prefer updating an existing object in-place over destroying and rebuilding. Rebuilding loses manual edits.
+3. **Log what you skip:** When an idempotency check causes a skip, log it so the user knows the script didn't silently do nothing.
+
+### Checklist for new scripts
+
+- [ ] Every create/write call is guarded by an existence check
+- [ ] Re-runs produce the same result as first runs (no duplicates, no data loss)
+- [ ] The script logs whether it created, reused, or skipped each resource
 
 ## Pre-Flight Checklist
 

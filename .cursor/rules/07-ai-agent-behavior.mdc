@@ -1,11 +1,27 @@
 ---
 name: "AI Agent Behavior Rules"
-description: "Meta-rules for AI agent behavior and tool usage"
+description: "Follow agent behavior protocols when performing any task to ensure cleanup, error recording, and safe tool usage"
 alwaysApply: true
 priority: 9
+version: 1.0
 ---
 
 # AI Agent Behavior Rules
+
+## Session Continuity (progress-file pattern)
+
+At the **start** of every task, read `docs/SESSION_LOG.md` (if it exists) to load context from prior sessions (completed work, blockers, errors, key decisions). This prevents re-doing finished work and repeating known mistakes.
+
+At the **end** of every task, append a summary entry (date, tasks completed/remaining, errors encountered, key decisions).
+
+## Context Window Awareness
+
+Manage context proactively to stay effective on long-horizon tasks:
+
+- **Targeted reads over full dumps:** Read specific line ranges or use semantic search instead of dumping entire large files.
+- **Search strategy:** Use `Grep` for exact symbol/string lookup; use `SemanticSearch` for exploratory "how/where" questions; use `Glob` for finding files by name pattern.
+- **Subtask decomposition:** Break large tasks into smaller subtasks. Complete and report on each subtask before starting the next. Use the `Task` tool to delegate independent sub-problems in parallel when possible.
+- **Avoid context pollution:** Don't read files you don't need. Don't re-read files whose content you already have in context.
 
 ## Tool Usage
 
@@ -40,7 +56,20 @@ priority: 9
 - Preserve existing structure when possible
 - Update related files (tests, docs)
 - Don't create unnecessary files
-- Clean up temporary files
+
+## Session Cleanup (mandatory before ending a task)
+
+Temporary files created during a session **must be deleted** before the task is considered complete. This includes:
+
+1. **Diagnostic/result JSON files** in the project root (e.g. `result.json`, `check_output.json`) — these are not project artifacts.
+2. **One-off scripts** created for debugging, diagnostics, or one-time fixes. Keep only reusable/idempotent setup scripts.
+3. **Temporary log or dump files** anywhere in the workspace that were created for intermediate inspection.
+
+**How to distinguish keep vs. delete:**
+- **Keep:** Scripts referenced by build/test/setup orchestrators, config files, project docs.
+- **Delete:** Scripts written to diagnose a specific issue in this session, result/output JSON files written by those scripts, any file whose only consumer was the agent in this conversation.
+
+**When to clean up:** After the task's objectives are verified and before reporting results to the user. Do not leave cleanup for a future session.
 
 ## Communication
 
@@ -88,10 +117,23 @@ priority: 9
 - Verify dependencies are installed before running tests
 - Document required devDependencies in project setup instructions
 
+## Error Recurrence Prevention
+
+- **When an error occurs** (build, lint, test, or runtime): Clearly note what failed (command, file, or step), likely cause, and the fix applied. Do not continue as if the error was unimportant.
+- **Where to record:**
+  - If the project has `docs/KNOWN_ERRORS.md` or `docs/LESSONS_LEARNED.md`, add a short entry there (error summary + fix + context).
+  - If not, state the error and fix in the response and suggest creating `docs/KNOWN_ERRORS.md` for future reference.
+- **Before similar changes:** When about to make changes in the same area or of the same type, check `docs/KNOWN_ERRORS.md` or `docs/LESSONS_LEARNED.md` if present, and avoid repeating a previously encountered and documented error.
+
 ## AI Agent Checklist
 
+- [ ] **Session log read** — read `docs/SESSION_LOG.md` at task start to load prior context (see Session Continuity)
 - [ ] Context gathered before changes
 - [ ] Changes are complete
 - [ ] Related files updated
 - [ ] Code follows project patterns
 - [ ] User informed of approach
+- [ ] Errors encountered during the task are noted and recorded; known errors checked before repeating similar work
+- [ ] Scripts that create resources are idempotent (check-before-create, no duplicates on re-run)
+- [ ] **Session cleanup done** — temporary scripts, result JSON files, and diagnostic artifacts deleted (see Session Cleanup section)
+- [ ] **Session log updated** — append a summary to `docs/SESSION_LOG.md` (date, tasks completed/remaining, errors, key decisions)

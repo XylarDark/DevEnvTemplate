@@ -1,8 +1,9 @@
 ---
 name: "DevEnvTemplate Project Context"
-description: "Project-specific context and conventions for DevEnvTemplate"
+description: "Provide project-specific context when working on DevEnvTemplate to ensure consistency with architecture and conventions"
 alwaysApply: true
 priority: 8
+version: 1.0
 ---
 
 # DevEnvTemplate Project Context

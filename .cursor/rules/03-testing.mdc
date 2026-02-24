@@ -1,8 +1,9 @@
 ---
 name: "Testing Standards"
-description: "Testing philosophy and standards"
+description: "Follow test pyramid and AAA patterns when writing or updating tests to ensure coverage and reliability"
 alwaysApply: true
 priority: 4
+version: 1.0
 ---
 
 # Testing Standards

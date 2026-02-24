@@ -17,7 +17,7 @@ These rules apply to all code regardless of file type:
 - **04-git-workflow.mdc** - Commit messages, branch naming, git best practices
 - **05-error-handling.mdc** - Defensive programming, error patterns, edge cases
 - **06-documentation.mdc** - Code comments, API docs, documentation standards
-- **07-ai-agent-behavior.mdc** - Meta-rules for AI agent tool usage and communication
+- **07-ai-agent-behavior.mdc** - Agent behavior protocols: session continuity, cleanup, error recording, context awareness
 - **08-project-context.mdc** - DevEnvTemplate-specific context and conventions
 
 ### Stack-Specific Rules (Conditional)
@@ -39,10 +39,11 @@ Each rule file uses the `.mdc` (Markdown Cursor) format with YAML frontmatter:
 ```yaml
 ---
 name: "Rule Name"
-description: "Brief description"
+description: "ACTION when TRIGGER to OUTCOME"
 alwaysApply: true  # or false for conditional rules
-glob: ["**/*.ts"]  # optional, for conditional rules
+globs: "**/*.ts, **/*.tsx"  # optional, comma-separated, for conditional rules
 priority: 1        # lower numbers = higher priority
+version: 1.0
 ---
 ```
 
@@ -93,8 +94,10 @@ To verify rules are loading correctly:
 When adding new rules:
 1. Determine if it should be always-applied or conditional
 2. Choose appropriate priority number
-3. Add glob patterns if conditional
-4. Keep file size < 450 lines
-5. Reference related rules to avoid duplication
-6. Test with actual code changes
+3. Add `globs:` patterns (comma-separated string) if conditional
+4. Include `version: 1.0` in frontmatter
+5. Use "ACTION when TRIGGER to OUTCOME" format for descriptions
+6. Keep file size < 450 lines
+7. Reference related rules to avoid duplication
+8. Test with actual code changes
 

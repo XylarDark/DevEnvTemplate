@@ -1,8 +1,9 @@
 ---
 name: "Git Workflow Standards"
-description: "Git conventions and commit message standards"
+description: "Follow Conventional Commits and branch naming rules when committing or creating branches to keep history clean"
 alwaysApply: true
 priority: 5
+version: 1.0
 ---
 
 # Git Workflow Standards

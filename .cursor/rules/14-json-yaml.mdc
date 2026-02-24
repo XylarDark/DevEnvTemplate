@@ -1,9 +1,10 @@
 ---
 name: "JSON/YAML Configuration Standards"
-description: "Standards for JSON and YAML configuration files"
+description: "Follow config formatting and schema validation rules when editing JSON or YAML files to prevent runtime errors"
 alwaysApply: false
-glob: ["**/*.json", "**/*.yaml", "**/*.yml"]
+globs: "**/*.json, **/*.yaml, **/*.yml"
 priority: 14
+version: 1.0
 ---
 
 # JSON/YAML Configuration Standards

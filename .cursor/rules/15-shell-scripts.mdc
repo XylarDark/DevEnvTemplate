@@ -1,9 +1,10 @@
 ---
 name: "Shell Script Standards"
-description: "Standards for shell scripts (bash, PowerShell, etc.)"
+description: "Follow cross-platform shell conventions when editing .sh, .ps1, or .bat files to ensure portability and safety"
 alwaysApply: false
-glob: ["**/*.sh", "**/*.ps1", "**/*.bat"]
+globs: "**/*.sh, **/*.ps1, **/*.bat"
 priority: 15
+version: 1.0
 ---
 
 # Shell Script Standards
@@ -29,7 +30,7 @@ priority: 15
   - ✅ Safe: Use direct command without limiting
   - ✅ Safe: Use command's built-in limiting flags (e.g., `--maxfail=1`)
   - ✅ Safe: Redirect to file if limiting needed: `command > output.txt; Get-Content output.txt -TotalCount 30`
-  - See [BEST-PRACTICES.md](../docs/BEST-PRACTICES.md#powershell-output-limiting-anti-pattern) for details
+  - See the PowerShell Compatibility section in `08-project-context.mdc` for project-specific details
 
 ## Bash-Specific
 

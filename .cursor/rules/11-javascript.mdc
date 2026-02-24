@@ -1,9 +1,10 @@
 ---
 name: "JavaScript Standards"
-description: "JavaScript-specific rules and best practices"
+description: "Follow modern ES2020+ patterns and runtime validation rules when editing .js or .jsx files to ensure safety"
 alwaysApply: false
-glob: ["**/*.js", "**/*.jsx"]
+globs: "**/*.js, **/*.jsx"
 priority: 11
+version: 1.0
 ---
 
 # JavaScript Standards

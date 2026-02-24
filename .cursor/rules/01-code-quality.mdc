@@ -1,8 +1,9 @@
 ---
 name: "Code Quality Standards"
-description: "Universal code quality standards that apply to all code"
+description: "Enforce naming, structure, and design patterns when writing or reviewing code to maintain consistency"
 alwaysApply: true
 priority: 2
+version: 1.0
 ---
 
 # Code Quality Standards

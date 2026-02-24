@@ -1,9 +1,10 @@
 ---
 name: "TypeScript Standards"
-description: "TypeScript-specific rules and best practices"
+description: "Follow TypeScript strict-mode patterns and type safety rules when editing .ts or .tsx files to catch errors at compile time"
 alwaysApply: false
-glob: ["**/*.ts", "**/*.tsx"]
+globs: "**/*.ts, **/*.tsx"
 priority: 10
+version: 1.0
 ---
 
 # TypeScript Standards
