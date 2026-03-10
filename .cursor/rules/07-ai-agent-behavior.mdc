@@ -1,18 +1,20 @@
 ---
 name: "AI Agent Behavior Rules"
-description: "Follow agent behavior protocols when performing any task to ensure cleanup, error recording, and safe tool usage"
+description: "Meta-rules for AI agent behavior, tool usage, session cleanup, and error recording"
 alwaysApply: true
 priority: 9
-version: 1.0
 ---
 
 # AI Agent Behavior Rules
 
-## Session Continuity (progress-file pattern)
+## Session Continuity (optional)
 
-At the **start** of every task, read `docs/SESSION_LOG.md` (if it exists) to load context from prior sessions (completed work, blockers, errors, key decisions). This prevents re-doing finished work and repeating known mistakes.
+If the project has a session or progress log (e.g. `docs/SESSION_LOG.md`, `docs/workflow/DAILY_STATE.md`):
 
-At the **end** of every task, append a summary entry (date, tasks completed/remaining, errors encountered, key decisions).
+- **At task start:** Read it to load context from prior sessions (completed work, blockers, errors, key decisions).
+- **At task end:** Append a summary entry (date, tasks completed/remaining, errors encountered, key decisions).
+
+Projects may define their own paths; adapt to the project's conventions.
 
 ## Context Window Awareness
 
@@ -20,7 +22,7 @@ Manage context proactively to stay effective on long-horizon tasks:
 
 - **Targeted reads over full dumps:** Read specific line ranges or use semantic search instead of dumping entire large files.
 - **Search strategy:** Use `Grep` for exact symbol/string lookup; use `SemanticSearch` for exploratory "how/where" questions; use `Glob` for finding files by name pattern.
-- **Subtask decomposition:** Break large tasks into smaller subtasks. Complete and report on each subtask before starting the next. Use the `Task` tool to delegate independent sub-problems in parallel when possible.
+- **Subtask decomposition:** Break large tasks into smaller subtasks. Complete and report on each subtask before starting the next.
 - **Avoid context pollution:** Don't read files you don't need. Don't re-read files whose content you already have in context.
 
 ## Tool Usage
@@ -49,6 +51,7 @@ Manage context proactively to stay effective on long-horizon tasks:
 - Add comments for complex logic
 - Follow project patterns
 - Verify code compiles/runs
+- **Verifiable goals:** For feature work, prefer defining or running tests as the success criterion; iterate until tests pass or document why tests are deferred.
 
 ## File Management
 
@@ -61,13 +64,9 @@ Manage context proactively to stay effective on long-horizon tasks:
 
 Temporary files created during a session **must be deleted** before the task is considered complete. This includes:
 
-1. **Diagnostic/result JSON files** in the project root (e.g. `result.json`, `check_output.json`) — these are not project artifacts.
-2. **One-off scripts** created for debugging, diagnostics, or one-time fixes. Keep only reusable/idempotent setup scripts.
-3. **Temporary log or dump files** anywhere in the workspace that were created for intermediate inspection.
-
-**How to distinguish keep vs. delete:**
-- **Keep:** Scripts referenced by build/test/setup orchestrators, config files, project docs.
-- **Delete:** Scripts written to diagnose a specific issue in this session, result/output JSON files written by those scripts, any file whose only consumer was the agent in this conversation.
+1. **Diagnostic/result files** in the project root (e.g. `*.json` result dumps, one-off reports) that are not project artifacts.
+2. **One-off scripts** created for debugging, diagnostics, or one-time fixes. Keep only reusable/idempotent scripts referenced by orchestrators or docs.
+3. **Temporary log or dump files** created for intermediate inspection.
 
 **When to clean up:** After the task's objectives are verified and before reporting results to the user. Do not leave cleanup for a future session.
 
@@ -117,23 +116,28 @@ Temporary files created during a session **must be deleted** before the task is 
 - Verify dependencies are installed before running tests
 - Document required devDependencies in project setup instructions
 
+## Feature Development: Research and Tutorials First
+
+When developing a **new feature** (new system, new integration, or significant new capability): (1) **Research first** — use official docs and project docs (e.g. `docs/KNOWN_ERRORS.md`, tech-specific guides). (2) **Tutorials first** — follow relevant tutorials (official or version-specific) before customizing. (3) **Then expand** — extend or adapt only where the project explicitly needs something different. This is policy: research then tutorials then implement then expand.
+
 ## Error Recurrence Prevention
 
 - **When an error occurs** (build, lint, test, or runtime): Clearly note what failed (command, file, or step), likely cause, and the fix applied. Do not continue as if the error was unimportant.
-- **Where to record:**
-  - If the project has `docs/KNOWN_ERRORS.md` or `docs/LESSONS_LEARNED.md`, add a short entry there (error summary + fix + context).
-  - If not, state the error and fix in the response and suggest creating `docs/KNOWN_ERRORS.md` for future reference.
-- **Before similar changes:** When about to make changes in the same area or of the same type, check `docs/KNOWN_ERRORS.md` or `docs/LESSONS_LEARNED.md` if present, and avoid repeating a previously encountered and documented error.
+- **Where to record:** If the project has `docs/KNOWN_ERRORS.md` or `docs/LESSONS_LEARNED.md`, add a short entry there (error summary + fix + context). If not, state the error and fix in the response and suggest creating `docs/KNOWN_ERRORS.md` for future reference.
+- **Before similar changes:** When about to make changes in the same area or of the same type, check `docs/KNOWN_ERRORS.md` or `docs/LESSONS_LEARNED.md` if present, and avoid repeating a previously documented error.
+
+## Debug Mode
+
+For **hard-to-reproduce or subtle bugs** (regressions, race conditions, performance issues), suggest **Cursor Debug Mode** (or the IDE's equivalent): the user reproduces the bug while the agent collects runtime data, instruments code with logging, generates hypotheses, and applies targeted fixes based on evidence. Do not guess; use instrumentation and hypotheses.
 
 ## AI Agent Checklist
 
-- [ ] **Session log read** — read `docs/SESSION_LOG.md` at task start to load prior context (see Session Continuity)
+- [ ] **Session log:** If project has one, read at task start and update at task end (see Session Continuity)
 - [ ] Context gathered before changes
 - [ ] Changes are complete
 - [ ] Related files updated
 - [ ] Code follows project patterns
 - [ ] User informed of approach
-- [ ] Errors encountered during the task are noted and recorded; known errors checked before repeating similar work
-- [ ] Scripts that create resources are idempotent (check-before-create, no duplicates on re-run)
-- [ ] **Session cleanup done** — temporary scripts, result JSON files, and diagnostic artifacts deleted (see Session Cleanup section)
-- [ ] **Session log updated** — append a summary to `docs/SESSION_LOG.md` (date, tasks completed/remaining, errors, key decisions)
+- [ ] Errors encountered are noted and recorded; known errors checked before repeating similar work
+- [ ] **Session cleanup done** — temporary scripts, result files, and diagnostic artifacts deleted (see Session Cleanup)
+- [ ] Scripts that create resources are idempotent (check-before-create, no duplicates on re-run) where applicable

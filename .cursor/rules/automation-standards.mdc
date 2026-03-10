@@ -1,0 +1,29 @@
+---
+name: "Automation standards"
+description: "Standards for automation that drives or configures external tools, APIs, or editor features"
+alwaysApply: true
+priority: 9
+---
+
+# Automation Standards
+
+## Variables with no access (automation)
+
+When programming automation that drives or configures **external tools, APIs, or editor/IDE features** (scripts, CLI wrappers, MCP, GUI automation), follow this procedure so required-but-inaccessible variables are documented and manual steps are explicit.
+
+1. **Identify required variables/settings**  
+   From official docs, tutorials, and reference: list every setting or variable that is **necessary** for the feature to work (e.g. "set in config," "configure in the panel," "assign in the UI"). Use version-specific sources where the tool has multiple versions.
+
+2. **Check access from our automation**  
+   For each required variable/setting, verify whether it can be **set (or read) reliably** from our automation (API, CLI, config files, scripting). Use API docs, introspection, or one-off tests. "Reliably" includes correct property names, no protected/read-only members, and stable behavior across relevant versions.
+
+3. **Document "no access" and manual steps**  
+   - **No (or unreliable) access:** Record in a project doc (e.g. `docs/AUTOMATION_GAPS.md`, `docs/KNOWN_ERRORS.md`): variable/setting name, why it is necessary, that automation cannot set it (and why, if known), and the **manual step** the user must perform. Link from setup/runbooks to this record.  
+   - **Manual steps:** In any "how to run" or "setup" doc, explicitly list which steps **only the user** can do because of no access (e.g. "Assign the graph in the UI; script cannot set it").
+
+4. **Re-check on upgrades**  
+   When upgrading the tool, library, or plugin, re-run the access check for affected features and update the "no access" doc so we do not assume old limitations remain or that previously working properties still exist.
+
+## Outcome
+
+Automation is transparent: we know what can be automated and what cannot. Users have a single place to look for required manual steps, and future work can target closing gaps.
