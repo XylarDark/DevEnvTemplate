@@ -22,6 +22,16 @@
 
 ---
 
+## Optional stack profiles
+
+**Default:** General software (Node/TypeScript/Python, etc.). Use [.cursor/rules/README.md](.cursor/rules/README.md) for the full rule list.
+
+**Documentation:** Place new markdown under the folders described in [docs/DOCS_LAYOUT.md](docs/DOCS_LAYOUT.md). Record recurring failures in [docs/KNOWN_ERRORS.md](docs/KNOWN_ERRORS.md); record automation limits in [docs/operational/automation-gaps.md](docs/operational/automation-gaps.md).
+
+**Unreal Engine:** If the repo has a `.uproject`, ensure `.cursor/rules/21-unreal-engine.mdc` and `22-unreal-editor-ui.mdc` are in `.cursor/rules/` (they ship with this template). Pin the engine version in your docs; use Epic’s documentation for that version—never rely on model training data for APIs or Editor menus. See [docs/templates/unreal/README.md](docs/templates/unreal/README.md). Stack detection emits a hint when `*.uproject` is found at the repository root.
+
+---
+
 ## LLM Quick Reference: PowerShell Path Navigation
 
 > **For LLMs:** When running PowerShell commands, always use these patterns to avoid path navigation errors.

@@ -1,4 +1,4 @@
-const { test } = require('node:test');
+const { describe, test, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs').promises;
 const path = require('path');
@@ -54,9 +54,11 @@ describe('Cursor Rules Integration', () => {
       dryRun: false
     });
 
-    assert.strictEqual(result.copied.length, 2); // Core rules + README
+    // Template stub only includes 00 + 01 as core files on disk; integration also copies README.
+    assert.strictEqual(result.copied.length, 3);
     assert.ok(result.copied.includes('00-core-principles.mdc'));
     assert.ok(result.copied.includes('01-code-quality.mdc'));
+    assert.ok(result.copied.includes('README.md'));
 
     // Verify files were actually copied
     const rulesDir = path.join(projectDir, '.cursor', 'rules');

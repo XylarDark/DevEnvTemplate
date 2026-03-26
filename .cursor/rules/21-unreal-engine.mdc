@@ -1,0 +1,43 @@
+---
+name: "Unreal Engine (general)"
+description: "Applies when working in Unreal Engine projects: version-specific sources, LFS, build hygiene, C++ vs content split"
+alwaysApply: false
+globs: "**/*.uproject, **/*.uplugin, **/*Build.cs, **/Source/**/*.cpp, **/Source/**/*.h"
+priority: 21
+version: 1.0
+---
+
+# Unreal Engine — general practices
+
+This rule applies when the repo layout indicates an **Unreal Engine** project (see globs). It stays **agnostic of a specific engine version**: your game repo must pin the version and maintain version-specific pitfalls locally.
+
+## 1. Engine version and documentation
+
+- **Do not rely on model training data** for APIs, blueprint nodes, plugin behavior, or Editor menu paths. They change between versions.
+- **Pin the version** in project docs (e.g. `docs/UE/README.md` or `README.md`) and/or from `*.uproject` (`EngineAssociation`).
+- **Prefer official Epic documentation** for the **pinned** version. When searching the web, include the version (e.g. “Unreal Engine 5.7”) in the query.
+- **If docs conflict with the local Editor**, trust the Editor and record the discrepancy in [docs/KNOWN_ERRORS.md](../../docs/KNOWN_ERRORS.md).
+
+## 2. Version control and binary assets
+
+- **Large/binary assets** (e.g. `.uasset`, `.umap`) should use **Git LFS** (or your org’s binary artifact store) with clear `.gitattributes` rules.
+- Avoid noisy regeneration of binaries without intent; align with [18-content-and-data-pipelines.mdc](18-content-and-data-pipelines.mdc).
+
+## 3. Build and Editor locks
+
+- **C++ module locks:** Compiling the **Editor target** while the Unreal Editor is running often fails (live coding / file locks). Prefer automated “close Editor → build → reopen” in your pipeline, or document the constraint in KNOWN_ERRORS.
+- **CI:** Document whether your agents/build machines have a full engine install vs. artifact-only builds.
+
+## 4. Code vs. content (principle)
+
+- **Systems** (gameplay frameworks, performance-sensitive logic) tend to live in **C++** or a single source of truth module; **designer-facing** iteration often lives in **data** (Blueprints, assets, curves), depending on team convention.
+- Keep a written **convention** in your game repo (who owns what); this template does not mandate C++ vs. Blueprint ratios.
+
+## 5. Automation and Editor scripting
+
+- Prefer **official automation** (Editor utility widgets, Python Editor Script Plugin where supported, command-line flags documented by Epic) in **descending** order of stability. Treat **UI automation** as last resort; see [automation-standards.mdc](automation-standards.mdc).
+- **Engine-specific pitfall tables** (renamed APIs, deprecated macros) belong in **your project’s** `docs/KNOWN_ERRORS.md` or `docs/UE/`—not in DevEnvTemplate.
+
+## 6. Optional Cursor / MCP integrations
+
+If you use an MCP bridge or custom tools for the Editor, document connection requirements in **your** `docs/setup/` and record limitations in [docs/operational/automation-gaps.md](../../docs/operational/automation-gaps.md).

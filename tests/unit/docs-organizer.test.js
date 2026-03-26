@@ -78,10 +78,11 @@ describe('Documentation Organizer', () => {
         defaultTarget: 'docs'
       };
 
-      const projectRoot = '/test/project';
+      const projectRoot = path.join(path.sep === '\\' ? 'C:\\test' : '', 'project');
       const result = docsOrganizer.determineTargetDirectory('RAILWAY_DEPLOYMENT.md', config, projectRoot);
-      
-      assert.ok(result.target.includes('docs/deployment'), 'Should target deployment directory');
+      const expected = path.join(projectRoot, 'docs', 'deployment');
+
+      assert.strictEqual(result.target, expected, 'Should target deployment directory');
       assert.ok(result.reason.includes('deployment'), 'Should indicate deployment rule');
     });
 

@@ -268,9 +268,40 @@ class StackDetector {
     await this.detectSecurity();
     await this.detectSecretsHygiene();
     await this.detectCursorRules();
+    await this.detectUnrealProject();
     this.assignProfiles();
 
     return this.stack;
+  }
+
+  /**
+   * Detect Unreal Engine project marker (*.uproject at repo root) and populate stack hints.
+   */
+  private async detectUnrealProject(): Promise<void> {
+    try {
+      const entries = await fs.readdir(this.rootDir, { withFileTypes: true });
+      const hasUProject = entries.some(
+        e => e.isFile() && e.name.toLowerCase().endsWith('.uproject')
+      );
+      if (!hasUProject) {
+        return;
+      }
+      this.stack.unrealProjectDetected = true;
+      if (!this.stack.stackHints) {
+        this.stack.stackHints = [];
+      }
+      this.stack.stackHints.push(
+        'Unreal-like repo: .uproject at repository root. Ensure .cursor/rules/21-unreal-engine.mdc and 22-unreal-editor-ui.mdc are present; see docs/templates/unreal/README.md.'
+      );
+      this.addTechnology('Unreal Engine', {
+        source: 'stack-detector',
+        detector: 'uproject-root'
+      });
+    } catch (error: any) {
+      if (error.code !== 'ENOENT') {
+        this.logDebug('detectUnrealProject failed', { error: error.message });
+      }
+    }
   }
 
   async loadProjectManifest(): Promise<void> {

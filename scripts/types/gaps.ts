@@ -111,6 +111,10 @@ export interface StackReport {
   languageProfile?: string;
   manifest?: Record<string, unknown> | null;
   cursorRules?: CursorRulesInfo;
+  /** True when a `*.uproject` exists at the repository root (Unreal Engine layout). */
+  unrealProjectDetected?: boolean;
+  /** Short hints for humans/integrations (e.g. enable Unreal Cursor rules). */
+  stackHints?: string[];
   [key: string]: any;
 }
 

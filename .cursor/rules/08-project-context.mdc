@@ -49,13 +49,15 @@ DevEnvTemplate is a "doctor" for development environments - it diagnoses issues,
 - `BOOTSTRAP.md` - Single-file-loads-all for LLMs
 - `README.md` - Human-readable overview
 - `package.json` - Dependencies and scripts
+- `docs/DOCS_LAYOUT.md` - Canonical documentation directory layout (`19-docs-directory-structure.mdc`)
+- `docs/KNOWN_ERRORS.md` / `docs/operational/automation-gaps.md` - Recurring errors and automation limits
 
 ## Conventions
 
 - Conventional commits (feat/fix/docs/etc.)
 - TypeScript strict mode
 - Tests in `tests/` directory
-- Documentation in `docs/` directory
+- Documentation in `docs/` directory per [DOCS_LAYOUT.md](../../docs/DOCS_LAYOUT.md) (not ad-hoc roots)
 - Cross-platform compatibility (Windows/macOS/Linux)
 
 ## PowerShell Compatibility

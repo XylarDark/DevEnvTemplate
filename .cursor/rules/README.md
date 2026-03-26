@@ -21,11 +21,13 @@ These rules apply to all code regardless of file type:
 - **08-project-context.mdc** - DevEnvTemplate-specific context and conventions
 - **16-feature-debug-instrumentation.mdc** - Debug instrumentation policy for new features (log-driven validation)
 - **17-plan-first.mdc** - Plan before code for complex/multi-file work; when to save plans to `.cursor/plans/`
-- **automation-standards.mdc** - Standards for automation that drives external tools/APIs (document no-access variables, manual steps)
+- **18-content-and-data-pipelines.mdc** - Non-destructive pipelines: authored state, migrations, binaries in VCS, explicit destructive flags
+- **19-docs-directory-structure.mdc** - Place docs per [docs/DOCS_LAYOUT.md](../../docs/DOCS_LAYOUT.md); `docs-organization` tooling implements pattern moves—DOCS_LAYOUT is canonical
+- **automation-standards.mdc** - Automation preference order (API → script → UI as last resort); document gaps in `docs/operational/automation-gaps.md`
 
 ### Stack-Specific Rules (Conditional)
 
-These rules apply only to specific file types via glob patterns:
+These rules apply only to specific file types or project layouts via glob patterns:
 
 - **10-typescript.mdc** - TypeScript-specific rules (`**/*.ts`, `**/*.tsx`)
 - **11-javascript.mdc** - JavaScript-specific rules (`**/*.js`, `**/*.jsx`)
@@ -34,6 +36,8 @@ These rules apply only to specific file types via glob patterns:
 - **14-json-yaml.mdc** - JSON/YAML config standards (`**/*.json`, `**/*.yaml`, `**/*.yml`)
 - **15-shell-scripts.mdc** - Shell script standards (`**/*.sh`, `**/*.ps1`, `**/*.bat`)
 - **20-frontend-frameworks.mdc** - Frontend best practices (`**/components/**`, `**/pages/**`, `**/app/**`)
+- **21-unreal-engine.mdc** - Unreal Engine projects: version-specific docs, LFS, build/content split (`.uproject`, `*Build.cs`, `Source/**/*.cpp`, etc.)
+- **22-unreal-editor-ui.mdc** - Editor UI steps must match Epic docs for the pinned engine version; no guessed menu paths
 
 ## File Format
 
@@ -59,8 +63,9 @@ priority: 1        # lower numbers = higher priority
 
 Rules are numbered to indicate priority:
 - `00-09`: Core always-applied rules
-- `10-19`: Stack-specific conditional rules
-- `20+`: Specialized conditional rules
+- `10-15`, `20-22`: Stack-specific conditional rules (language, frontend, Unreal)
+- `16-19`: Additional always-applied rules (instrumentation, planning, pipelines, docs layout)
+- `automation-standards.mdc`: Always-applied (automation and gaps)
 
 ## Composability
 

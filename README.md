@@ -92,6 +92,16 @@ All recommendations use free tiers:
 - GitHub security scanning
 - No paid services required
 
+### Documentation layout and Cursor rules
+
+- **Canonical structure:** [docs/DOCS_LAYOUT.md](docs/DOCS_LAYOUT.md) defines where new docs belong. The [docs-organization](docs/guides/docs-organization.md) tool uses pattern rules in `config/docs-organization.yaml`; keep patterns aligned with DOCS_LAYOUT when you add folders.
+- **Known errors log:** [docs/KNOWN_ERRORS.md](docs/KNOWN_ERRORS.md) and [docs/operational/automation-gaps.md](docs/operational/automation-gaps.md) — operational learning and automation limits.
+- **Cursor rules:** [.cursor/rules/README.md](.cursor/rules/README.md) — always-applied engineering rules plus conditional rules (e.g. TypeScript, shell scripts).
+
+### Optional stack profile: Unreal Engine
+
+For game repositories with a **`.uproject`** file, this template ships **conditional** rules `21-unreal-engine.mdc` and `22-unreal-editor-ui.mdc` (Epic doc–aligned Editor UI guidance). They load when you work on Unreal project files. Suggested doc stubs: [docs/templates/unreal/README.md](docs/templates/unreal/README.md). Stack detection adds a hint when a `.uproject` is present.
+
 ## How It Works: The Doctor Workflow
 
 DevEnvTemplate follows a medical diagnostic approach:

@@ -40,7 +40,12 @@ const STANDARD_CORE_FILES = [
   '05-error-handling.mdc',
   '06-documentation.mdc',
   '07-ai-agent-behavior.mdc',
-  '08-project-context.mdc'
+  '08-project-context.mdc',
+  '16-feature-debug-instrumentation.mdc',
+  '17-plan-first.mdc',
+  '18-content-and-data-pipelines.mdc',
+  '19-docs-directory-structure.mdc',
+  'automation-standards.mdc'
 ];
 
 /**
@@ -154,7 +159,8 @@ async function preserveProjectRules(projectPath: string): Promise<string[]> {
           entry.name.startsWith('10-') || entry.name.startsWith('11-') ||
           entry.name.startsWith('12-') || entry.name.startsWith('13-') ||
           entry.name.startsWith('14-') || entry.name.startsWith('15-') ||
-          entry.name.startsWith('20-');
+          entry.name.startsWith('20-') || entry.name.startsWith('21-') ||
+          entry.name.startsWith('22-');
 
         if (!isStandard) {
           preserved.push(entry.name);

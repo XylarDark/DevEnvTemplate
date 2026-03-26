@@ -1,0 +1,28 @@
+---
+name: "Unreal Editor UI"
+description: "Editor UI steps must match Epic documentation for the project’s pinned engine version—no invented menu paths"
+alwaysApply: false
+globs: "**/*.uproject, **/*.uplugin, **/*Build.cs, **/Source/**/*.cpp, **/Source/**/*.h"
+priority: 22
+version: 1.0
+---
+
+# Unreal Editor UI
+
+## Policy
+
+When describing or automating **Unreal Editor** UI (menus, panels, settings names, Content Browser paths):
+
+1. **Source from Epic documentation** for the **same major.minor** engine line your project pins. Menu labels and locations change between releases.
+2. **Use exact names** from those docs when listing steps.
+3. **If the doc does not cover a control** or your Editor differs, do not guess: state that verification is needed, link the closest official page, and ask the human to confirm what they see.
+4. **Record stable findings** in your project’s `docs/UE/` (or equivalent) so the team shares one verified copy.
+
+## Applies to
+
+- Step-by-step guides, automation design, and AI-generated runbooks that reference the Editor.
+
+## Related
+
+- [21-unreal-engine.mdc](21-unreal-engine.mdc) — broader UE practices
+- [automation-standards.mdc](automation-standards.mdc) — automation preference order and gaps log

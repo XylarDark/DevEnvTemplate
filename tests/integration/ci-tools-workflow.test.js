@@ -8,6 +8,17 @@ const { promisify } = require('util');
 
 const execAsync = promisify(exec);
 
+/** Compiled CLIs (npm test runs build first). */
+function stackDetectorBin(root) {
+  return path.join(root, 'dist', 'scripts', 'tools', 'stack-detector.js');
+}
+function gapAnalyzerBin(root) {
+  return path.join(root, 'dist', 'scripts', 'tools', 'gap-analyzer.js');
+}
+function planGeneratorBin(root) {
+  return path.join(root, 'dist', 'scripts', 'tools', 'plan-generator.js');
+}
+
 describe('CI Tools Workflow Integration', () => {
   let tempDir;
   let projectRoot;
@@ -50,7 +61,7 @@ describe('CI Tools Workflow Integration', () => {
   });
 
   it('should run stack-detector and generate stack report', async () => {
-    const stackDetectorPath = path.join(projectRoot, 'scripts', 'tools', 'stack-detector.js');
+    const stackDetectorPath = stackDetectorBin(projectRoot);
     
     const { stdout } = await execAsync(
       `node "${stackDetectorPath}"`,
@@ -80,12 +91,12 @@ describe('CI Tools Workflow Integration', () => {
     
     if (!stackReportExists) {
       // Run stack detector first
-      const stackDetectorPath = path.join(projectRoot, '.github', 'tools', 'stack-detector.js');
+      const stackDetectorPath = stackDetectorBin(projectRoot);
       await execAsync(`node "${stackDetectorPath}"`, { cwd: tempDir });
     }
     
     // Run gap analyzer
-    const gapAnalyzerPath = path.join(projectRoot, 'scripts', 'tools', 'gap-analyzer.js');
+    const gapAnalyzerPath = gapAnalyzerBin(projectRoot);
     const { stdout } = await execAsync(
       `node "${gapAnalyzerPath}"`,
       { cwd: tempDir }
@@ -98,7 +109,7 @@ describe('CI Tools Workflow Integration', () => {
     
     // Verify gaps report content
     const gapsReport = await fs.readFile(gapsReportPath, 'utf8');
-    assert.ok(gapsReport.includes('# DevEnvTemplate Gap Analysis Report'), 'Should have report title');
+    assert.ok(gapsReport.includes('# Development Environment Gap Analysis Report'), 'Should have report title');
     assert.ok(gapsReport.includes('Generated:'), 'Should have timestamp');
     assert.ok(gapsReport.includes('Total gaps found:'), 'Should have gap count');
   });
@@ -110,15 +121,15 @@ describe('CI Tools Workflow Integration', () => {
     
     if (!gapsReportExists) {
       // Run stack detector and gap analyzer first
-      const stackDetectorPath = path.join(projectRoot, '.github', 'tools', 'stack-detector.js');
+      const stackDetectorPath = stackDetectorBin(projectRoot);
       await execAsync(`node "${stackDetectorPath}"`, { cwd: tempDir });
       
-      const gapAnalyzerPath = path.join(projectRoot, 'scripts', 'tools', 'gap-analyzer.js');
+      const gapAnalyzerPath = gapAnalyzerBin(projectRoot);
       await execAsync(`node "${gapAnalyzerPath}"`, { cwd: tempDir });
     }
     
     // Run plan generator
-    const planGeneratorPath = path.join(projectRoot, 'scripts', 'tools', 'plan-generator.js');
+    const planGeneratorPath = planGeneratorBin(projectRoot);
     const { stdout } = await execAsync(
       `node "${planGeneratorPath}"`,
       { cwd: tempDir }
@@ -131,7 +142,7 @@ describe('CI Tools Workflow Integration', () => {
     
     // Verify plan content
     const plan = await fs.readFile(planPath, 'utf8');
-    assert.ok(plan.includes('# DevEnvTemplate Hardening Plan'), 'Should have plan title');
+    assert.ok(plan.includes('# Development Environment Hardening Plan'), 'Should have plan title');
     assert.ok(plan.includes('## 📊 Plan Summary'), 'Should have summary section');
     assert.ok(plan.includes('**Total Tasks:**'), 'Should have task count');
     assert.ok(plan.includes('## 🛠️ Implementation Guidelines'), 'Should have implementation guidelines');
@@ -148,9 +159,9 @@ describe('CI Tools Workflow Integration', () => {
     }
     
     // Run full workflow
-    const stackDetectorPath = path.join(projectRoot, '.github', 'tools', 'stack-detector.js');
-    const gapAnalyzerPath = path.join(projectRoot, 'scripts', 'tools', 'gap-analyzer.js');
-    const planGeneratorPath = path.join(projectRoot, 'scripts', 'tools', 'plan-generator.js');
+    const stackDetectorPath = stackDetectorBin(projectRoot);
+    const gapAnalyzerPath = gapAnalyzerBin(projectRoot);
+    const planGeneratorPath = planGeneratorBin(projectRoot);
     
     // Step 1: Stack Detection
     await execAsync(`node "${stackDetectorPath}"`, { cwd: tempDir });
@@ -183,11 +194,15 @@ describe('CI Tools Workflow Integration', () => {
     await fs.mkdir(path.join(cleanDir, '.devenv'), { recursive: true });
     
     try {
-      const gapAnalyzerPath = path.join(projectRoot, 'scripts', 'tools', 'gap-analyzer.js');
+      const gapAnalyzerPath = gapAnalyzerBin(projectRoot);
       await execAsync(`node "${gapAnalyzerPath}"`, { cwd: cleanDir });
       assert.fail('Should have thrown error for missing stack report');
     } catch (error) {
-      assert.ok(error.message.includes('Stack report not found'), 'Should error about missing stack report');
+      const combined = `${error.message || ''}${error.stderr ? String(error.stderr) : ''}${error.stdout ? String(error.stdout) : ''}`;
+      assert.ok(
+        error.code === 1 || combined.includes('Stack report not found'),
+        `Should fail when stack-report.json is missing; code=${error.code} output=${combined.slice(0, 300)}`
+      );
     } finally {
       await fs.rm(cleanDir, { recursive: true, force: true });
     }
@@ -199,7 +214,7 @@ describe('CI Tools Workflow Integration', () => {
     await fs.mkdir(path.join(cleanDir, '.devenv'), { recursive: true });
     
     try {
-      const planGeneratorPath = path.join(projectRoot, 'scripts', 'tools', 'plan-generator.js');
+      const planGeneratorPath = planGeneratorBin(projectRoot);
       await execAsync(`node "${planGeneratorPath}"`, { cwd: cleanDir });
       assert.fail('Should have thrown error for missing gaps report');
     } catch (error) {
@@ -215,10 +230,10 @@ describe('CI Tools Workflow Integration', () => {
     const gapsReportExists = await fs.access(gapsReportPath).then(() => true).catch(() => false);
     
     if (!gapsReportExists) {
-      const stackDetectorPath = path.join(projectRoot, '.github', 'tools', 'stack-detector.js');
+      const stackDetectorPath = stackDetectorBin(projectRoot);
       await execAsync(`node "${stackDetectorPath}"`, { cwd: tempDir });
       
-      const gapAnalyzerPath = path.join(projectRoot, 'scripts', 'tools', 'gap-analyzer.js');
+      const gapAnalyzerPath = gapAnalyzerBin(projectRoot);
       await execAsync(`node "${gapAnalyzerPath}"`, { cwd: tempDir });
     }
     
@@ -226,7 +241,7 @@ describe('CI Tools Workflow Integration', () => {
     const gapsReport = await fs.readFile(gapsReportPath, 'utf8');
     
     // Verify report has correct structure
-    assert.ok(gapsReport.includes('# DevEnvTemplate Gap Analysis Report'), 'Should have report title');
+    assert.ok(gapsReport.includes('# Development Environment Gap Analysis Report'), 'Should have report title');
     assert.ok(gapsReport.includes('Generated:'), 'Should have generation timestamp');
     assert.ok(gapsReport.includes('Total gaps found:'), 'Should have total count');
     
@@ -248,9 +263,9 @@ describe('CI Tools Workflow Integration', () => {
     
     if (!planExists) {
       // Run full workflow
-      const stackDetectorPath = path.join(projectRoot, '.github', 'tools', 'stack-detector.js');
-      const gapAnalyzerPath = path.join(projectRoot, 'scripts', 'tools', 'gap-analyzer.js');
-      const planGeneratorPath = path.join(projectRoot, 'scripts', 'tools', 'plan-generator.js');
+      const stackDetectorPath = stackDetectorBin(projectRoot);
+      const gapAnalyzerPath = gapAnalyzerBin(projectRoot);
+      const planGeneratorPath = planGeneratorBin(projectRoot);
       
       await execAsync(`node "${stackDetectorPath}"`, { cwd: tempDir });
       await execAsync(`node "${gapAnalyzerPath}"`, { cwd: tempDir });

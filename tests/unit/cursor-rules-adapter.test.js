@@ -1,4 +1,4 @@
-const { test } = require('node:test');
+const { describe, test, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs').promises;
 const path = require('path');
@@ -113,6 +113,30 @@ describe('Cursor Rules Adapter', () => {
     assert.strictEqual(adapter.shouldIncludeRule('00-core-principles.mdc', stackReport), true);
     assert.strictEqual(adapter.shouldIncludeRule('01-code-quality.mdc', stackReport), true);
     assert.strictEqual(adapter.shouldIncludeRule('08-project-context.mdc', stackReport), true);
+    assert.strictEqual(adapter.shouldIncludeRule('19-docs-directory-structure.mdc', stackReport), true);
+  });
+
+  test('should include Unreal rules when unrealProjectDetected', () => {
+    const stackReport = {
+      technologies: [],
+      quality: { typescript: false },
+      frameworks: { type: 'vanilla' },
+      unrealProjectDetected: true
+    };
+
+    assert.strictEqual(adapter.shouldIncludeRule('21-unreal-engine.mdc', stackReport), true);
+    assert.strictEqual(adapter.shouldIncludeRule('22-unreal-editor-ui.mdc', stackReport), true);
+  });
+
+  test('should omit Unreal rules when unrealProjectDetected is unset', () => {
+    const stackReport = {
+      technologies: [],
+      quality: { typescript: false },
+      frameworks: { type: 'vanilla' }
+    };
+
+    assert.strictEqual(adapter.shouldIncludeRule('21-unreal-engine.mdc', stackReport), false);
+    assert.strictEqual(adapter.shouldIncludeRule('22-unreal-editor-ui.mdc', stackReport), false);
   });
 
   test('should adapt rules for stack', async () => {

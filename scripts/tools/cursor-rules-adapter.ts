@@ -37,7 +37,12 @@ const STANDARD_CORE_FILES = [
   '05-error-handling.mdc',
   '06-documentation.mdc',
   '07-ai-agent-behavior.mdc',
-  '08-project-context.mdc'
+  '08-project-context.mdc',
+  '16-feature-debug-instrumentation.mdc',
+  '17-plan-first.mdc',
+  '18-content-and-data-pipelines.mdc',
+  '19-docs-directory-structure.mdc',
+  'automation-standards.mdc'
 ];
 
 const STANDARD_CONDITIONAL_FILES = [
@@ -47,7 +52,9 @@ const STANDARD_CONDITIONAL_FILES = [
   '13-markdown.mdc',
   '14-json-yaml.mdc',
   '15-shell-scripts.mdc',
-  '20-frontend-frameworks.mdc'
+  '20-frontend-frameworks.mdc',
+  '21-unreal-engine.mdc',
+  '22-unreal-editor-ui.mdc'
 ];
 
 /**
@@ -144,8 +151,11 @@ export function shouldIncludeRule(ruleFile: string, stackReport: StackReport): b
       ) || true; // Include by default as many projects have scripts
     case '20-frontend-frameworks.mdc':
       return hasFrontend;
+    case '21-unreal-engine.mdc':
+    case '22-unreal-editor-ui.mdc':
+      return stackReport.unrealProjectDetected === true;
     default:
-      // Core files (00-08) are always included
+      // Core files are always included when requested via shouldIncludeRule
       return STANDARD_CORE_FILES.includes(ruleFile);
   }
 }

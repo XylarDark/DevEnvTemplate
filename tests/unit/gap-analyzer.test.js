@@ -415,7 +415,7 @@ describe('Gap Analyzer', () => {
       const analyzer = new GapAnalyzer({ rootDir: testRoot });
       const report = await analyzer.analyze();
 
-      assert.ok(report.includes('# DevEnvTemplate Gap Analysis Report'));
+      assert.ok(report.includes('# Development Environment Gap Analysis Report'));
       assert.ok(report.includes('## Summary'));
       assert.ok(report.includes('## Next Steps'));
       assert.ok(report.includes('Total gaps found'));

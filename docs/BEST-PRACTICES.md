@@ -755,6 +755,8 @@ def get_config_dir() -> Path:
 
 ## Documentation Organization
 
+**Canonical layout:** Before adding new top-level buckets under `docs/`, define them in [DOCS_LAYOUT.md](DOCS_LAYOUT.md). Pattern-based tooling (`config/docs-organization.yaml`, `devenv organize-docs`) should match that layout so automation and humans agree on where files belong.
+
 ### The Problem
 
 Markdown files often accumulate in the project root, making it difficult to find relevant documentation and cluttering the repository structure.

@@ -3,9 +3,15 @@ name: "AI Agent Behavior Rules"
 description: "Meta-rules for AI agent behavior, tool usage, session cleanup, and error recording"
 alwaysApply: true
 priority: 9
+version: 1.1
 ---
 
 # AI Agent Behavior Rules
+
+## Conversation and context
+
+- **New logical task:** Prefer a new chat for a new unit of work so the agent stays focused. Bring in only the prior context you need (e.g. `@file`, past summary) instead of very long threads.
+- **Long threads:** If context becomes noisy or contradictory, summarize progress and start a fresh chat with that summary as the first message.
 
 ## Session Continuity (optional)
 

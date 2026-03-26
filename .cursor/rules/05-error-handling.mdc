@@ -75,8 +75,10 @@ try {
 ## Learning from Errors
 
 - Document errors and their fixes so the same mistake is not repeated.
-- Prefer a single project-wide place (e.g. `docs/KNOWN_ERRORS.md` or `docs/LESSONS_LEARNED.md`) for recurring or instructive errors.
+- **Primary log:** If present, append to [docs/KNOWN_ERRORS.md](../../docs/KNOWN_ERRORS.md) (symptom, cause, fix, date). Use [docs/LESSONS_LEARNED.md](../../docs/LESSONS_LEARNED.md) only if your project prefers that name—pick one canonical file and link it here in your fork.
+- **Automation limits:** If the failure is due to a tool that cannot be scripted, also link [docs/operational/automation-gaps.md](../../docs/operational/automation-gaps.md) per `automation-standards.mdc`.
 - Follow the process in `07-ai-agent-behavior.mdc` (error recurrence prevention) when working in the codebase.
+- **Before similar changes:** Read `KNOWN_ERRORS` / `LESSONS_LEARNED` so previously documented failures are not repeated.
 
 ## Concurrency & Async Patterns
 
