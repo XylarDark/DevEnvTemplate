@@ -11,7 +11,7 @@ For **complex or multi-file work**, do not jump straight into code. Propose a sh
 
 ## When the user asks for a plan
 
-When the user says **"make a plan," "create a plan," or "develop a plan,"** use the **Cursor plan feature** (present the plan in-app for confirmation, e.g. in Plan mode). **Do not** create or update a file under `.cursor/plans/` unless the user explicitly asks to **"save the plan to a file"** or **"save to workspace."**
+When the user says **"make a plan," "create a plan," or "develop a plan,"** create the plan directly in the response. Do not use the Cursor plan feature or create files under `.cursor/plans/` unless the user explicitly asks to save the plan. Never ask clarifying questions in Plan mode.
 
 ## When to plan first
 
