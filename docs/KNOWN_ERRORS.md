@@ -159,6 +159,13 @@
   a skill, keep the practice and the commands in separate sections: the practice is why the skill
   ships, the commands are an example of running it here.
 
+### Copied always-on rules inflated every turn
+
+- **Symptom:** Agent sessions feel slow or expensive; context window fills with guidance unrelated to the current file.
+- **Cause:** Always-applied Cursor rules from an older template (~1,200 lines) still present in `.cursor/rules/`.
+- **Fix:** Migrate content to `AGENTS.md` and `.agents/skills/`, set rules to glob-scoped with `alwaysApply: false`, or remove retired files.
+- **Prevention:** See [DevEnvTemplate_RULES_SYNC.md](DevEnvTemplate_RULES_SYNC.md) and `RETIRED_RULE_REPLACEMENTS` in [`scripts/tools/cursor-rules-adapter.ts`](../scripts/tools/cursor-rules-adapter.ts).
+
 ### A script flag passed after `--` never arrived, on PowerShell only
 
 - **Date:** 2026-09-08

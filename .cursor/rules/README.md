@@ -22,6 +22,11 @@ used to be here, see the mapping in `RETIRED_RULE_REPLACEMENTS` in
 [`scripts/tools/cursor-rules-adapter.ts`](../../scripts/tools/cursor-rules-adapter.ts). The doctor
 reports any that reappear, so re-adding one is a visible decision rather than a quiet regression.
 
+Token cost is input plus output plus cache on every turn. Always-on rules ride that bill whether
+or not the task touches them, which is why this directory still forbids `alwaysApply: true` — not
+because shorter prompts are nicer, but because irrelevant always-loaded context is billed and
+harmful.
+
 ## Apply modes
 
 Cursor supports four modes. Only the third is used here.

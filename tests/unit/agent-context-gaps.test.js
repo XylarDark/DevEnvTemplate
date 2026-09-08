@@ -214,4 +214,29 @@ describe('agent context gaps', () => {
 
     assert.ok(!titles(gaps).includes('MCP Config Contains an Inline Secret'));
   });
+
+  test('reports a thin .cursorignore missing common vendor directories', async () => {
+    await fs.writeFile(path.join(projectDir, '.cursorignore'), 'node_modules/\ndist/\n');
+
+    const gaps = await analyze();
+
+    assert.ok(
+      titles(gaps).includes('.cursorignore Missing Common Vendor Directories'),
+      `expected a cursorignore vendor gap, got: ${titles(gaps).join(', ')}`
+    );
+  });
+
+  test('accepts a .cursorignore with common vendor directories', async () => {
+    await fs.writeFile(
+      path.join(projectDir, '.cursorignore'),
+      ['node_modules/', 'build/', '.venv/', '__pycache__/', 'vendor/', '.next/', '.turbo/'].join(
+        '\n'
+      )
+    );
+
+    const gaps = await analyze();
+
+    assert.ok(!titles(gaps).includes('.cursorignore Missing Common Vendor Directories'));
+    assert.ok(!titles(gaps).includes('.cursorignore Is Missing'));
+  });
 });
