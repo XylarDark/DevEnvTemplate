@@ -75,7 +75,7 @@ when `unrealProjectDetected`, Unity rules when `unityProjectDetected`, and so on
 every skill in `.agents/skills/`. Existing host files are never overwritten.
 
 Skills are copied **verbatim**, which is right — the practice in them is stack-agnostic — but it
-means any sentence describing *this* repository arrives in the host as a false statement. Those
+means any sentence describing _this_ repository arrives in the host as a false statement. Those
 sections carry a **Localize on copy** callout naming what to replace, the integration step reports
 which copied skills contain one, and `tests/unit/skill-portability.test.js` fails if a repo-local
 command appears before the callout or anywhere in a `description`. This was not theoretical: a

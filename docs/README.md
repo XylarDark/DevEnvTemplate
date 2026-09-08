@@ -34,8 +34,8 @@ subdirectory that fits, not to this root.
 
 ## Decisions
 
-| Document                                                                     | Decides                                       |
-| ---------------------------------------------------------------------------- | --------------------------------------------- |
+| Document                                                                       | Decides                                                                 |
+| ------------------------------------------------------------------------------ | ----------------------------------------------------------------------- |
 | [adr/001-agent-hook-failure-posture.md](adr/001-agent-hook-failure-posture.md) | Whether the secret-scan hook fails open or closed, and what that costs. |
 
 ## Agent context

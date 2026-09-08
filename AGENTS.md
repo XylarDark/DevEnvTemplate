@@ -148,7 +148,7 @@ glob-scoped `.cursor/rules/`, `docs/DOCS_LAYOUT.md`, `docs/KNOWN_ERRORS.md`, and
 
 Host projects write their **own** `AGENTS.md`. The copy in this repo describes this repo.
 
-Skills travel verbatim, so any section of a skill that describes *this* repository is marked with
+Skills travel verbatim, so any section of a skill that describes _this_ repository is marked with
 a **Localize on copy** callout and must be rewritten by the host. `tests/unit/skill-portability.test.js`
 fails if a skill names a repo-local script before that callout, and the integration step reports
 which copied skills carry one. Do not add a repo-local command to a skill's `description`: it is

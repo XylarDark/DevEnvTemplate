@@ -132,7 +132,7 @@
 - **Symptom:** In a project that had integrated this template's agent layer, four copied skills
   instructed agents to run `npm run check:doc-links`, `npm run lint`, and `node --test`. None of
   those exist in that project — it has no link checker, no ESLint, and uses a different test
-  runner. The skills also carried a copy of *this* repository's docs-root inventory, which does
+  runner. The skills also carried a copy of _this_ repository's docs-root inventory, which does
   not match the host's `DOCS_LAYOUT.md`. Nothing failed loudly: an agent following the skill runs
   a command that does not exist, or worse, files a document per an inventory that is not the
   host's.
