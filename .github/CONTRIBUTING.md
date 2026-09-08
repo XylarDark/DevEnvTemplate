@@ -77,9 +77,14 @@ commitlint on `commit-msg`. Two constraints catch people out:
 
 ## Quality gates
 
-CI runs on every push and pull request and blocks on formatting, lint, type checking, tests,
-`npm audit --audit-level=high`, registry signature verification, and secret scanning. The
-doctor's health score is reported as a pull request comment and does not block.
+**The CI workflow is currently disabled**, so the gates below run locally or not at all. The
+workflow file still describes what it would check on every push and pull request: formatting,
+lint, type checking, tests, `npm audit --audit-level=high`, registry signature verification, and
+secret scanning, with the doctor's health score reported as a comment rather than a gate.
+
+While it is off, `npm run verify` covers the first four, and `npm run preflight` covers the
+security checks — the audit, signatures, and a `gitleaks` scan — plus a strict doctor run. Run
+preflight before a release rather than on every change; it is deliberately slow.
 
 Before opening a pull request:
 
@@ -87,6 +92,11 @@ Before opening a pull request:
 - [ ] New behavior has a test
 - [ ] No secrets in the diff
 - [ ] Docs updated if behavior changed
+
+Before a release, additionally:
+
+- [ ] `npm run preflight` clears, with `gitleaks` installed so the secret scan actually runs
+- [ ] The sign-off list preflight prints has been worked through by a human
 
 ## Recording failures
 
