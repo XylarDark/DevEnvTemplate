@@ -10,7 +10,7 @@ commands, generate code, record errors, and finish cleanly.
 
 ## Project facts
 
-- Node.js **24+** is required. TypeScript is strict, ES2020, CommonJS.
+- Node.js **24+** is required. TypeScript is strict, ES2022, CommonJS.
 - `AGENTS.md` at the repo root (plus any nested `AGENTS.md`) is the canonical
   always-loaded project context. Treat it as always true.
 - Documentation lives under `docs/` per `docs/DOCS_LAYOUT.md`. The docs root holds
@@ -121,7 +121,7 @@ real request objects, and document any deliberate structural difference.
 ## Adding test infrastructure
 
 Add every testing dependency to `package.json` — framework, utilities, type
-definitions, coverage tools — and install them *before* writing tests. Document
+definitions, coverage tools — and install them _before_ writing tests. Document
 required devDependencies in the setup instructions.
 
 ## Error recurrence prevention
