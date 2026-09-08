@@ -34,6 +34,7 @@
     "verify": "node scripts/tools/verify.js",
     "check:doc-links": "node scripts/tools/check-doc-links.js",
     "check:encoding": "node scripts/tools/fix-mojibake.js --check",
+    "check:dist-sync": "node scripts/tools/check-dist-sync.js",
     "sync": "npm run build && node dist/scripts/sync/cli.js"
   },
   "engines": {

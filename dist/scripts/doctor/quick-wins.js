@@ -1,0 +1,513 @@
+"use strict";
+/**
+ * Quick Wins Registry
+ *
+ * Maps detected gaps to actionable fixes that can be completed in < 10 minutes.
+ * Used by doctor mode to suggest and auto-apply improvements.
+ */
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.QUICK_WINS = void 0;
+exports.getApplicableQuickWins = getApplicableQuickWins;
+const jsonc_1 = require("../utils/jsonc");
+/**
+ * Registry of all quick wins
+ */
+exports.QUICK_WINS = [
+    // ========================================
+    // ENV HYGIENE
+    // ========================================
+    {
+        id: 'add-env-example',
+        title: 'Add .env.example file',
+        description: 'Create .env.example to document required environment variables',
+        estimatedTime: '2 min',
+        autoFixable: true,
+        category: 'env-hygiene',
+        detectCondition: async (ctx) => {
+            return (!(await ctx.hasFile('.env.example')) &&
+                ((await ctx.hasFile('.env')) || (await ctx.hasFile('.env.local'))));
+        },
+        fixAction: async (ctx) => {
+            const content = getEnvExampleTemplate(ctx.stack.frameworks?.type);
+            await ctx.writeFile('.env.example', content);
+            return {
+                success: true,
+                message: 'Created .env.example',
+                filesCreated: ['.env.example'],
+            };
+        },
+    },
+    {
+        id: 'add-env-to-gitignore',
+        title: 'Add .env to .gitignore',
+        description: 'Ensure sensitive environment files are not committed',
+        estimatedTime: '1 min',
+        autoFixable: true,
+        category: 'env-hygiene',
+        detectCondition: async (ctx) => {
+            if (!(await ctx.hasFile('.gitignore')))
+                return false;
+            const gitignore = await ctx.readFile('.gitignore');
+            return !gitignore.includes('.env') && (await ctx.hasFile('.env'));
+        },
+        fixAction: async (ctx) => {
+            const gitignore = await ctx.readFile('.gitignore');
+            const updated = gitignore + '\n# Environment variables\n.env\n.env.local\n.env.*.local\n';
+            await ctx.writeFile('.gitignore', updated);
+            return {
+                success: true,
+                message: 'Added .env patterns to .gitignore',
+                filesModified: ['.gitignore'],
+            };
+        },
+    },
+    // ========================================
+    // TYPE SAFETY
+    // ========================================
+    {
+        id: 'enable-ts-strict',
+        title: 'Enable TypeScript strict mode',
+        description: 'Enable strict type checking for better code quality',
+        estimatedTime: '1 min',
+        autoFixable: true,
+        category: 'type-safety',
+        detectCondition: async (ctx) => {
+            if (!(await ctx.hasFile('tsconfig.json')))
+                return false;
+            const tsconfig = (0, jsonc_1.parseJsonc)(await ctx.readFile('tsconfig.json'));
+            return tsconfig.compilerOptions && !tsconfig.compilerOptions.strict;
+        },
+        fixAction: async (ctx) => {
+            await ctx.updateJson('tsconfig.json', config => {
+                if (!config.compilerOptions)
+                    config.compilerOptions = {};
+                config.compilerOptions.strict = true;
+                return config;
+            });
+            return {
+                success: true,
+                message: 'Enabled TypeScript strict mode',
+                filesModified: ['tsconfig.json'],
+            };
+        },
+    },
+    {
+        id: 'add-types-node',
+        title: 'Install @types/node',
+        description: 'Add Node.js type definitions for better TypeScript support',
+        estimatedTime: '30 sec',
+        autoFixable: true,
+        category: 'type-safety',
+        detectCondition: async (ctx) => {
+            return (ctx.packageJson &&
+                ctx.packageJson.devDependencies?.typescript &&
+                !ctx.packageJson.devDependencies?.['@types/node'] &&
+                !ctx.packageJson.dependencies?.['@types/node']);
+        },
+    },
+    // ========================================
+    // LINT/FORMAT
+    // ========================================
+    {
+        id: 'add-eslint-config',
+        title: 'Add ESLint configuration',
+        description: 'Set up ESLint for code quality and consistency',
+        estimatedTime: '5 min',
+        autoFixable: true,
+        category: 'lint-format',
+        frameworks: ['nextjs', 'vite', 'express', 'vanilla'],
+        detectCondition: async (ctx) => {
+            const eslintConfigs = ['eslint.config.js', '.eslintrc.js', '.eslintrc.json', '.eslintrc.yml'];
+            for (const config of eslintConfigs) {
+                if (await ctx.hasFile(config))
+                    return false;
+            }
+            return ctx.packageJson?.devDependencies?.eslint || false;
+        },
+    },
+    {
+        id: 'add-prettier-config',
+        title: 'Add Prettier configuration',
+        description: 'Set up Prettier for consistent code formatting',
+        estimatedTime: '2 min',
+        autoFixable: true,
+        category: 'lint-format',
+        detectCondition: async (ctx) => {
+            const prettierConfigs = [
+                '.prettierrc',
+                '.prettierrc.json',
+                '.prettierrc.js',
+                'prettier.config.js',
+            ];
+            for (const config of prettierConfigs) {
+                if (await ctx.hasFile(config))
+                    return false;
+            }
+            return ctx.packageJson?.devDependencies?.prettier || false;
+        },
+    },
+    {
+        id: 'add-lint-script',
+        title: 'Add lint script to package.json',
+        description: 'Add npm script for running linter',
+        estimatedTime: '30 sec',
+        autoFixable: true,
+        category: 'lint-format',
+        detectCondition: async (ctx) => {
+            return ctx.packageJson?.devDependencies?.eslint && !ctx.packageJson?.scripts?.lint;
+        },
+        fixAction: async (ctx) => {
+            await ctx.updateJson('package.json', pkg => {
+                if (!pkg.scripts)
+                    pkg.scripts = {};
+                pkg.scripts.lint = 'eslint .';
+                return pkg;
+            });
+            return {
+                success: true,
+                message: 'Added lint script to package.json',
+                filesModified: ['package.json'],
+            };
+        },
+    },
+    {
+        id: 'add-format-script',
+        title: 'Add format script to package.json',
+        description: 'Add npm script for running formatter',
+        estimatedTime: '30 sec',
+        autoFixable: true,
+        category: 'lint-format',
+        detectCondition: async (ctx) => {
+            return ctx.packageJson?.devDependencies?.prettier && !ctx.packageJson?.scripts?.format;
+        },
+        fixAction: async (ctx) => {
+            await ctx.updateJson('package.json', pkg => {
+                if (!pkg.scripts)
+                    pkg.scripts = {};
+                pkg.scripts.format = 'prettier --write .';
+                return pkg;
+            });
+            return {
+                success: true,
+                message: 'Added format script to package.json',
+                filesModified: ['package.json'],
+            };
+        },
+    },
+    // ========================================
+    // TESTING
+    // ========================================
+    {
+        id: 'add-test-script',
+        title: 'Add test script to package.json',
+        description: 'Add npm script for running tests',
+        estimatedTime: '30 sec',
+        autoFixable: true,
+        category: 'testing',
+        detectCondition: async (ctx) => {
+            const hasTestFramework = ctx.packageJson?.devDependencies?.jest ||
+                ctx.packageJson?.devDependencies?.vitest ||
+                ctx.packageJson?.devDependencies?.['@playwright/test'];
+            return hasTestFramework && !ctx.packageJson?.scripts?.test;
+        },
+        fixAction: async (ctx) => {
+            await ctx.updateJson('package.json', pkg => {
+                if (!pkg.scripts)
+                    pkg.scripts = {};
+                // Detect which test framework to use
+                if (pkg.devDependencies?.vitest) {
+                    pkg.scripts.test = 'vitest';
+                }
+                else if (pkg.devDependencies?.jest) {
+                    pkg.scripts.test = 'jest';
+                }
+                else if (pkg.devDependencies?.['@playwright/test']) {
+                    pkg.scripts.test = 'playwright test';
+                }
+                else {
+                    pkg.scripts.test = 'node --test';
+                }
+                return pkg;
+            });
+            return {
+                success: true,
+                message: 'Added test script to package.json',
+                filesModified: ['package.json'],
+            };
+        },
+    },
+    {
+        id: 'add-typecheck-script',
+        title: 'Add typecheck script to package.json',
+        description: 'Add npm script for TypeScript type checking',
+        estimatedTime: '30 sec',
+        autoFixable: true,
+        category: 'type-safety',
+        detectCondition: async (ctx) => {
+            return (ctx.packageJson?.devDependencies?.typescript &&
+                !ctx.packageJson?.scripts?.typecheck &&
+                (await ctx.hasFile('tsconfig.json')));
+        },
+        fixAction: async (ctx) => {
+            await ctx.updateJson('package.json', pkg => {
+                if (!pkg.scripts)
+                    pkg.scripts = {};
+                pkg.scripts.typecheck = 'tsc --noEmit';
+                return pkg;
+            });
+            return {
+                success: true,
+                message: 'Added typecheck script to package.json',
+                filesModified: ['package.json'],
+            };
+        },
+    },
+    // ========================================
+    // DOCUMENTATION
+    // ========================================
+    {
+        id: 'organize-docs',
+        title: 'Organize documentation files',
+        description: 'Move misplaced markdown files from project root to appropriate directories',
+        estimatedTime: '2 min',
+        autoFixable: true,
+        category: 'env-hygiene',
+        detectCondition: async (ctx) => {
+            try {
+                const { detectMisplacedDocs } = await Promise.resolve().then(() => __importStar(require('../utils/docs-organizer')));
+                const misplaced = await detectMisplacedDocs(ctx.rootDir);
+                return misplaced.length > 0;
+            }
+            catch {
+                return false;
+            }
+        },
+        fixAction: async (ctx) => {
+            try {
+                const { organizeDocumentation } = await Promise.resolve().then(() => __importStar(require('../utils/docs-organizer')));
+                const result = await organizeDocumentation(ctx.rootDir, false);
+                if (result.errors.length > 0) {
+                    return {
+                        success: false,
+                        message: `Failed to organize docs: ${result.errors.join(', ')}`,
+                        error: result.errors.join('; '),
+                    };
+                }
+                const filesMoved = result.filesToMove.map((m) => m.source);
+                return {
+                    success: result.success,
+                    message: `Organized ${result.filesToMove.length} documentation file(s)`,
+                    filesModified: filesMoved,
+                };
+            }
+            catch (error) {
+                return {
+                    success: false,
+                    message: `Failed to organize docs: ${error.message}`,
+                    error: error.message,
+                };
+            }
+        },
+    },
+    // ========================================
+    // CI/CD
+    // ========================================
+    {
+        id: 'add-github-actions',
+        title: 'Add GitHub Actions CI workflow',
+        description: 'Set up basic CI pipeline for automated testing',
+        estimatedTime: '8 min',
+        autoFixable: true,
+        category: 'ci',
+        detectCondition: async (ctx) => {
+            return (!(await ctx.hasFile('.github/workflows/ci.yml')) &&
+                !(await ctx.hasFile('.github/workflows/indie-ci.yml')));
+        },
+    },
+    // ========================================
+    // CURSOR RULES
+    // ========================================
+    {
+        id: 'setup-agent-layer',
+        title: 'Set up the agent context layer',
+        description: 'Copy the glob-scoped Cursor rules for your stack, plus the core agent skills',
+        estimatedTime: '2 min',
+        autoFixable: true,
+        category: 'env-hygiene',
+        detectCondition: async (ctx) => {
+            // The layer is in place when skills exist and at least one glob-scoped rule matches the
+            // detected stack. Absent either, there is something worth copying.
+            if (!(await ctx.hasFile('.agents/skills'))) {
+                return true;
+            }
+            const rules = ctx.stack.cursorRules;
+            if (!rules?.present) {
+                return true;
+            }
+            // Retired always-on rules still cost context on every turn, so flag them for migration.
+            return rules.stackFiles.length === 0 || rules.retiredAlwaysOnFiles.length > 0;
+        },
+        fixAction: async (ctx) => {
+            try {
+                const { integrateCursorRules } = await Promise.resolve().then(() => __importStar(require('../tools/cursor-rules-integration')));
+                const path = await Promise.resolve().then(() => __importStar(require('path')));
+                const { existsSync } = await Promise.resolve().then(() => __importStar(require('fs')));
+                // Find .cursor/rules path within .devenv (self-contained)
+                let templateRulesPath = null;
+                const possiblePaths = [
+                    path.join(ctx.rootDir, '.devenv', '.cursor', 'rules'),
+                    path.join(__dirname, '../../../.cursor/rules'),
+                ];
+                for (const possiblePath of possiblePaths) {
+                    if (existsSync(possiblePath)) {
+                        templateRulesPath = possiblePath;
+                        break;
+                    }
+                }
+                if (!templateRulesPath) {
+                    return {
+                        success: false,
+                        message: '.devenv/.cursor/rules/ not found',
+                        error: 'Cannot locate cursor rules directory in .devenv',
+                    };
+                }
+                const result = await integrateCursorRules({
+                    projectRoot: ctx.rootDir,
+                    templateRulesPath,
+                    stackReport: ctx.stack,
+                    dryRun: false,
+                });
+                // Recommendations are already sentences, so join on a space. Joining on '. ' produced
+                // doubled periods mid-message.
+                const message = [`Copied ${result.copied.length} file(s).`, ...result.recommendations].join(' ');
+                return {
+                    success: true,
+                    message,
+                    filesCreated: result.copied,
+                };
+            }
+            catch (error) {
+                return {
+                    success: false,
+                    message: `Failed to integrate cursor rules: ${error.message}`,
+                    error: error.message,
+                };
+            }
+        },
+    },
+];
+/**
+ * Get .env.example template based on framework
+ */
+function getEnvExampleTemplate(framework) {
+    const base = `# Environment Variables
+# Copy this file to .env and fill in your values
+
+# Application
+NODE_ENV=development
+PORT=3000
+`;
+    const templates = {
+        nextjs: base +
+            `
+# Next.js
+# NEXT_PUBLIC_API_URL=
+
+# Database (if using)
+# DATABASE_URL=
+
+# Authentication (if using)
+# NEXTAUTH_URL=http://localhost:3000
+# NEXTAUTH_SECRET=
+
+# API Keys
+# API_KEY=
+`,
+        express: base +
+            `
+# Database
+# DATABASE_URL=
+
+# JWT/Authentication
+# JWT_SECRET=
+
+# API Keys
+# API_KEY=
+
+# Redis (if using)
+# REDIS_URL=
+`,
+        vite: base +
+            `
+# API URL
+# VITE_API_URL=http://localhost:3000
+
+# Feature flags
+# VITE_ENABLE_ANALYTICS=false
+
+# API Keys (prefix with VITE_ to expose to client)
+# VITE_PUBLIC_KEY=
+`,
+    };
+    return templates[framework || 'vanilla'] || base;
+}
+/**
+ * Filter quick wins by framework and current state
+ */
+async function getApplicableQuickWins(context) {
+    const applicable = [];
+    for (const quickWin of exports.QUICK_WINS) {
+        // Check if framework matches (if specified)
+        if (quickWin.frameworks && quickWin.frameworks.length > 0) {
+            const currentFramework = context.stack.frameworks?.type || 'vanilla';
+            if (!quickWin.frameworks.includes(currentFramework)) {
+                continue;
+            }
+        }
+        // Check if detection condition is met
+        try {
+            const applies = await quickWin.detectCondition(context);
+            if (applies) {
+                applicable.push(quickWin);
+            }
+        }
+        catch (error) {
+            console.error(`Error checking quick win ${quickWin.id}:`, error);
+        }
+    }
+    return applicable;
+}
+//# sourceMappingURL=quick-wins.js.map

@@ -56,6 +56,25 @@ jobs:
       - name: Type check
         run: npm run prebuild
 
+      # Doctor must work from committed dist/ before any build step in this job.
+      - name: Doctor smoke (no build)
+        run: |
+          mkdir -p .devenv
+          npm run doctor -- --fast --json > .devenv/doctor-smoke.json
+        continue-on-error: true
+
+      - name: Assert doctor smoke produced output
+        run: |
+          if [ ! -s .devenv/doctor-smoke.json ]; then
+            echo "::error::Doctor failed before build - committed dist/ may be missing or broken."
+            exit 1
+          fi
+          echo "Doctor smoke passed ($(wc -c < .devenv/doctor-smoke.json) bytes JSON)."
+
+      # Rebuild and compare hashes so committed dist/ cannot drift from TypeScript sources.
+      - name: Verify committed dist matches sources
+        run: npm run check:dist-sync
+
       # Catches links broken by moving or renaming a doc. Cheap, and the failure mode is
       # otherwise invisible until a reader hits a 404.
       - name: Check documentation links
@@ -150,11 +169,7 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
-      # The doctor runs the compiled tools out of dist/, so this build is required rather
-      # than incidental. Failures here must surface instead of being swallowed.
-      - name: Build tools
-        run: npm run build:clean
-
+      # dist/ is committed; doctor runs from it without a separate build step.
       # `npm run doctor --json` passes the flag to npm, not the script. The `--` is required.
       # The doctor exits non-zero when it finds critical gaps, which is a report, not a
       # workflow failure, so the exit code is captured and re-surfaced in the summary.
