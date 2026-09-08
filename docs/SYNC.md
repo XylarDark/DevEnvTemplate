@@ -1,4 +1,4 @@
-# Syncing .devenv with DevEnvTemplate
+﻿# Syncing .devenv with DevEnvTemplate
 
 This document explains how to keep `.devenv` synchronized with the `DevEnvTemplate` repository while preserving project-specific files.
 
@@ -198,6 +198,6 @@ npm run build
 
 ## Related Documentation
 
-- [EMBEDDED-USAGE.md](EMBEDDED-USAGE.md) - Using DevEnvTemplate in embedded mode
+- [EMBEDDED-USAGE.md](guides/embedded-usage.md) - Using DevEnvTemplate in embedded mode
 - [SETUP-GUIDE.md](SETUP-GUIDE.md) - Initial setup instructions
-- [LEARNINGS-FROM-EMBEDDED-USAGE.md](LEARNINGS-FROM-EMBEDDED-USAGE.md) - Insights from real-world usage
+- [LEARNINGS-FROM-EMBEDDED-USAGE.md](archive/embedded-usage-learnings.md) - Insights from real-world usage

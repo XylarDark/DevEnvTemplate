@@ -1,4 +1,4 @@
-# Python Best Practices for Lunar Mining Simulator
+# Python Best Practices
 
 ## Package Installation
 
@@ -12,7 +12,7 @@ pip install -e .
 pip install -e .[all]
 
 # Verify installation
-python -c "import lunar_mining_sim; print('OK')"
+python -c "import your_package; print('OK')"
 ```
 
 ### ❌ Never Use sys.path Hacks
@@ -23,11 +23,11 @@ import sys
 from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
-from lunar_mining_sim import simulate
+from your_package import simulate
 
 # ✅ CORRECT - Proper package installation
-from lunar_mining_sim import simulate
-from lunar_mining_sim.utils.path_resolver import get_project_root
+from your_package import simulate
+from your_package.utils.path_resolver import get_project_root
 ```
 
 **Why:** sys.path hacks are fragile, break on reorganization, and violate Python packaging best practices.
@@ -37,7 +37,7 @@ from lunar_mining_sim.utils.path_resolver import get_project_root
 ### Use Centralized Path Utilities
 
 ```python
-from lunar_mining_sim.utils.path_resolver import (
+from your_package.utils.path_resolver import (
     get_project_root,
     get_data_dir,
     get_config_dir,
@@ -61,7 +61,7 @@ config_dir = get_config_dir()
 data_dir = Path(__file__).parent.parent / 'data'
 
 # ✅ CORRECT - Use path resolver
-from lunar_mining_sim.utils.path_resolver import get_data_dir
+from your_package.utils.path_resolver import get_data_dir
 data_dir = get_data_dir()
 ```
 
@@ -82,8 +82,8 @@ from typing import Dict, Optional
 import numpy as np
 import pandas as pd
 
-from lunar_mining_sim import simulate
-from lunar_mining_sim.utils.exceptions import SimulationError
+from your_package import simulate
+from your_package.utils.exceptions import SimulationError
 ```
 
 ### Use isort for Automatic Organization
@@ -93,10 +93,10 @@ from lunar_mining_sim.utils.exceptions import SimulationError
 pip install isort
 
 # Check import ordering
-isort --check-only lunar_mining_sim/
+isort --check-only your_package/
 
 # Fix import ordering
-isort lunar_mining_sim/
+isort your_package/
 ```
 
 ## Type Hints
@@ -136,7 +136,7 @@ def simulate(
 pip install mypy
 
 # Type check the package
-mypy lunar_mining_sim/
+mypy your_package/
 ```
 
 ## Error Handling
@@ -144,8 +144,8 @@ mypy lunar_mining_sim/
 ### Use Custom Exception Hierarchy
 
 ```python
-from lunar_mining_sim.utils.exceptions import (
-    LunarMiningError,
+from your_package.utils.exceptions import (
+    ProjectError,
     SimulationError,
     ValidationError,
     ConfigurationError
@@ -212,7 +212,7 @@ pip install pytest pytest-cov
 pytest
 
 # Run with coverage
-pytest --cov=lunar_mining_sim --cov-report=html
+pytest --cov=your_package --cov-report=html
 
 # Run specific test
 pytest tests/test_simulator.py::test_basic_simulation -v
@@ -223,12 +223,12 @@ pytest tests/test_simulator.py::test_basic_simulation -v
 ```python
 # tests/test_simulator.py
 import pytest
-from lunar_mining_sim import simulate
+from your_package import simulate
 
 def test_basic_simulation():
     """Test basic simulation functionality."""
     energy = simulate(
-        scenario="lunar_flat_standard",
+        scenario="baseline_standard",
         depth=0.5,
         angle=45.0,
         speed=1.0
@@ -246,10 +246,10 @@ def test_basic_simulation():
 pip install ruff
 
 # Check code
-ruff check lunar_mining_sim/
+ruff check your_package/
 
 # Format code
-ruff format lunar_mining_sim/
+ruff format your_package/
 ```
 
 ### Use vulture to Find Dead Code
@@ -259,7 +259,7 @@ ruff format lunar_mining_sim/
 pip install vulture
 
 # Find unused code
-vulture lunar_mining_sim/
+vulture your_package/
 ```
 
 ## Documentation
@@ -290,7 +290,7 @@ def simulate(
         SimulationError: If simulation fails
 
     Example:
-        >>> energy = simulate("lunar_flat_standard", 0.5, 45.0, 1.0)
+        >>> energy = simulate("baseline_standard", 0.5, 45.0, 1.0)
         >>> print(f"Energy: {energy:.2f} J")
     """
 ```

@@ -10,7 +10,7 @@
 
 | File                                                         | Purpose                                              |
 | ------------------------------------------------------------ | ---------------------------------------------------- |
-| [README.md](README.md)                                       | Docs index (if present).                             |
+| [README.md](README.md)                                       | Docs index.                                          |
 | **DOCS_LAYOUT.md**                                           | This file — canonical structure.                     |
 | [BEST-PRACTICES.md](BEST-PRACTICES.md)                       | Cross-cutting practices.                             |
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md)                     | Common failures and fixes.                           |
@@ -21,24 +21,37 @@
 
 Adjust names to match your fork; keep **DOCS_LAYOUT** updated when you add or rename entry files.
 
+**This list is exhaustive.** Anything else belongs in a subdirectory below. A document that
+does not fit an existing category needs a new row in the table in the next section before it
+is written, not a new file at the root.
+
 ---
 
 ## Topic subdirectories (recommended)
 
-| Directory         | Purpose                                    | Examples                                                                                           |
-| ----------------- | ------------------------------------------ | -------------------------------------------------------------------------------------------------- |
-| **guides/**       | How-to and long-form guides                | `docs-organization.md`, tutorials                                                                  |
-| **architecture/** | System design, diagrams, ADR supplements   | diagrams, service boundaries                                                                       |
-| **adr/**          | Architecture Decision Records              | `001-use-postgres.md`                                                                              |
-| **runbooks/**     | Operational procedures, on-call steps      | deploy, rollback, incident response                                                                |
-| **setup/**        | Environment, tools, editor config          | MCP, CI runner, local secrets policy                                                               |
-| **security/**     | Threat modeling notes, security checklists | OWASP mapping, dependency policy                                                                   |
-| **operational/**  | Automation gaps, maintenance               | [`automation-gaps.md`](operational/automation-gaps.md), recurring chores                           |
-| **templates/**    | Fork-specific stubs (optional)             | [`templates/unreal/`](templates/unreal/README.md), [`templates/unity/`](templates/unity/README.md) |
-| **deployment/**   | Release and infra docs                     | `*_DEPLOYMENT.md` (also matched by organizer)                                                      |
-| **api/**          | API design and references                  | `*_API.md`                                                                                         |
+| Directory           | Purpose                                    | Examples                                                                                           |
+| ------------------- | ------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| **guides/**         | How-to and long-form guides                | `docs-organization.md`, tutorials                                                                  |
+| **architecture/**   | System design, diagrams, ADR supplements   | diagrams, service boundaries                                                                       |
+| **adr/**            | Architecture Decision Records              | `001-use-postgres.md`                                                                              |
+| **runbooks/**       | Operational procedures, on-call steps      | deploy, rollback, incident response                                                                |
+| **setup/**          | Environment, tools, editor config          | MCP, CI runner, local secrets policy                                                               |
+| **security/**       | Threat modeling notes, security checklists | OWASP mapping, dependency policy                                                                   |
+| **operational/**    | Automation gaps, maintenance               | [`automation-gaps.md`](operational/automation-gaps.md), recurring chores                           |
+| **templates/**      | Fork-specific stubs (optional)             | [`templates/unreal/`](templates/unreal/README.md), [`templates/unity/`](templates/unity/README.md) |
+| **deployment/**     | Release and infra docs                     | `*_DEPLOYMENT.md` (also matched by organizer)                                                      |
+| **api/**            | API design and references                  | `*_API.md`                                                                                         |
+| **best-practices/** | Per-stack practice guides                  | `python.md`, `nextjs.md`, `fastapi.md`, `deployment.md`                                            |
+| **archive/**        | Superseded plans, RFCs, and release notes  | historical documents kept for provenance only                                                      |
 
 Create a subdirectory only when you have at least one document to place there, then add a row here.
+
+`best-practices/` previously sat at the **repository** root, outside `docs/`, which broke the
+relative links pointing at it. Per-stack guides belong here.
+
+`archive/` is read-only by convention: do not update its contents to match current behavior,
+because its value is showing what was decided at the time. Anything still true belongs in a
+live document instead.
 
 ---
 

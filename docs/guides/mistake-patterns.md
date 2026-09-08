@@ -44,17 +44,17 @@ This document catalogs mistake patterns discovered during development sessions, 
 
 ```bash
 # ❌ Fails in PowerShell
-cd lunar_mining_sim && npm run doctor
+cd your-project && npm run doctor
 
 # ✅ Correct for PowerShell
-cd lunar_mining_sim; npm run doctor
+cd your-project; npm run doctor
 
 # ✅ Better: Use separate commands
-cd lunar_mining_sim
+cd your-project
 npm run doctor
 
 # ✅ Best: Use npm scripts (cross-platform)
-npm run doctor --project-root lunar_mining_sim
+npm run doctor -- --project-root your-project
 ```
 
 ---
@@ -142,12 +142,12 @@ python -m pytest --collect-only -q | Select-String "test_"
 # ❌ Before: sys.path hack
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
-from lunar_mining_sim import simulate
+from your_package import simulate
 
 # ✅ After: Proper package installation
 # Package should be installed: pip install -e .
-from lunar_mining_sim import simulate
-from lunar_mining_sim.utils.path_resolver import get_project_root
+from your_package import simulate
+from your_package.utils.path_resolver import get_project_root
 project_root = get_project_root()
 ```
 
@@ -239,7 +239,7 @@ project_root = Path(__file__).parent.parent
 data_dir = project_root / 'data'
 
 # ✅ After: Centralized path resolution
-from lunar_mining_sim.utils.path_resolver import get_project_root, get_data_dir
+from your_package.utils.path_resolver import get_project_root, get_data_dir
 project_root = get_project_root()
 data_dir = get_data_dir()
 ```
@@ -483,7 +483,7 @@ DEMO_MODE = os.getenv("DEMO_MODE", "false").lower() == "true"
 
 ```python
 # ❌ Before: Mixed imports
-from lunar_mining_sim import simulate
+from your_package import simulate
 import os
 import numpy as np
 from pathlib import Path
@@ -494,7 +494,7 @@ from pathlib import Path
 
 import numpy as np
 
-from lunar_mining_sim import simulate
+from your_package import simulate
 ```
 
 ---
@@ -537,7 +537,7 @@ except Exception as e:
     print(f"Error: {e}")
 
 # ✅ After: Specific exceptions with context
-from lunar_mining_sim.utils.exceptions import SimulationError, ValidationError
+from your_package.utils.exceptions import SimulationError, ValidationError
 
 try:
     result = simulate(...)
@@ -799,10 +799,10 @@ Before committing code, verify:
 
 ## Related Documentation
 
-- [Python Best Practices](best-practices/python.md)
-- [Next.js Best Practices](best-practices/nextjs.md)
-- [FastAPI Best Practices](best-practices/fastapi.md)
-- [DevEnvTemplate Best Practices](../../DevEnvTemplate/docs/BEST-PRACTICES.md)
+- [Python Best Practices](../best-practices/python.md)
+- [Next.js Best Practices](../best-practices/nextjs.md)
+- [FastAPI Best Practices](../best-practices/fastapi.md)
+- [DevEnvTemplate Best Practices](../BEST-PRACTICES.md)
 
 ---
 

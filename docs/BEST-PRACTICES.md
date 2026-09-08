@@ -1,4 +1,4 @@
-# Best Practices Guide
+﻿# Best Practices Guide
 
 This document outlines technology-agnostic best practices for development, derived from real-world development sessions and common mistakes. These practices apply to all projects regardless of framework or language.
 
@@ -93,22 +93,22 @@ import { verifyKeyFormat } from './scripts/utils/crypto-helpers';
 
 const key = generateEncryptionKey(32);
 if (verifyKeyFormat(key, 32)) {
-  console.log('✅ Key format is valid');
+  console.log('âœ… Key format is valid');
 } else {
-  console.error('❌ Key format is invalid');
+  console.error('âŒ Key format is invalid');
 }
 ```
 
 ### Common Mistakes to Avoid
 
-**❌ Wrong - Using `secrets.token_urlsafe()` directly**:
+**âŒ Wrong - Using `secrets.token_urlsafe()` directly**:
 
 ```python
 # This may not produce proper padding
 key = secrets.token_urlsafe(32)  # May be 43 characters, missing padding
 ```
 
-**❌ Wrong - Manual base64 encoding without padding**:
+**âŒ Wrong - Manual base64 encoding without padding**:
 
 ```python
 # Missing proper encoding
@@ -354,7 +354,7 @@ PowerShell pipeline operations with `Select-Object -First N` can interfere with 
 
 **Anti-Pattern:**
 ```powershell
-# ❌ AVOID: Causes VPN connection issues
+# âŒ AVOID: Causes VPN connection issues
 python -m pytest --collect-only -q 2>&1 | Select-Object -First 30
 ````
 
@@ -363,28 +363,28 @@ python -m pytest --collect-only -q 2>&1 | Select-Object -First 30
 1. **Use direct command without limiting:**
 
    ```powershell
-   # ✅ SAFE: Accept full output
+   # âœ… SAFE: Accept full output
    python -m pytest --collect-only -q
    ```
 
 2. **Use command's built-in limiting flags:**
 
    ```powershell
-   # ✅ SAFE: Use command-specific flags
+   # âœ… SAFE: Use command-specific flags
    python -m pytest --collect-only -q --maxfail=1
    ```
 
 3. **Redirect to file if limiting is absolutely necessary:**
 
    ```powershell
-   # ✅ SAFE: File-based filtering
+   # âœ… SAFE: File-based filtering
    python -m pytest --collect-only -q > output.txt
    Get-Content output.txt -TotalCount 30
    ```
 
 4. **Use Select-String for filtering (not Select-Object -First N):**
    ```powershell
-   # ✅ SAFE: Filter with Select-String
+   # âœ… SAFE: Filter with Select-String
    python -m pytest --collect-only -q | Select-String "test_"
    ```
 
@@ -443,14 +443,14 @@ Python projects often suffer from import errors, path resolution issues, and cro
 **Never use sys.path hacks**:
 
 ```python
-# ❌ Wrong - sys.path hack
+# âŒ Wrong - sys.path hack
 import sys
 from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 from my_package import something
 
-# ✅ Correct - proper package installation
+# âœ… Correct - proper package installation
 # Install package: pip install -e .
 from my_package import something
 ```
@@ -458,10 +458,10 @@ from my_package import something
 **Use absolute imports from installed package**:
 
 ```python
-# ❌ Wrong - relative import in script
+# âŒ Wrong - relative import in script
 from ..core import config
 
-# ✅ Correct - absolute import
+# âœ… Correct - absolute import
 from my_package.core import config
 ```
 
@@ -488,11 +488,11 @@ from my_package.utils import helpers
 **Always use pathlib.Path for cross-platform paths**:
 
 ```python
-# ❌ Wrong - os.path (works but less modern)
+# âŒ Wrong - os.path (works but less modern)
 import os
 data_dir = os.path.join(base_dir, 'data', 'results.json')
 
-# ✅ Correct - pathlib.Path
+# âœ… Correct - pathlib.Path
 from pathlib import Path
 data_dir = Path(base_dir) / 'data' / 'results.json'
 ```
@@ -526,10 +526,10 @@ def get_data_dir() -> Path:
 **Never hardcode paths relative to **file\*\*\*\*:
 
 ```python
-# ❌ Wrong - hardcoded path
+# âŒ Wrong - hardcoded path
 config_file = Path(__file__).parent.parent / 'config' / 'settings.yaml'
 
-# ✅ Correct - use resolver
+# âœ… Correct - use resolver
 from my_package.utils.path_resolver import get_project_root
 config_file = get_project_root() / 'config' / 'settings.yaml'
 ```
@@ -554,7 +554,7 @@ python -c "import my_package; print(my_package.__file__)"
 Script that works when package is installed.
 """
 
-# ✅ Correct - import from installed package
+# âœ… Correct - import from installed package
 from my_package import main_function
 from my_package.utils.path_resolver import get_data_dir
 
@@ -611,11 +611,11 @@ pip install -e .
 **Tests should not modify sys.path**:
 
 ```python
-# ❌ Wrong - sys.path hack in test
+# âŒ Wrong - sys.path hack in test
 import sys
 sys.path.insert(0, '../')
 
-# ✅ Correct - package should be installed
+# âœ… Correct - package should be installed
 from my_package.core import config
 ````
 
@@ -658,26 +658,26 @@ if __name__ == "__main__":
 
 ### Common Mistakes to Avoid
 
-**❌ Wrong - sys.path hacks**:
+**âŒ Wrong - sys.path hacks**:
 
 ```python
 sys.path.insert(0, str(Path(__file__).parent.parent))
 ```
 
-**❌ Wrong - hardcoded paths**:
+**âŒ Wrong - hardcoded paths**:
 
 ```python
 data_file = '../data/results.json'
 ```
 
-**❌ Wrong - os.path instead of pathlib**:
+**âŒ Wrong - os.path instead of pathlib**:
 
 ```python
 import os
 path = os.path.join(base, 'data', 'file.json')
 ```
 
-**✅ Correct - proper patterns**:
+**âœ… Correct - proper patterns**:
 
 ```python
 from pathlib import Path
@@ -692,10 +692,10 @@ data_file = data_dir / 'results.json'
 **Command chaining in PowerShell**:
 
 ```powershell
-# ❌ Fails in PowerShell
+# âŒ Fails in PowerShell
 cd project && python script.py
 
-# ✅ Correct for PowerShell
+# âœ… Correct for PowerShell
 cd project; python script.py
 
 # Or separate commands
@@ -799,19 +799,19 @@ Markdown files often accumulate in the project root, making it difficult to find
 
 ```
 project-root/
-├── README.md              # Stays in root
-├── CHANGELOG.md           # Stays in root
-├── CONTRIBUTING.md        # Stays in root
-├── LICENSE.md             # Stays in root
-└── docs/                  # All other documentation
-    ├── deployment/
-    │   ├── RAILWAY_DEPLOYMENT.md
-    │   └── VERCEL_DEPLOYMENT.md
-    ├── api/
-    │   └── API_GUIDE.md
-    ├── guides/
-    │   └── GETTING_STARTED_GUIDE.md
-    └── ...
+â”œâ”€â”€ README.md              # Stays in root
+â”œâ”€â”€ CHANGELOG.md           # Stays in root
+â”œâ”€â”€ CONTRIBUTING.md        # Stays in root
+â”œâ”€â”€ LICENSE.md             # Stays in root
+â””â”€â”€ docs/                  # All other documentation
+    â”œâ”€â”€ deployment/
+    â”‚   â”œâ”€â”€ RAILWAY_DEPLOYMENT.md
+    â”‚   â””â”€â”€ VERCEL_DEPLOYMENT.md
+    â”œâ”€â”€ api/
+    â”‚   â””â”€â”€ API_GUIDE.md
+    â”œâ”€â”€ guides/
+    â”‚   â””â”€â”€ GETTING_STARTED_GUIDE.md
+    â””â”€â”€ ...
 ```
 
 ### Using DevEnvTemplate
@@ -829,7 +829,7 @@ devenv organize-docs --auto-fix
 The tool uses configurable rules in `config/docs-organization.yaml`:
 
 - **Root exceptions**: Files that should stay in root (README.md, CHANGELOG.md, etc.)
-- **Directory rules**: Pattern-based organization (e.g., `*_DEPLOYMENT.md` → `docs/deployment/`)
+- **Directory rules**: Pattern-based organization (e.g., `*_DEPLOYMENT.md` â†’ `docs/deployment/`)
 - **Default target**: Fallback directory for unmatched files
 
 ### Naming Conventions
@@ -859,27 +859,27 @@ The hook will:
 
 ### Common Mistakes to Avoid
 
-**❌ Wrong - All docs in root:**
+**âŒ Wrong - All docs in root:**
 
 ```
 project-root/
-├── README.md
-├── DEPLOYMENT.md
-├── API_GUIDE.md
-├── QUICK_START.md
-└── CONTRIBUTING.md
+â”œâ”€â”€ README.md
+â”œâ”€â”€ DEPLOYMENT.md
+â”œâ”€â”€ API_GUIDE.md
+â”œâ”€â”€ QUICK_START.md
+â””â”€â”€ CONTRIBUTING.md
 ```
 
-**✅ Correct - Organized structure:**
+**âœ… Correct - Organized structure:**
 
 ```
 project-root/
-├── README.md
-├── CONTRIBUTING.md
-└── docs/
-    ├── deployment/DEPLOYMENT.md
-    ├── api/API_GUIDE.md
-    └── QUICK_START.md
+â”œâ”€â”€ README.md
+â”œâ”€â”€ CONTRIBUTING.md
+â””â”€â”€ docs/
+    â”œâ”€â”€ deployment/DEPLOYMENT.md
+    â”œâ”€â”€ api/API_GUIDE.md
+    â””â”€â”€ QUICK_START.md
 ```
 
 ### Integration with Doctor
@@ -894,7 +894,7 @@ npm run doctor
 Fix automatically:
 
 ```bash
-npm run doctor --fix
+npm run doctor -- --fix
 # Automatically organizes misplaced docs
 ```
 
@@ -920,11 +920,11 @@ DevEnvTemplate uses `@commitlint/config-conventional` which enforces:
 **Examples:**
 
 ```bash
-# ❌ Wrong: Body line exceeds 100 characters
+# âŒ Wrong: Body line exceeds 100 characters
 git commit -m "docs: organize markdown files" \
   -m "- Move IMPLEMENTATION_SUMMARY.md, MISTAKE_PATTERNS.md, REPOSITORY_STRUCTURE.md, and STRUCTURE.md to docs/"
 
-# ✅ Correct: Break into shorter lines
+# âœ… Correct: Break into shorter lines
 git commit \
   -m "docs: organize markdown files" \
   -m "- Move IMPLEMENTATION_SUMMARY.md, MISTAKE_PATTERNS.md," \
@@ -964,14 +964,14 @@ npm run organize-docs -- --auto-fix
 **Examples:**
 
 ```bash
-# ✅ Method 1: Through npm (if it works)
+# âœ… Method 1: Through npm (if it works)
 npm run organize-docs -- --auto-fix
 
-# ✅ Method 2: Direct execution (if npm passing fails)
+# âœ… Method 2: Direct execution (if npm passing fails)
 npm run build  # Ensure dist/ is up to date
 node dist/scripts/tools/docs-organizer.js --auto-fix
 
-# ✅ Method 3: Check script implementation
+# âœ… Method 3: Check script implementation
 # Verify package.json script can accept flags:
 # "organize-docs": "node dist/scripts/tools/docs-organizer.js"
 ```
@@ -999,6 +999,6 @@ These best practices help prevent common mistakes and improve developer experien
 For more information, see:
 
 - [Troubleshooting Guide](TROUBLESHOOTING.md)
-- [Usage Guide](USAGE.md)
+- [Usage Guide](guides/usage.md)
 - [LLM Context Guide](LLM-CONTEXT-GUIDE.md)
 - [Python Best Practices Guide](guides/python-best-practices.md)

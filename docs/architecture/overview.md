@@ -35,24 +35,24 @@ scripts/
 │   └── questionnaire.js # Interactive setup questions
 │
 ├── cleanup/            # Template cleanup utilities
+│   ├── cli.ts          # Cleanup CLI (dry run by default)
 │   ├── engine.ts       # Cleanup engine implementation
 │   └── package-managers/ # Package manager adapters
 │
 ├── doctor/             # Health checking & auto-fixes
-│   ├── cli.ts          # Doctor mode CLI
-│   ├── installers.ts   # Dependency installer
-│   ├── quick-wins.ts   # Quick-fix registry
+│   ├── cli.ts          # Doctor mode CLI and health scoring
+│   ├── quick-wins.ts   # Quick-fix registry (drives --fix)
 │   └── templates/      # Config templates
-│       ├── eslint-*.json
 │       ├── tsconfig-*.json
-│       └── prettierrc.json
+│       ├── prettierrc.json
+│       ├── ci-workflow.yml
+│       └── env.example
 │
-├── tools/              # Analysis tools (moved from .github/tools)
-│   ├── stack-detector.js  # Technology stack detection
-│   ├── gap-analyzer.js    # Gap analysis
-│   ├── gap-analyzer.ts
-│   ├── plan-generator.js  # Improvement plan generation
-│   └── plan-generator.ts
+├── tools/              # Analysis tools
+│   ├── stack-detector.ts  # Technology stack detection
+│   ├── gap-analyzer.ts    # Gap analysis
+│   ├── plan-generator.ts  # Improvement plan generation
+│   └── clean.js           # Removes build output
 │
 ├── types/              # TypeScript type definitions
 │   ├── cleanup.ts      # Cleanup types
@@ -83,8 +83,7 @@ docs/
 │   └── plans/                  # Historical planning docs
 │
 ├── guides/                     # Integration guides
-│   ├── cursor-plan-integration.md
-│   └── troubleshooting.md
+│   └── cursor-plan-integration.md
 │
 ├── ARCHITECTURE.md             # This file
 ├── LLM-CONTEXT-GUIDE.md        # Context for AI assistants
@@ -200,7 +199,7 @@ tests/
 ### Doctor Mode Workflow
 
 ```
-User runs: npm run doctor --fix
+User runs: npm run doctor -- --fix
 
 1. Stack Detection (scripts/tools/stack-detector.ts)
    ↓
@@ -217,26 +216,29 @@ User runs: npm run doctor --fix
    - Missing CI/CD
    - Environment variable issues
    ↓
+   Writes .devenv/gaps-report.json (machine-readable, consumed downstream)
+   and .devenv/gaps-report.md (for humans)
+   ↓
 3. Health Scoring (scripts/doctor/cli.ts)
    ↓
-   Calculates weighted scores:
-   - Testing: 25%
-   - CI/CD: 20%
-   - Type Safety: 20%
-   - Environment: 15%
-   - Linting: 20%
+   Reads gaps-report.json and routes each gap to one scored dimension by
+   its category. Weights and per-severity penalties come from
+   config/quality-budgets.json (healthScore block); the defaults are
+   testing 25%, CI/CD 20%, type safety 20%, quality 20%, security 15%.
+   Documentation is scored and reported but not weighted into the overall.
    ↓
 4. Quick Wins Registry (scripts/doctor/quick-wins.ts)
    ↓
-   Matches gaps to fixable actions
+   Each entry pairs a detectCondition with a fixAction, so --fix decides
+   what to do by inspecting the filesystem rather than by matching gap text
    ↓
-5. Auto-Fix (scripts/doctor/cli.ts + installers.ts)
+5. Auto-Fix (scripts/doctor/cli.ts)
    ↓
-   Applies fixes:
+   Runs the applicable registry entries:
    - Generates configs from templates
-   - Installs dependencies (respects --no-install)
    - Adds npm scripts
    - Creates missing files
+   - Honors --dry-run, --no-install, and --preset
    ↓
 6. Report
    ↓
@@ -418,12 +420,12 @@ When contributing to this project:
 1. **Follow the directory structure** - Add files to appropriate modules
 2. **Use TypeScript** - All new code should be .ts (exceptions: wrappers, standalone tools)
 3. **Update tests** - Add tests in `tests/unit/` or `tests/integration/`
-4. **Update docs** - Document new features in `docs/USAGE.md`
+4. **Update docs** - Document new features in `docs/guides/usage.md`
 5. **Run doctor** - Ensure project passes health checks
 
 ## References
 
 - [Main README](../README.md) - Getting started
-- [Usage Guide](USAGE.md) - Detailed command reference
-- [LLM Context Guide](LLM-CONTEXT-GUIDE.md) - For AI assistants
-- [Troubleshooting](TROUBLESHOOTING.md) - Common issues
+- [Usage Guide](../guides/usage.md) - Detailed command reference
+- [LLM Context Guide](../LLM-CONTEXT-GUIDE.md) - For AI assistants
+- [Troubleshooting](../TROUBLESHOOTING.md) - Common issues

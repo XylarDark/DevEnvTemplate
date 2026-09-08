@@ -28,7 +28,7 @@ Implementation pattern:
 
 Projects can and should keep helper scripts in their native stacks when the checks are domain-specific. Examples:
 
-- `scripts/check_env.py` inside `lunar_mining_sim` verifies Python env variables before running expensive simulations.
+- A Python project might keep a `scripts/check_env.py` that verifies required environment variables before an expensive run.
 - A Node web app might keep a `scripts/validate-config.ts` that runs as part of its own CI pipeline.
 
 Guidelines:
@@ -47,4 +47,4 @@ Until then, TypeScript + Node remains the single source of truth for DevEnvTempl
 
 - **File-system caching:** the stack detector memoizes reads of package manifests, workflow files, and configs so repeated checks don’t thrash disk I/O.
 - **Directory ignore lists:** both stack detector and gap analyzer skip heavy folders (`node_modules`, `dist/`, `.venv/`, datasets, etc.) and cap workflow traversal to a handful of files per CI folder.
-- **Fast mode (`npm run doctor --fast`):** runs the short path (stack detection + core quality/security checks) and skips documentation, accessibility, Docker, and git-hook analyses. Default/full scans still run everything before releases.
+- **Fast mode (`npm run doctor -- --fast`):** runs the short path (stack detection + core quality/security checks) and skips documentation, accessibility, Docker, and git-hook analyses. Default/full scans still run everything before releases.

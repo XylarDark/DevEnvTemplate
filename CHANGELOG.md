@@ -192,5 +192,5 @@ This is a **major breaking release** that pivots DevEnvTemplate from enterprise/
 
 - [GitHub Repository](https://github.com/XylarDark/DevEnvTemplate)
 - [Documentation](docs/)
-- [Market Positioning](docs/market-positioning.md)
-- [Project Rules](docs/rules-changelog.md)
+- [Cursor rules](.cursor/rules/README.md)
+- [Agent notes](AGENTS.md)

@@ -239,9 +239,229 @@ npx tsc --noEmit
 # Push after fixing
 ```
 
+### Playwright Tests Fail in CI
+
+**Problem:** Playwright tests pass locally but fail on CI runners.
+
+**Symptoms:**
+
+```
+browserType.launch: Executable doesn't exist
+```
+
+**Cause:** Missing browser binaries or no display server in the CI environment.
+
+**Solution:**
+
+```javascript
+// playwright.config.ts
+export default defineConfig({
+  use: {
+    headless: true,
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+    ],
+  },
+});
+```
+
+Also install the browsers in CI with `npx playwright install --with-deps`.
+
+**Prevention:** Configure Playwright for headless CI environments with appropriate browser args.
+
+### SBOM Generation Permission Errors
+
+**Problem:** CycloneDX SBOM generation fails with permission errors.
+
+**Symptoms:**
+
+```
+Error: EACCES: permission denied, open 'sbom.json'
+```
+
+**Cause:** File system permissions or directory access issues on the CI runner.
+
+**Solution:**
+
+```bash
+# Ensure write permissions
+chmod 644 sbom.json 2>/dev/null || true
+
+# In CI, ensure the process has write access to the working directory
+```
+
+**Prevention:** Check file permissions before running SBOM generation in CI.
+
+## Build and Deployment Issues
+
+### Next.js Server/Client Boundary Errors
+
+**Problem:** The build fails with "Module not found: Can't resolve 'fs'" or a similar Node.js API error.
+
+**Symptoms:**
+
+```
+Module not found: Can't resolve 'fs' in 'components/MyComponent.tsx'
+```
+
+**Cause:** A client component is importing a Node.js-only module.
+
+**Solution:**
+
+```typescript
+// ❌ Wrong - client component trying to use a Node API
+'use client';
+import fs from 'fs'; // This will fail at runtime
+
+// ✅ Correct - move the file access into an API route
+// app/api/files/route.ts
+import fs from 'fs';
+
+export async function GET() {
+  const files = fs.readdirSync('data');
+  return Response.json(files);
+}
+
+// In the client component
+const response = await fetch('/api/files');
+const files = await response.json();
+```
+
+**Prevention:** Never import Node.js modules (`fs`, `path`, `os`, etc.) in client components. Use API routes instead.
+
+### Next.js Static Export Fails
+
+**Problem:** `next export` fails with dynamic route or API route errors.
+
+**Symptoms:**
+
+```
+Error: The export feature is no longer supported
+```
+
+**Cause:** Next.js 14+ removed the standalone `next export` command in favour of the `output` config option.
+
+**Solution:**
+
+```javascript
+// next.config.js - enable static export
+/** @type {import('next').NextConfig} */
+module.exports = {
+  output: 'export',
+  trailingSlash: true,
+  images: {
+    unoptimized: true, // Required for static export
+  },
+};
+```
+
+**Prevention:** Use the `output: 'export'` configuration for static deployments.
+
+### Bundle Size Budget Exceeded
+
+**Problem:** The build fails because the bundle exceeds its size budget.
+
+**Symptoms:**
+
+```
+Bundle size exceeds budget
+```
+
+**Cause:** Large dependencies or excessive imports.
+
+**Solution:**
+
+```bash
+# Install a bundle analyzer
+npm install --save-dev webpack-bundle-analyzer
+
+# Analyze the built chunks
+npx webpack-bundle-analyzer out/static/chunks/*.js
+```
+
+**Prevention:** Monitor bundle sizes regularly and lazy-load large components.
+
+### Deployment Environment Variables Missing
+
+**Problem:** A deploy step fails because required environment variables are not set.
+
+**Symptoms:**
+
+```
+Error: VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID are required
+```
+
+**Cause:** Required environment variables were never configured for the deploy environment.
+
+**Solution:**
+
+```bash
+# Set the variables in your shell or CI secret store
+export VERCEL_TOKEN="your-vercel-token"
+export VERCEL_ORG_ID="your-org-id"
+export VERCEL_PROJECT_ID="your-project-id"
+
+# Or add them to a local .env file (never commit it)
+echo "VERCEL_TOKEN=your-token" >> .env
+```
+
+**Prevention:** Document every required environment variable in your deployment instructions and `.env.example`.
+
+## Linting and Type-Check Issues
+
+### ESLint Import Boundary Violations
+
+**Problem:** ESLint reports `import/no-internal-modules` errors.
+
+**Symptoms:**
+
+```
+Do not import from internal modules
+```
+
+**Cause:** Importing a deep internal path instead of a module's public API.
+
+**Solution:**
+
+```typescript
+// ❌ Wrong - internal import
+import { parseSchema } from '../../../lib/schema';
+
+// ✅ Correct - public API
+import { parseSchema } from '@/lib/schema';
+```
+
+**Prevention:** Use barrel exports (`index.ts`) to define clean public APIs.
+
+### TypeScript Strict Mode Errors
+
+**Problem:** Compilation fails once strict mode is enabled.
+
+**Symptoms:**
+
+```
+Object is possibly 'undefined'
+```
+
+**Cause:** Nullable values are not handled explicitly.
+
+**Solution:**
+
+```typescript
+// ❌ Fails in strict mode
+const name = user.name.toUpperCase();
+
+// ✅ Handle undefined
+const name = user.name?.toUpperCase() ?? 'Unknown';
+```
+
+**Prevention:** Enable strict mode early and handle all nullable types explicitly.
+
 ## Embedded Usage Issues
 
-> **Note:** This section documents issues specific to using DevEnvTemplate when embedded as `.devenv/` inside another project. For general embedded usage guidance, see [EMBEDDED-USAGE.md](EMBEDDED-USAGE.md).
+> **Note:** This section documents issues specific to using DevEnvTemplate when embedded as `.devenv/` inside another project. For general embedded usage guidance, see [EMBEDDED-USAGE.md](guides/embedded-usage.md).
 
 ### Doctor Analyzes DevEnvTemplate Instead of Parent Project
 
@@ -390,9 +610,9 @@ npm run doctor --prefix .devenv -- --project-root ..
 
 **Problem:** No guidance on how to run doctor when DevEnvTemplate is vendored into `.devenv/`.
 
-**Solution:** See [EMBEDDED-USAGE.md](EMBEDDED-USAGE.md) for complete embedded workflow documentation.
+**Solution:** See [EMBEDDED-USAGE.md](guides/embedded-usage.md) for complete embedded workflow documentation.
 
-See [Embedded Usage Guide](EMBEDDED-USAGE.md) for complete workflow.
+See [Embedded Usage Guide](guides/embedded-usage.md) for complete workflow.
 
 ---
 
@@ -488,6 +708,31 @@ ls config/cleanup.config.yaml
 npx devenv-init
 ```
 
+### Hardcoded Paths Break After Restructuring
+
+**Problem:** Scripts can't find files after directories are moved or renamed.
+
+**Symptoms:**
+
+```
+Error: ENOENT: no such file or directory, open 'cleanup.config.yaml'
+```
+
+**Cause:** Paths were hardcoded to the old locations (for example root-level config files that now live under `config/`).
+
+**Solution:**
+
+```typescript
+// ❌ Hardcoded old path
+const configPath = path.join(__dirname, '../../cleanup.config.yaml');
+
+// ✅ Use the path resolver
+import { resolveConfigPath } from '../utils/path-resolver';
+const configPath = resolveConfigPath('cleanup.config.yaml', projectRoot);
+```
+
+**Prevention:** Always resolve config and pack paths through `scripts/utils/path-resolver.ts` rather than composing them from `__dirname`.
+
 ## PowerShell Issues (Windows)
 
 ### Command Chaining Fails
@@ -504,6 +749,16 @@ npm run test
 # Or use ; instead
 npm run lint; npm run test
 ```
+
+`&&` is still safe _inside_ a `package.json` script, because npm runs it through its own shell. Wrapping a multi-step sequence in a script keeps it cross-platform:
+
+```json
+"scripts": {
+  "check": "npm run lint && npm run test"
+}
+```
+
+**Prevention:** Test scripts in both bash and PowerShell, and prefer npm scripts for multi-command sequences.
 
 ### Emoji/Unicode Errors
 

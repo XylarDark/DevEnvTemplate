@@ -1,10 +1,10 @@
-# Embedded Usage Guide
+﻿# Embedded Usage Guide
 
 **Purpose:** Ongoing usage workflows for DevEnvTemplate when embedded as `.devenv/` inside a project.
 
-> **Before You Start:** If you haven't embedded DevEnvTemplate yet, see [SETUP-GUIDE.md](SETUP-GUIDE.md) for initial setup instructions.
+> **Before You Start:** If you haven't embedded DevEnvTemplate yet, see [SETUP-GUIDE.md](../SETUP-GUIDE.md) for initial setup instructions.
 
-This guide covers **ongoing usage** after DevEnvTemplate is already embedded. For the initial one-time setup process, see [SETUP-GUIDE.md](SETUP-GUIDE.md).
+This guide covers **ongoing usage** after DevEnvTemplate is already embedded. For the initial one-time setup process, see [SETUP-GUIDE.md](../SETUP-GUIDE.md).
 
 ## Overview
 
@@ -28,7 +28,7 @@ cd .devenv
 npm run doctor
 ```
 
-> **First Time Setup?** If you haven't embedded DevEnvTemplate yet, see [SETUP-GUIDE.md](SETUP-GUIDE.md) for complete setup instructions.
+> **First Time Setup?** If you haven't embedded DevEnvTemplate yet, see [SETUP-GUIDE.md](../SETUP-GUIDE.md) for complete setup instructions.
 
 ## Running Doctor Commands
 
@@ -107,13 +107,13 @@ When running from embedded `.devenv/`, generated files are placed in the **paren
 
 ```
 your-project/
-├── .devenv/              # DevEnvTemplate checkout
-│   ├── scripts/
-│   └── ...
-└── .devenv/              # Generated reports (parent project)
-    ├── stack-report.json
-    ├── gaps-report.md
-    └── health-report.json
+â”œâ”€â”€ .devenv/              # DevEnvTemplate checkout
+â”‚   â”œâ”€â”€ scripts/
+â”‚   â””â”€â”€ ...
+â””â”€â”€ .devenv/              # Generated reports (parent project)
+    â”œâ”€â”€ stack-report.json
+    â”œâ”€â”€ gaps-report.md
+    â””â”€â”€ health-report.json
 ```
 
 **Note**: The parent project's `.devenv/` directory is created automatically if it doesn't exist.
@@ -141,10 +141,10 @@ DEVENV_PROJECT_ROOT=.. npm run doctor --prefix .devenv
 **Solution**: Use `;` instead of `&&`:
 
 ```powershell
-# ❌ Wrong
+# âŒ Wrong
 cd .devenv && npm run doctor
 
-# ✅ Correct
+# âœ… Correct
 Set-Location .devenv; npm run doctor
 ```
 
@@ -220,7 +220,7 @@ The sync scripts will:
 - Pull updates from the template repository
 - Rebuild the project after syncing
 
-See [SYNC.md](SYNC.md) for detailed sync documentation and troubleshooting.
+See [SYNC.md](../SYNC.md) for detailed sync documentation and troubleshooting.
 
 ## Project-Specific Customizations
 
@@ -234,8 +234,8 @@ These customizations are preserved during sync operations.
 
 ## Related Documentation
 
-- **[SETUP-GUIDE.md](SETUP-GUIDE.md)** - Initial one-time setup (embedding DevEnvTemplate)
-- **[SYNC.md](SYNC.md)** - Syncing with template updates
+- **[SETUP-GUIDE.md](../SETUP-GUIDE.md)** - Initial one-time setup (embedding DevEnvTemplate)
+- **[SYNC.md](../SYNC.md)** - Syncing with template updates
 - **[USAGE.md](USAGE.md)** - General DevEnvTemplate usage and day-to-day workflows
-- **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - Common issues and solutions (includes embedded usage issues)
-- **[BEST-PRACTICES.md](BEST-PRACTICES.md)** - Development best practices
+- **[TROUBLESHOOTING.md](../TROUBLESHOOTING.md)** - Common issues and solutions (includes embedded usage issues)
+- **[BEST-PRACTICES.md](../BEST-PRACTICES.md)** - Development best practices

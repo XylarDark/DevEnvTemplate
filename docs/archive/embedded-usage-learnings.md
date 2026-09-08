@@ -1,9 +1,9 @@
 # Learnings from Embedded Usage: What DevEnvTemplate Can Learn from `.devenv` Implementations
 
-**Purpose:** This document captures insights from real-world embedded usage of DevEnvTemplate (specifically from `lunar_mining_sim/.devenv`) to improve the template's ability to accommodate setup and ongoing development differences.
+**Purpose:** This document captures insights from real-world embedded usage of DevEnvTemplate (a host project vendoring the template as `.devenv/`) to improve the template's ability to accommodate setup and ongoing development differences.
 
 **Date:** 2025-01-27  
-**Source:** Analysis of `lunar_mining_sim/.devenv` implementation
+**Source:** Analysis of an embedded `.devenv/` implementation in a host project
 
 ---
 

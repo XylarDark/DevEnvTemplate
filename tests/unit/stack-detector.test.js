@@ -322,4 +322,45 @@ describe('StackDetector', () => {
       }
     });
   });
+
+  describe('Node built-in test runner detection', () => {
+    const fs = require('fs').promises;
+    const os = require('os');
+
+    async function detectWithTestScript(testScript) {
+      const tmp = await fs.mkdtemp(path.join(os.tmpdir(), 'node-runner-'));
+      try {
+        await fs.writeFile(
+          path.join(tmp, 'package.json'),
+          JSON.stringify({ name: 'fixture', scripts: { test: testScript } }, null, 2)
+        );
+        const detector = new StackDetector({ rootDir: tmp, quiet: true });
+        return await detector.detect();
+      } finally {
+        await fs.rm(tmp, { recursive: true, force: true });
+      }
+    }
+
+    test('should register the Node test runner from a "node --test" script', async () => {
+      const stack = await detectWithTestScript('node --test tests/**/*.test.js');
+
+      assert.ok(
+        stack.tooling.testing.frameworks.some(f => f.name === 'Node test runner'),
+        'Node test runner should be detected as a testing framework'
+      );
+      assert.strictEqual(stack.quality.testing, true);
+    });
+
+    test('should register the Node test runner when the script builds first', async () => {
+      const stack = await detectWithTestScript('npm run build && node --test tests/**/*.test.js');
+
+      assert.ok(stack.tooling.testing.frameworks.some(f => f.name === 'Node test runner'));
+    });
+
+    test('should not register a runner for a script that only mentions node', async () => {
+      const stack = await detectWithTestScript('node scripts/verify.js');
+
+      assert.ok(!stack.tooling.testing.frameworks.some(f => f.name === 'Node test runner'));
+    });
+  });
 });

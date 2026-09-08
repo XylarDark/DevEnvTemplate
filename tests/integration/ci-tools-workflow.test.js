@@ -122,8 +122,8 @@ describe('CI Tools Workflow Integration', () => {
   });
 
   it('should run plan-generator after gap-analyzer', async () => {
-    // Ensure gaps report exists
-    const gapsReportPath = path.join(tempDir, '.devenv', 'gaps-report.md');
+    // Ensure the structured gaps report exists; that is what the generator reads.
+    const gapsReportPath = path.join(tempDir, '.devenv', 'gaps-report.json');
     const gapsReportExists = await fs
       .access(gapsReportPath)
       .then(() => true)
@@ -153,10 +153,10 @@ describe('CI Tools Workflow Integration', () => {
     // Verify plan content
     const plan = await fs.readFile(planPath, 'utf8');
     assert.ok(plan.includes('# Development Environment Hardening Plan'), 'Should have plan title');
-    assert.ok(plan.includes('## 📊 Plan Summary'), 'Should have summary section');
+    assert.ok(plan.includes('## Plan Summary'), 'Should have summary section');
     assert.ok(plan.includes('**Total Tasks:**'), 'Should have task count');
     assert.ok(
-      plan.includes('## 🛠️ Implementation Guidelines'),
+      plan.includes('## Implementation Guidelines'),
       'Should have implementation guidelines'
     );
   });

@@ -1,4 +1,4 @@
-# Documentation Organization Guide
+﻿# Documentation Organization Guide
 
 Complete guide to automatically organizing markdown files in your project.
 
@@ -84,8 +84,8 @@ Files matching these patterns go to `docs/deployment/`:
 
 **Examples:**
 
-- `RAILWAY_DEPLOYMENT.md` → `docs/deployment/RAILWAY_DEPLOYMENT.md`
-- `VERCEL_DEPLOY.md` → `docs/deployment/VERCEL_DEPLOY.md`
+- `RAILWAY_DEPLOYMENT.md` â†’ `docs/deployment/RAILWAY_DEPLOYMENT.md`
+- `VERCEL_DEPLOY.md` â†’ `docs/deployment/VERCEL_DEPLOY.md`
 
 ### API Documentation
 
@@ -97,8 +97,8 @@ Files matching these patterns go to `docs/api/`:
 
 **Examples:**
 
-- `API_GUIDE.md` → `docs/api/API_GUIDE.md`
-- `REST_API.md` → `docs/api/REST_API.md`
+- `API_GUIDE.md` â†’ `docs/api/API_GUIDE.md`
+- `REST_API.md` â†’ `docs/api/REST_API.md`
 
 ### Guides
 
@@ -110,8 +110,8 @@ Files matching these patterns go to `docs/guides/`:
 
 **Examples:**
 
-- `GETTING_STARTED_GUIDE.md` → `docs/guides/GETTING_STARTED_GUIDE.md`
-- `USER_GUIDE.md` → `docs/guides/USER_GUIDE.md`
+- `GETTING_STARTED_GUIDE.md` â†’ `docs/guides/GETTING_STARTED_GUIDE.md`
+- `USER_GUIDE.md` â†’ `docs/guides/USER_GUIDE.md`
 
 ### Quick Start Documentation
 
@@ -124,8 +124,8 @@ Files matching these patterns go to `docs/`:
 
 **Examples:**
 
-- `QUICK_START.md` → `docs/QUICK_START.md`
-- `RAILWAY_QUICK_START.md` → `docs/RAILWAY_QUICK_START.md`
+- `QUICK_START.md` â†’ `docs/QUICK_START.md`
+- `RAILWAY_QUICK_START.md` â†’ `docs/RAILWAY_QUICK_START.md`
 
 ### Default Target
 
@@ -194,7 +194,7 @@ npm run doctor
 **Output:**
 
 ```
-🟡 Warning: Misplaced Documentation Files
+ðŸŸ¡ Warning: Misplaced Documentation Files
    Description: 2 markdown file(s) in project root should be organized
    Recommendation: Move files to appropriate directories. Run 'devenv organize-docs --auto-fix'
 ```
@@ -204,7 +204,7 @@ npm run doctor
 Automatically organize docs when running doctor:
 
 ```bash
-npm run doctor --fix
+npm run doctor -- --fix
 ```
 
 This will:
@@ -258,11 +258,11 @@ When files are moved with `--auto-fix`:
 
 ```bash
 $ devenv organize-docs --auto-fix
-✅ Moved 2 file(s):
-  • RAILWAY_DEPLOYMENT.md
-    → docs/deployment/RAILWAY_DEPLOYMENT.md
-  • API_GUIDE.md
-    → docs/api/API_GUIDE.md
+âœ… Moved 2 file(s):
+  â€¢ RAILWAY_DEPLOYMENT.md
+    â†’ docs/deployment/RAILWAY_DEPLOYMENT.md
+  â€¢ API_GUIDE.md
+    â†’ docs/api/API_GUIDE.md
 
 $ git status
 Changes to be committed:
@@ -276,8 +276,8 @@ If a target file already exists, the move is skipped and reported as a conflict:
 
 ```bash
 $ devenv organize-docs --auto-fix
-⚠️  Conflicts (files not moved):
-  • RAILWAY_DEPLOYMENT.md
+âš ï¸  Conflicts (files not moved):
+  â€¢ RAILWAY_DEPLOYMENT.md
     Target already exists: docs/deployment/RAILWAY_DEPLOYMENT.md
 ```
 
@@ -370,20 +370,20 @@ If configuration isn't loading:
 ```bash
 # Before
 project-root/
-├── README.md
-├── RAILWAY_DEPLOYMENT.md
-└── VERCEL_DEPLOYMENT.md
+â”œâ”€â”€ README.md
+â”œâ”€â”€ RAILWAY_DEPLOYMENT.md
+â””â”€â”€ VERCEL_DEPLOYMENT.md
 
 # Run organize
 $ devenv organize-docs --auto-fix
 
 # After
 project-root/
-├── README.md
-└── docs/
-    └── deployment/
-        ├── RAILWAY_DEPLOYMENT.md
-        └── VERCEL_DEPLOYMENT.md
+â”œâ”€â”€ README.md
+â””â”€â”€ docs/
+    â””â”€â”€ deployment/
+        â”œâ”€â”€ RAILWAY_DEPLOYMENT.md
+        â””â”€â”€ VERCEL_DEPLOYMENT.md
 ```
 
 ### Example 2: Organize API Documentation
@@ -391,24 +391,24 @@ project-root/
 ```bash
 # Before
 project-root/
-├── README.md
-├── API_GUIDE.md
-└── REST_API.md
+â”œâ”€â”€ README.md
+â”œâ”€â”€ API_GUIDE.md
+â””â”€â”€ REST_API.md
 
 # Run organize
 $ devenv organize-docs --auto-fix
 
 # After
 project-root/
-├── README.md
-└── docs/
-    └── api/
-        ├── API_GUIDE.md
-        └── REST_API.md
+â”œâ”€â”€ README.md
+â””â”€â”€ docs/
+    â””â”€â”€ api/
+        â”œâ”€â”€ API_GUIDE.md
+        â””â”€â”€ REST_API.md
 ```
 
 ## See Also
 
-- [Usage Guide](../USAGE.md) - General DevEnvTemplate usage
+- [Usage Guide](usage.md) - General DevEnvTemplate usage
 - [Best Practices](../BEST-PRACTICES.md) - Development best practices
 - [Troubleshooting](../TROUBLESHOOTING.md) - Common issues and solutions

@@ -1,4 +1,4 @@
-# Cursor Plan Integration
+﻿# Cursor Plan Integration
 
 This guide shows how DevEnvTemplate integrates with Cursor Plan mode to create a Plan-first development workflow where CI automation handles the heavy lifting.
 
@@ -29,7 +29,7 @@ When you drop DevEnvTemplate into your repository:
 
 **Use Cursor Plan mode as your primary planning tool:**
 
-1. **Open Plan Mode** (`Cmd/Ctrl + Shift + P` → "Plan Mode")
+1. **Open Plan Mode** (`Cmd/Ctrl + Shift + P` â†’ "Plan Mode")
 2. **Attach CI artifacts** for comprehensive context:
    - Download `.devenv/stack-report.json` from CI artifacts
    - Download `.devenv/gaps-report.md` from CI artifacts
@@ -46,7 +46,7 @@ PROJECT CONTEXT (from CI artifacts):
 - Current Gaps: [paste relevant sections from .devenv/gaps-report.md]
 
 REQUIREMENTS:
-- Follow DevEnvTemplate patterns from docs/ARCHITECTURE.md and docs/BEST-PRACTICES.md
+- Follow DevEnvTemplate patterns from docs/architecture/overview.md and docs/BEST-PRACTICES.md
 - Address gaps identified in CI analysis
 - Include comprehensive error handling and TypeScript types
 - Write tests for new functionality

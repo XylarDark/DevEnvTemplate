@@ -53,7 +53,7 @@ Once `.devenv/stack-report.json` exists, the doctor prints the detected profile(
 
 **Python Project Example:**
 
-For a Python project like `lunar_mining_sim`, the doctor detects:
+For a Python project, the doctor detects:
 
 - Package structure (`pyproject.toml` or `setup.py`)
 - Testing framework (pytest, unittest)
@@ -78,11 +78,13 @@ For simulation/ML-style Python repos the doctor now:
 
 ### Tooling architecture (why Node? why TypeScript?)
 
-All shared tooling inside `.devenv/`—stack detection, gap analysis, plan generation, cleanup—runs on **Node.js** and is authored in **TypeScript**. That single runtime keeps the embedded experience predictable on macOS, Linux, and Windows (`cd .devenv && npm install && npm run doctor`). Projects are still free to keep helper scripts in their native stacks (e.g., a Python repo can ship a `scripts/check_env.py`), but if a helper becomes broadly useful we port it into the TypeScript core so every template user benefits. See [`docs/TOOLING-ARCHITECTURE.md`](TOOLING-ARCHITECTURE.md) for the contributor guidelines.
+All shared tooling inside `.devenv/`—stack detection, gap analysis, plan generation, cleanup—runs on **Node.js** and is authored in **TypeScript**. That single runtime keeps the embedded experience predictable on macOS, Linux, and Windows (`cd .devenv && npm install && npm run doctor`). Projects are still free to keep helper scripts in their native stacks (e.g., a Python repo can ship a `scripts/check_env.py`), but if a helper becomes broadly useful we port it into the TypeScript core so every template user benefits. See [`docs/architecture/tooling.md`](../architecture/tooling.md) for the contributor guidelines.
 
 ### Fast vs. full doctor runs
 
-`npm run doctor --fast` (or `--mode fast`) now uses a shallow scan that skips documentation, accessibility, Docker, and git-hook checks. It trims a typical run down to ~200 ms (see [`docs/PERF-BASELINE.md`](PERF-BASELINE.md)) by aggressively ignoring cache directories and reusing parsed configs. Use it during tight feedback loops, then switch back to the default/full run (`npm run doctor` or `npm run doctor --full`) before releasing or merging to `main` so nothing slips through.
+`npm run doctor -- --fast` (or `-- --mode fast`) uses a shallow scan that skips documentation, accessibility, Docker, and git-hook checks. It trims a typical run to a few hundred milliseconds by ignoring cache directories and reusing parsed configs. Use it during tight feedback loops, then switch back to the default full run (`npm run doctor`) before releasing or merging so nothing slips through.
+
+The `--` matters: `npm run doctor --fast` passes the flag to npm rather than to the doctor, so the scan silently stays in full mode.
 
 ### Diagnostics & debug logging
 
@@ -125,9 +127,9 @@ Found 2 file(s) that need organization:
     → docs/api/
 ```
 
-The doctor automatically detects misplaced documentation files and includes them in the health check. Use `npm run doctor --fix` to automatically organize them.
+The doctor automatically detects misplaced documentation files and includes them in the health check. Use `npm run doctor -- --fix` to automatically organize them.
 
-See [`docs/guides/docs-organization.md`](guides/docs-organization.md) for complete documentation.
+See [`docs/guides/docs-organization.md`](docs-organization.md) for complete documentation.
 
 ### Secrets handling checklist
 
@@ -138,9 +140,9 @@ The doctor clears the "Secrets Handling Not Detected" gap when it sees four sign
 3. **Env loader** – `python-dotenv`, `pydantic-settings`, `dotenv`, `env-cmd`, etc. configured by the runtime.
 4. **Dependency audit** – a CI step that runs `pip-audit`/`bandit` for Python or `npm audit`/`pnpm audit`/`yarn audit` for Node.
 
-When all four are present, the new stack detector metadata flips `quality.security` to ✅ and the gap analyzer stays quiet. The [Python simulator fixture](../tests/fixtures/python-sim-project/) shows a compliant setup: `.env.example`, `.env` inside `.gitignore`, `python-dotenv` in `pyproject.toml`, and a CI workflow that runs `pip-audit` + `bandit`. For Node stacks, add the `dotenv` package (or equivalent) and schedule `npm audit --production` (or `pnpm audit`, `yarn audit`) in `.github/workflows/ci.yml`.
+When all four are present, the new stack detector metadata flips `quality.security` to ✅ and the gap analyzer stays quiet. The [Python simulator fixture](../../tests/fixtures/python-sim-project/) shows a compliant setup: `.env.example`, `.env` inside `.gitignore`, `python-dotenv` in `pyproject.toml`, and a CI workflow that runs `pip-audit` + `bandit`. For Node stacks, add the `dotenv` package (or equivalent) and schedule `npm audit --production` (or `pnpm audit`, `yarn audit`) in `.github/workflows/ci.yml`.
 
-> Tip: projects such as `lunar_mining_sim` keep a tiny helper (`scripts/check_env.py`) that asserts required variables before long-running jobs. You can adopt the same pattern or use `pre-commit` hooks to guard against missing templates.
+> Tip: a Python project can keep a tiny helper (`scripts/check_env.py`) that asserts required variables before long-running jobs. You can adopt the same pattern or use `pre-commit` hooks to guard against missing templates.
 
 ### Environment Variable Validation
 
@@ -161,7 +163,7 @@ const apiKey = requireEnvVar('API_KEY', {
 const encryptionKey = requireEncryptionKey('ENCRYPTION_KEY', 32);
 ```
 
-For more information, see [Best Practices Guide](BEST-PRACTICES.md#environment-variable-management).
+For more information, see [Best Practices Guide](../BEST-PRACTICES.md#environment-variable-management).
 
 ### Generating Encryption Keys
 
@@ -181,7 +183,7 @@ node dist/scripts/tools/generate-key.js --format hex
 node dist/scripts/tools/generate-key.js --quiet
 ```
 
-For more information, see [Best Practices Guide](BEST-PRACTICES.md#encryption-key-generation).
+For more information, see [Best Practices Guide](../BEST-PRACTICES.md#encryption-key-generation).
 
 ### Auto-Fix Issues
 
@@ -209,7 +211,7 @@ Useful for CI integration or programmatic access.
 
 ### First Time Setup
 
-See [`docs/SETUP-GUIDE.md`](SETUP-GUIDE.md) for the full walkthrough (cloning `.devenv/`, building it, running `agent:init`, and the first doctor pass). Once setup is complete, use this Usage guide for the day-to-day commands (`doctor`, `doctor:fix`, `cleanup`, etc.).
+See [`docs/SETUP-GUIDE.md`](../SETUP-GUIDE.md) for the full walkthrough (cloning `.devenv/`, building it, running `agent:init`, and the first doctor pass). Once setup is complete, use this Usage guide for the day-to-day commands (`doctor`, `doctor:fix`, `cleanup`, etc.).
 
 ---
 
@@ -217,13 +219,13 @@ See [`docs/SETUP-GUIDE.md`](SETUP-GUIDE.md) for the full walkthrough (cloning `.
 
 ### "I want to start a new side project"
 
-Use the ["New Project" flow in the Setup Guide](SETUP-GUIDE.md#quick-reference) to scaffold your framework, drop in `.devenv/`, and run the first `npm run doctor`. After that initial bootstrap, come back here for routine doctor/cleanup commands.
+Use the ["New Project" flow in the Setup Guide](../SETUP-GUIDE.md#quick-reference) to scaffold your framework, drop in `.devenv/`, and run the first `npm run doctor`. After that initial bootstrap, come back here for routine doctor/cleanup commands.
 
 ---
 
 ### "I want to add DevEnvTemplate to an existing project"
 
-Follow the ["Existing Project" flow in the Setup Guide](SETUP-GUIDE.md#quick-reference) to clone `.devenv/`, build it once, and run the first doctor. The rest of this Usage guide assumes setup is complete and focuses on health checks, fixes, and automation.
+Follow the ["Existing Project" flow in the Setup Guide](../SETUP-GUIDE.md#quick-reference) to clone `.devenv/`, build it once, and run the first doctor. The rest of this Usage guide assumes setup is complete and focuses on health checks, fixes, and automation.
 
 ### Cross-Platform Commands
 
@@ -687,8 +689,8 @@ Most issues: Missing environment variables.
 
 **Need Help?**
 
-- See [docs/ARCHITECTURE.md](ARCHITECTURE.md) and [docs/BEST-PRACTICES.md](BEST-PRACTICES.md) for advanced features
-- Check [docs/](docs/) for detailed guides
+- See [docs/architecture/overview.md](../architecture/overview.md) and [docs/BEST-PRACTICES.md](../BEST-PRACTICES.md) for advanced features
+- Check the [documentation index](../README.md) for detailed guides
 - Open an issue on GitHub
 
 ---
@@ -702,7 +704,7 @@ For power users, DevEnvTemplate includes:
 - **Custom Rules**: Define your own cleanup rules
 - **Cursor Integration**: AI-guided development workflow
 
-See [docs/ARCHITECTURE.md](ARCHITECTURE.md) for details.
+See [docs/architecture/overview.md](../architecture/overview.md) for details.
 
 ---
 

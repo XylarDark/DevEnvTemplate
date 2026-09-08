@@ -4,7 +4,8 @@
 # Use * for wildcards, ** for recursive matching
 
 # Core governance files - require review from maintainers
-/.projectrules @maintainer
+/AGENTS.md @maintainer
+/.cursor/rules/ @maintainer
 /docs/rules-changelog.md @maintainer
 
 # CI/CD configurations - require review from DevOps/infrastructure team

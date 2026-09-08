@@ -1,7 +1,6 @@
-#!/usr/bin/env node
+﻿#!/usr/bin/env node
 
-/**
- * Plan Generator - CI-only utility
+/*** Plan Generator - CI-only utility
  *
  * Generates a hardening plan from gap analysis results.
  * Creates actionable tasks with code snippets, dependency ordering, and priority scoring.
@@ -10,7 +9,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import { createLogger, Logger } from '../../scripts/utils/logger';
-import { Gap, GapCategory } from '../types/gaps';
+import { Gap, GapReport } from '../types/gaps';
 import { Task, TaskGroup, CodeSnippet, PlanGeneratorOptions, PlanMetadata } from '../types/plan';
 
 export class PlanGenerator {
@@ -33,14 +32,21 @@ export class PlanGenerator {
   }
 
   public async generate(): Promise<string> {
-    this.logger.info('📋 Generating hardening plan from gap analysis...');
+    this.logger.info('Generating hardening plan from gap analysis...');
 
-    // Load gaps report
+    // Load gaps from the structured report. The markdown report is the human artifact and
+    // encodes severity as a heading emoji, which is not something to parse back out.
     try {
-      const gapsReportPath = path.join(this.rootDir, '.devenv', 'gaps-report.md');
-      const gapsReport = await fs.readFile(gapsReportPath, 'utf8');
-      this.parseGaps(gapsReport);
-      this.logger.debug(`Parsed ${this.gaps.length} gaps from report`);
+      const gapsReportPath = path.join(this.rootDir, '.devenv', 'gaps-report.json');
+      const raw = await fs.readFile(gapsReportPath, 'utf8');
+      const report = JSON.parse(raw) as GapReport;
+
+      if (!Array.isArray(report.gaps)) {
+        throw new Error(`${gapsReportPath} has no "gaps" array`);
+      }
+
+      this.gaps = report.gaps;
+      this.logger.debug(`Loaded ${this.gaps.length} gaps from report`);
     } catch (error: any) {
       this.logger.error('Failed to load gaps report. Run gap-analyzer first.', {
         error: error.message,
@@ -75,90 +81,6 @@ export class PlanGenerator {
 
     this.logger.info(`Generated plan with ${this.tasks.length} tasks`);
     return this.generatePlanMarkdown();
-  }
-
-  private parseGaps(report: string): void {
-    const lines = report.split('\n');
-    let currentGap: Partial<Gap> | null = null;
-    let inSection: 'description' | 'impact' | 'recommendation' | 'files' | 'resources' | null =
-      null;
-
-    for (const line of lines) {
-      if (line.startsWith('### ')) {
-        if (currentGap && currentGap.title) {
-          this.gaps.push(currentGap as Gap);
-        }
-
-        // Match pattern: "### 🔴 Title" or "### 🟡 Title" or "### 🟢 Title"
-        // Emojis are multi-byte, so use a flexible pattern
-        const titleMatch = line.match(/^### .+ (.+)$/);
-        if (titleMatch) {
-          const severity = line.includes('🔴') ? 'high' : line.includes('🟡') ? 'medium' : 'low';
-          // Extract title by removing "### " and the emoji
-          // The `u` flag is required: without it each emoji is treated as two independent
-          // surrogate code units, so the class would also match a lone surrogate half.
-          const title = line.replace(/^### [🔴🟡🟢] /u, '');
-          currentGap = {
-            title: title,
-            severity: severity as 'high' | 'medium' | 'low',
-            category: 'typescript' as GapCategory, // Will be overwritten when parsed
-            description: '',
-            impact: '',
-            recommendation: '',
-            effort: 'medium' as 'low' | 'medium' | 'high',
-            files: [],
-            resources: [],
-          };
-          inSection = null;
-        }
-      } else if (currentGap) {
-        if (line.startsWith('**Category:**')) {
-          const categoryStr = line.replace('**Category:**', '').trim();
-          currentGap.category = categoryStr as GapCategory;
-        } else if (
-          line.trim() &&
-          !line.startsWith('**') &&
-          !line.startsWith('---') &&
-          !currentGap.description
-        ) {
-          currentGap.description = line.trim();
-        } else if (line.startsWith('**Impact:**')) {
-          currentGap.impact = line.replace('**Impact:**', '').trim();
-          inSection = 'impact';
-        } else if (line.startsWith('**Recommendation:**')) {
-          currentGap.recommendation = line.replace('**Recommendation:**', '').trim();
-          inSection = 'recommendation';
-        } else if (line.startsWith('**Effort:**')) {
-          const effortStr = line.replace('**Effort:**', '').trim().toLowerCase();
-          currentGap.effort =
-            effortStr === 'low' || effortStr === 'medium' || effortStr === 'high'
-              ? effortStr
-              : 'medium';
-          inSection = null;
-        } else if (line.startsWith('**Files:**')) {
-          const filesStr = line.replace('**Files:**', '').trim();
-          currentGap.files = filesStr ? filesStr.split(',').map(f => f.trim()) : [];
-          inSection = 'files';
-        } else if (line.startsWith('**Resources:**')) {
-          inSection = 'resources';
-        } else if (line.startsWith('- ') && inSection === 'resources') {
-          const url = line.replace(/^- /, '').trim();
-          currentGap.resources = currentGap.resources || [];
-          currentGap.resources.push(url);
-        } else if (inSection && line.trim() && !line.startsWith('**') && !line.startsWith('---')) {
-          // Continuation of previous section
-          if (inSection === 'impact' && currentGap.impact) {
-            currentGap.impact += ' ' + line.trim();
-          } else if (inSection === 'recommendation' && currentGap.recommendation) {
-            currentGap.recommendation += ' ' + line.trim();
-          }
-        }
-      }
-    }
-
-    if (currentGap && currentGap.title) {
-      this.gaps.push(currentGap as Gap);
-    }
   }
 
   private gapToTask(gap: Gap, number: number): Task {
@@ -299,29 +221,33 @@ export class PlanGenerator {
     // ESLint configuration
     if (task.category === 'linting' && task.title.toLowerCase().includes('eslint')) {
       snippets.push({
-        language: 'json',
-        filename: '.eslintrc.json',
-        description: 'ESLint configuration',
-        code: `{
-  "env": {
-    "node": true,
-    "es2021": true
+        language: 'javascript',
+        filename: 'eslint.config.js',
+        // Flat config is the only format ESLint 10 reads; .eslintrc.* is silently ignored.
+        description: 'ESLint flat configuration',
+        code: `const js = require('@eslint/js');
+
+module.exports = [
+  { ignores: ['dist/**', 'node_modules/**', 'coverage/**'] },
+  js.configs.recommended,
+  {
+    files: ['**/*.js'],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'commonjs',
+      globals: { console: 'readonly', process: 'readonly' },
+    },
+    rules: {
+      'no-console': 'warn',
+      'no-unused-vars': 'error',
+    },
   },
-  "extends": ["eslint:recommended"],
-  "parserOptions": {
-    "ecmaVersion": 12,
-    "sourceType": "module"
-  },
-  "rules": {
-    "no-console": "warn",
-    "no-unused-vars": "error"
-  }
-}`,
+];`,
       });
       snippets.push({
         language: 'bash',
         description: 'Install ESLint',
-        code: `npm install --save-dev eslint`,
+        code: `npm install --save-dev eslint @eslint/js`,
       });
     }
 
@@ -438,21 +364,21 @@ npx husky add .husky/pre-commit "npm run lint"`,
       '> Tasks are prioritized by impact and include code snippets for quick implementation.\n\n';
 
     // Plan Summary
-    plan += '## 📊 Plan Summary\n\n';
+    plan += '## Plan Summary\n\n';
     plan += `- **Total Tasks:** ${metadata.totalTasks}\n`;
     plan += `- **Estimated Time:** ${metadata.totalEstimatedHours.toFixed(1)} hours\n`;
-    plan += `- **Critical Tasks:** ${metadata.criticalTasks} 🔴\n`;
-    plan += `- **Quick Wins:** ${metadata.quickWins} 💡 (low effort, high impact)\n\n`;
+    plan += `- **Critical Tasks:** ${metadata.criticalTasks}\n`;
+    plan += `- **Quick Wins:** ${metadata.quickWins} (low effort, high impact)\n\n`;
     plan += `**Breakdown:**\n`;
-    plan += `- 🚨 High Priority: ${taskGroups.find(g => g.priority === 'high')?.tasks.length || 0} tasks\n`;
-    plan += `- ⚠️ Medium Priority: ${taskGroups.find(g => g.priority === 'medium')?.tasks.length || 0} tasks\n`;
-    plan += `- 💡 Low Priority: ${taskGroups.find(g => g.priority === 'low')?.tasks.length || 0} tasks\n\n`;
+    plan += `- High Priority: ${taskGroups.find(g => g.priority === 'high')?.tasks.length || 0} tasks\n`;
+    plan += `- Medium Priority: ${taskGroups.find(g => g.priority === 'medium')?.tasks.length || 0} tasks\n`;
+    plan += `- Low Priority: ${taskGroups.find(g => g.priority === 'low')?.tasks.length || 0} tasks\n\n`;
 
     // Quick Wins
     const quickWins = this.identifyQuickWins();
     if (quickWins.length > 0) {
-      plan += '## 🚀 Quick Wins\n\n';
-      plan += '*Start here for fast, high-impact improvements (≤30 min, high severity)*\n\n';
+      plan += '## Quick Wins\n\n';
+      plan += '*Start here for fast, high-impact improvements (under 30 min, high severity)*\n\n';
       quickWins.forEach(task => {
         plan += `- **Task ${task.number}**: ${task.title} (~${task.estimatedMinutes} min)\n`;
       });
@@ -499,7 +425,7 @@ npx husky add .husky/pre-commit "npm run lint"`,
     const groups: TaskGroup[] = [
       {
         priority: 'high',
-        title: '🚨 High Priority Tasks',
+        title: 'High Priority Tasks',
         description: 'Address these first for maximum impact on quality and security.',
         tasks: this.tasks.filter(t => t.priority === 'high'),
         totalEffort: 0,
@@ -507,7 +433,7 @@ npx husky add .husky/pre-commit "npm run lint"`,
       },
       {
         priority: 'medium',
-        title: '⚠️ Medium Priority Tasks',
+        title: 'Medium Priority Tasks',
         description:
           'Important improvements that enhance maintainability and developer experience.',
         tasks: this.tasks.filter(t => t.priority === 'medium'),
@@ -516,7 +442,7 @@ npx husky add .husky/pre-commit "npm run lint"`,
       },
       {
         priority: 'low',
-        title: '💡 Low Priority Tasks',
+        title: 'Low Priority Tasks',
         description: 'Quality of life improvements that can be addressed when time allows.',
         tasks: this.tasks.filter(t => t.priority === 'low'),
         totalEffort: 0,
@@ -564,18 +490,18 @@ npx husky add .husky/pre-commit "npm run lint"`,
     md += `| **Priority Score** | ${task.priorityScore} |\n\n`;
 
     // Impact
-    md += `**💥 Impact:**\n${task.impact}\n\n`;
+    md += `**Impact:**\n${task.impact}\n\n`;
 
     // Recommendation
-    md += `**✅ Recommendation:**\n${task.recommendation}\n\n`;
+    md += `**Recommendation:**\n${task.recommendation}\n\n`;
 
     // Dependencies
     if (task.dependencies && task.dependencies.length > 0) {
-      md += `**⚠️ Dependencies:**\n`;
+      md += `**Dependencies:**\n`;
       task.dependencies.forEach(dep => {
         const depTask = this.tasks.find(t => t.id === dep.taskId);
         if (depTask) {
-          md += `- **Task ${depTask.number}** (${depTask.title}): ${dep.reason}\n`;
+          md += `- **Task ${depTask.number}**(${depTask.title}): ${dep.reason}\n`;
         }
       });
       md += '\n';
@@ -583,7 +509,7 @@ npx husky add .husky/pre-commit "npm run lint"`,
 
     // Code Snippets
     if (task.codeSnippets && task.codeSnippets.length > 0) {
-      md += `**📝 Implementation:**\n\n`;
+      md += `**Implementation:**\n\n`;
       task.codeSnippets.forEach(snippet => {
         if (snippet.description) {
           md += `*${snippet.description}*\n\n`;
@@ -597,7 +523,7 @@ npx husky add .husky/pre-commit "npm run lint"`,
 
     // Files to Create/Modify
     if (task.files && task.files.length > 0 && task.files[0] !== '[restructure directories]') {
-      md += `**📁 Files to Create/Modify:**\n`;
+      md += `**Files to Create/Modify:**\n`;
       task.files.forEach(file => {
         md += `- [ ] \`${file}\`\n`;
       });
@@ -606,7 +532,7 @@ npx husky add .husky/pre-commit "npm run lint"`,
 
     // Resources
     if (task.resources && task.resources.length > 0) {
-      md += `**📚 Resources:**\n`;
+      md += `**Resources:**\n`;
       task.resources.forEach(resource => {
         md += `- ${resource}\n`;
       });
@@ -614,7 +540,7 @@ npx husky add .husky/pre-commit "npm run lint"`,
     }
 
     // Acceptance Criteria
-    md += `**✅ Acceptance Criteria:**\n`;
+    md += `**Acceptance Criteria:**\n`;
     md += `- [ ] ${task.recommendation}\n`;
     md += `- [ ] Implementation tested and working\n`;
     md += `- [ ] Documentation updated if needed\n`;
@@ -628,15 +554,15 @@ npx husky add .husky/pre-commit "npm run lint"`,
 
   private formatPriority(priority: string): string {
     const icons = {
-      high: '🔴 High',
-      medium: '🟡 Medium',
-      low: '🟢 Low',
+      high: 'High',
+      medium: 'Medium',
+      low: 'Low',
     };
     return icons[priority as keyof typeof icons] || priority;
   }
 
   private generateImplementationGuidelines(): string {
-    let md = '## 🛠️ Implementation Guidelines\n\n';
+    let md = '## Implementation Guidelines\n\n';
     md += '### Using Cursor Plan Mode\n\n';
     md += '1. Open Cursor Plan Mode (Cmd/Ctrl + Shift + P)\n';
     md += '2. Copy the relevant task from this plan\n';
@@ -644,14 +570,14 @@ npx husky add .husky/pre-commit "npm run lint"`,
     md += '4. Execute the plan step by step, using Agent Mode for implementation\n\n';
 
     md += '### Task Completion Workflow\n\n';
-    md += '1. **Read** the task description and acceptance criteria\n';
-    md += '2. **Check** dependencies - complete prerequisite tasks first\n';
-    md += '3. **Implement** using the provided code snippets as a starting point\n';
-    md += '4. **Test** your changes locally\n';
-    md += '5. **Update** relevant documentation\n';
-    md += '6. **Run** quality gates (`npm test`, `npm run lint`, etc.)\n';
-    md += '7. **Commit** with a descriptive message\n';
-    md += '8. **Mark** the task as complete in this plan\n\n';
+    md += '1. **Read**the task description and acceptance criteria\n';
+    md += '2. **Check**dependencies - complete prerequisite tasks first\n';
+    md += '3. **Implement**using the provided code snippets as a starting point\n';
+    md += '4. **Test**your changes locally\n';
+    md += '5. **Update**relevant documentation\n';
+    md += '6. **Run**quality gates (`npm test`, `npm run lint`, etc.)\n';
+    md += '7. **Commit**with a descriptive message\n';
+    md += '8. **Mark**the task as complete in this plan\n\n';
 
     md += '### Rollback Strategy\n\n';
     md += 'If any changes cause issues:\n\n';
@@ -664,7 +590,7 @@ npx husky add .husky/pre-commit "npm run lint"`,
   }
 
   private generateSuccessMetrics(): string {
-    let md = '## 📈 Success Metrics\n\n';
+    let md = '## Success Metrics\n\n';
     md += 'Track your progress with these metrics:\n\n';
     md += '- [ ] All high-priority tasks completed\n';
     md += '- [ ] CI pipeline green (all quality gates passing)\n';
@@ -678,10 +604,11 @@ npx husky add .husky/pre-commit "npm run lint"`,
   }
 
   private generateResources(): string {
-    let md = '## 📚 Additional Resources\n\n';
+    let md = '## Additional Resources\n\n';
     md += '- [Stack Report](.devenv/stack-report.json) - Current project stack detection\n';
     md += '- [Gap Analysis](.devenv/gaps-report.md) - Detailed gap analysis\n';
-    md += '- [Architecture Guide](../docs/ARCHITECTURE.md) - Project structure and design\n';
+    md +=
+      '- [Architecture Guide](../docs/architecture/overview.md) - Project structure and design\n';
     md += '- [Best Practices](../docs/BEST-PRACTICES.md) - Technology-agnostic best practices\n';
     md +=
       '- [Cursor Plan Integration](../docs/guides/cursor-plan-integration.md) - Plan mode guide\n';

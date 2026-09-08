@@ -334,8 +334,11 @@ class GapAnalyzer {
   private analyzeNodeTesting(): void {
     const hasJest = this.hasTestingFramework('Jest');
     const hasVitest = this.hasTestingFramework('Vitest');
+    // `node --test` is a first-class runner, not a gap. Treating it as missing coverage
+    // reported this repo's own 190+ unit tests as absent.
+    const hasNodeRunner = this.hasTestingFramework('Node test runner');
 
-    if (!hasJest && !hasVitest) {
+    if (!hasJest && !hasVitest && !hasNodeRunner) {
       this.gaps.push({
         category: 'testing',
         severity: 'high',

@@ -5,6 +5,8 @@
  * Used by doctor mode to suggest and auto-apply improvements.
  */
 
+import { parseJsonc } from '../utils/jsonc';
+
 export interface QuickWin {
   id: string;
   title: string;
@@ -101,7 +103,7 @@ export const QUICK_WINS: QuickWin[] = [
     category: 'type-safety',
     detectCondition: async ctx => {
       if (!(await ctx.hasFile('tsconfig.json'))) return false;
-      const tsconfig = JSON.parse(await ctx.readFile('tsconfig.json'));
+      const tsconfig = parseJsonc<any>(await ctx.readFile('tsconfig.json'));
       return tsconfig.compilerOptions && !tsconfig.compilerOptions.strict;
     },
     fixAction: async ctx => {

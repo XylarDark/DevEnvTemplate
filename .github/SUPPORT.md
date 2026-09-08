@@ -8,10 +8,10 @@ If you need help with this project, here are the best ways to get assistance:
 
 Before asking for help, please check:
 
-1. [README.md](README.md) - Setup and usage instructions
+1. [README.md](../README.md) - Setup and usage instructions
 2. [CONTRIBUTING.md](CONTRIBUTING.md) - Development guidelines
-3. [`.projectrules`](.projectrules) - Governance and standards
-4. [docs/rules-changelog.md](docs/rules-changelog.md) - Rules evolution
+3. [`AGENTS.md`](../AGENTS.md) and [`.cursor/rules/`](../.cursor/rules/) - Governance and standards
+4. [docs/README.md](../docs/README.md) - Documentation index
 
 ## Community Support
 

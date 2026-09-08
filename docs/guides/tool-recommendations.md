@@ -194,7 +194,7 @@ pip install vulture
 **Usage:**
 
 ```bash
-vulture lunar_mining_sim/
+vulture your_package/
 ```
 
 **Integration:** DevEnvTemplate could run vulture as part of gap analysis.
@@ -280,7 +280,7 @@ pip install mypy
 **Usage:**
 
 ```bash
-mypy lunar_mining_sim/
+mypy your_package/
 ```
 
 **Integration:** DevEnvTemplate could check for mypy configuration and suggest setup.
@@ -617,6 +617,6 @@ if (detectsNode) {
 
 ## Related Documentation
 
-- [Best Practices](BEST-PRACTICES.md) - Development best practices
-- [Troubleshooting](TROUBLESHOOTING.md) - Common issues and solutions
+- [Best Practices](../BEST-PRACTICES.md) - Development best practices
+- [Troubleshooting](../TROUBLESHOOTING.md) - Common issues and solutions
 - [Usage Guide](USAGE.md) - How to use DevEnvTemplate

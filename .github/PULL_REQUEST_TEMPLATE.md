@@ -64,6 +64,6 @@ After implementing, complete this section:
 
 - [ ] **Changes summary:** What was added/modified/removed
 - [ ] **Errors/workarounds:** Any platform/environment issues encountered
-- [ ] **Rules deltas:** Updates needed to `.projectrules` or governance
+- [ ] **Rules deltas:** Updates needed to `AGENTS.md` or `.cursor/rules/`
 - [ ] **Version bump:** Increment version if governance rules changed
 - [ ] **Changelog:** Updated `docs/rules-changelog.md` if applicable

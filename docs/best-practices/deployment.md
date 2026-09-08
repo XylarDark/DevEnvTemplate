@@ -72,7 +72,7 @@ const nextConfig: NextConfig = {
     "buildCommand": "pip install -e ."
   },
   "deploy": {
-    "startCommand": "uvicorn lunar_mining_sim.api.server:app --host 0.0.0.0 --port $PORT",
+    "startCommand": "uvicorn your_package.api.server:app --host 0.0.0.0 --port $PORT",
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10
   }
@@ -85,10 +85,10 @@ const nextConfig: NextConfig = {
 # render.yaml
 services:
   - type: web
-    name: lunar-mining-sim-api
+    name: your-project-api
     env: python
     buildCommand: pip install -e .
-    startCommand: uvicorn lunar_mining_sim.api.server:app --host 0.0.0.0 --port $PORT
+    startCommand: uvicorn your_package.api.server:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
         value: 3.11

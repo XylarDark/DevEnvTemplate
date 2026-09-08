@@ -67,16 +67,16 @@ def require_api_key(api_key: Optional[str] = Security(get_api_key_from_header)):
 # ✅ CORRECT - Custom exceptions with context
 from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse
-from lunar_mining_sim.utils.exceptions import (
-    LunarMiningError,
+from your_package.utils.exceptions import (
+    ProjectError,
     ValidationError,
     SimulationError,
     LicenseError
 )
 
-@app.exception_handler(LunarMiningError)
-async def lunar_mining_error_handler(request, exc: LunarMiningError):
-    """Handle custom Lunar Mining Simulator exceptions."""
+@app.exception_handler(ProjectError)
+async def project_error_handler(request, exc: ProjectError):
+    """Handle the project's custom exceptions."""
     if isinstance(exc, ValidationError):
         status_code = status.HTTP_400_BAD_REQUEST
     elif isinstance(exc, LicenseError):
@@ -116,12 +116,12 @@ from pydantic import BaseModel, Field
 from enum import Enum
 
 class ScenarioType(str, Enum):
-    LUNAR_FLAT_STANDARD = "lunar_flat_standard"
-    LUNAR_COMPACTED = "lunar_compacted"
+    BASELINE_STANDARD = "baseline_standard"
+    COMPACTED = "compacted"
 
 class SimulationRequest(BaseModel):
     scenario: ScenarioType = Field(
-        default=ScenarioType.LUNAR_FLAT_STANDARD,
+        default=ScenarioType.BASELINE_STANDARD,
         description="Terrain scenario"
     )
     depth: float = Field(
@@ -151,8 +151,8 @@ FastAPI automatically generates OpenAPI docs at `/docs` and ReDoc at `/redoc`.
 
 ```python
 app = FastAPI(
-    title="Lunar Mining Simulator API",
-    description="REST API for physics-based lunar excavation simulation",
+    title="Your Project API",
+    description="REST API for the project's simulation endpoints",
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
@@ -276,10 +276,10 @@ SECRET_KEY=
 
 ```bash
 # Development
-uvicorn lunar_mining_sim.api.server:app --reload
+uvicorn your_package.api.server:app --reload
 
 # Production
-uvicorn lunar_mining_sim.api.server:app --host 0.0.0.0 --port $PORT
+uvicorn your_package.api.server:app --host 0.0.0.0 --port $PORT
 ```
 
 ### Railway/Render Configuration
@@ -292,7 +292,7 @@ uvicorn lunar_mining_sim.api.server:app --host 0.0.0.0 --port $PORT
     "buildCommand": "pip install -e ."
   },
   "deploy": {
-    "startCommand": "uvicorn lunar_mining_sim.api.server:app --host 0.0.0.0 --port $PORT"
+    "startCommand": "uvicorn your_package.api.server:app --host 0.0.0.0 --port $PORT"
   }
 }
 ```

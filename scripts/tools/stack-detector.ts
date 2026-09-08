@@ -11,6 +11,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { createLogger } from '../utils/logger';
 import { createJsonParseError } from '../utils/error-helpers';
+import { stripJsonComments } from '../utils/jsonc';
 import type {
   StackReport,
   ToolingFramework,
@@ -244,8 +245,14 @@ class StackDetector {
       return JSON.parse(content);
     } catch (error: any) {
       if (error instanceof SyntaxError) {
-        // Use improved error helper for better error messages
-        throw createJsonParseError(error, absPath);
+        // tsconfig.json, jsconfig.json and several tool configs are JSONC: comments and
+        // trailing commas are legal there and common in real projects. Retry tolerantly
+        // before reporting the file as malformed.
+        try {
+          return JSON.parse(stripJsonComments(content));
+        } catch {
+          throw createJsonParseError(error, absPath);
+        }
       }
       throw error;
     }
@@ -1226,6 +1233,16 @@ class StackDetector {
         break;
       } catch (error: any) {
         // Continue checking
+      }
+    }
+
+    // Node's built-in test runner has no config file to find, so detect it from the test
+    // script. Projects using it are fully tested and must not be reported as untested.
+    if (!testingFrameworks.some(framework => framework.name === 'Node test runner')) {
+      const testScript = this.stack.scripts.detected.find(script => script.name === 'test');
+      if (testScript && /\bnode\b[^&|]*--test\b/.test(testScript.command)) {
+        testingFrameworks.push({ name: 'Node test runner', config: 'package.json' });
+        this.stack.quality.testing = true;
       }
     }
 

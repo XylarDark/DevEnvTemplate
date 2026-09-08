@@ -310,7 +310,6 @@ npm run format --prefix .devenv
 | `docs/guides/docs-organization.md`       | Documentation organization guide | Organizing markdown files    |
 | `docs/guides/cursor-plan-integration.md` | Cursor IDE integration           | Using with Cursor IDE        |
 | `docs/guides/python-best-practices.md`   | Python-specific patterns         | Working with Python projects |
-| `docs/guides/troubleshooting.md`         | Extended troubleshooting         | Deep-dive problem solving    |
 
 #### Additional Development Resources
 
@@ -1596,7 +1595,6 @@ Get-ChildItem $DestDir
 - **[guides/docs-organization.md](docs/guides/docs-organization.md)** - Documentation organization patterns
 - **[guides/cursor-plan-integration.md](docs/guides/cursor-plan-integration.md)** - Cursor IDE integration
 - **[guides/python-best-practices.md](docs/guides/python-best-practices.md)** - Python-specific development patterns
-- **[guides/troubleshooting.md](docs/guides/troubleshooting.md)** - Extended troubleshooting guide
 
 #### Additional Resources
 - **[CONTRIBUTING.md](docs/CONTRIBUTING.md)** - Contribution guidelines

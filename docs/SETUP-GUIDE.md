@@ -2,9 +2,9 @@
 
 **Purpose:** One-time initial setup instructions for embedding DevEnvTemplate into a project.
 
-> **After Setup:** Once DevEnvTemplate is embedded, see [EMBEDDED-USAGE.md](EMBEDDED-USAGE.md) for ongoing usage workflows and day-to-day operations.
+> **After Setup:** Once DevEnvTemplate is embedded, see [EMBEDDED-USAGE.md](guides/embedded-usage.md) for ongoing usage workflows and day-to-day operations.
 
-This guide covers the **initial embedding process** (steps 1-6). For ongoing usage after setup is complete, refer to the [Embedded Usage Guide](EMBEDDED-USAGE.md).
+This guide covers the **initial embedding process** (steps 1-6). For ongoing usage after setup is complete, refer to the [Embedded Usage Guide](guides/embedded-usage.md).
 
 ---
 
@@ -64,13 +64,13 @@ The first run is intentionally technology-agnostic and writes `.devenv/stack-rep
 
 | Stack profile         | What to expect                                                                                        | Recommended commands                                                                                                                           |
 | --------------------- | ----------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Node / TypeScript** | Doctor will recommend Vitest + ESLint + Playwright once detected.                                     | `npm run doctor --preset nextjs` (or vite/express) if the repo is empty but you already know the stack.                                        |
+| **Node / TypeScript** | Doctor will recommend Vitest + ESLint + Playwright once detected.                                     | `npm run doctor -- --preset nextjs` (or vite/express) if the repo is empty but you already know the stack.                                     |
 | **Python-only**       | Doctor pivots to Pytest + Ruff + Black + Mypy once `pyproject.toml` / `requirements.txt` are present. | Add `pyproject.toml` or `requirements.txt`, then re-run `npm run doctor`. No ESLint/TypeScript guidance will appear after the first detection. |
-| **Polyglot**          | Multiple profiles can be active. Doctor outputs one section per profile.                              | Run `npm run doctor --json` if you need to programmatically separate profile-specific issues.                                                  |
+| **Polyglot**          | Multiple profiles can be active. Doctor outputs one section per profile.                              | Run `npm run doctor -- --json` if you need to programmatically separate profile-specific issues.                                               |
 
 ### Python Project Setup Example
 
-For a Python project like `lunar_mining_sim`:
+For a Python project:
 
 1. **Create virtual environment:**
 
@@ -148,7 +148,7 @@ git commit -m "chore: add DevEnvTemplate doctor"
 git push
 ```
 
-CI will now be able to run `npm run doctor --strict` (optional) plus your existing tests.
+CI will now be able to run `npm run doctor -- --strict` (optional) plus your existing tests.
 
 ---
 
@@ -170,9 +170,9 @@ This allows you to use the sync scripts to pull template updates. See [SYNC.md](
 
 After completing this setup:
 
-1. **Read [EMBEDDED-USAGE.md](EMBEDDED-USAGE.md)** - Learn how to use DevEnvTemplate in your daily workflow
+1. **Read [EMBEDDED-USAGE.md](guides/embedded-usage.md)** - Learn how to use DevEnvTemplate in your daily workflow
 2. **Read [SYNC.md](SYNC.md)** - How to sync with template updates
-3. **Read [USAGE.md](USAGE.md)** - Day-to-day doctor/cleanup workflows
+3. **Read [USAGE.md](guides/usage.md)** - Day-to-day doctor/cleanup workflows
 4. **Read [TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - Common issues and solutions
 
 ---

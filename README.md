@@ -1,4 +1,4 @@
-# DevEnvTemplate
+﻿# DevEnvTemplate
 
 [![CI](https://github.com/XylarDark/DevEnvTemplate/actions/workflows/indie-ci.yml/badge.svg)](https://github.com/XylarDark/DevEnvTemplate/actions/workflows/indie-ci.yml)
 [![Version](https://img.shields.io/github/package-json/v/XylarDark/DevEnvTemplate)](https://github.com/XylarDark/DevEnvTemplate)
@@ -12,10 +12,10 @@ Building with AI assistants like Cursor, GitHub Copilot, or ChatGPT? Your dev en
 
 **DevEnvTemplate is your dev environment doctor:**
 
-- **Diagnose** → Scans your project stack and quality setup
-- **Prescribe** → Identifies gaps (missing tests, CI, security)
-- **Cure** → Auto-fixes common issues in seconds
-- **Monitor** → Continuous health checks on every push
+- **Diagnose** â†’ Scans your project stack and quality setup
+- **Prescribe** â†’ Identifies gaps (missing tests, CI, security)
+- **Cure** â†’ Auto-fixes common issues in seconds
+- **Monitor** â†’ Continuous health checks on every push
 
 **From diagnosis to deployment in < 10 minutes.** Quality by default, not by overtime.
 
@@ -35,27 +35,27 @@ npm run doctor
 **Output:**
 
 ```
-🏥 DevEnvTemplate Health Check
+ðŸ¥ DevEnvTemplate Health Check
 
-🟢 Project Health: 75/100
+ðŸŸ¢ Project Health: 75/100
 
-📊 Health Breakdown:
-   Security:      🟢 ██████████ 85/100
-   Code Quality:  🟡 ███████░░░ 70/100
-   Testing:       🔴 ████░░░░░░ 40/100
-   CI/CD:         🟢 ████████░░ 80/100
-   Documentation: 🟡 ███████░░░ 70/100
+ðŸ“Š Health Breakdown:
+   Security:      ðŸŸ¢ â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆ 85/100
+   Code Quality:  ðŸŸ¡ â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–‘â–‘â–‘ 70/100
+   Testing:       ðŸ”´ â–ˆâ–ˆâ–ˆâ–ˆâ–‘â–‘â–‘â–‘â–‘â–‘ 40/100
+   CI/CD:         ðŸŸ¢ â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–‘â–‘ 80/100
+   Documentation: ðŸŸ¡ â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–‘â–‘â–‘ 70/100
 
-🔴 Critical Issues (2):
+ðŸ”´ Critical Issues (2):
    - No testing framework detected
    - Missing .env.example (secrets at risk)
 
-💡 Quick Wins (can fix in < 10 min):
-   1. Add .env.example → 2 min
-   2. Enable TypeScript strict → 1 min
-   3. Add ESLint config → 5 min
+ðŸ’¡ Quick Wins (can fix in < 10 min):
+   1. Add .env.example â†’ 2 min
+   2. Enable TypeScript strict â†’ 1 min
+   3. Add ESLint config â†’ 5 min
 
-📋 Full Report: .devenv/health-report.json
+ðŸ“‹ Full Report: .devenv/health-report.json
 ```
 
 ### Auto-Fix Issues
@@ -67,10 +67,10 @@ npm run doctor:fix
 
 Auto-fixes:
 
-- ✅ Creates `.env.example`
-- ✅ Adds `.env` to `.gitignore`
-- ✅ Enables TypeScript strict mode
-- ✅ And more...
+- âœ… Creates `.env.example`
+- âœ… Adds `.env` to `.gitignore`
+- âœ… Enables TypeScript strict mode
+- âœ… And more...
 
 ## What You Get
 
@@ -101,12 +101,12 @@ All recommendations use free tiers:
 ### Documentation layout and Cursor rules
 
 - **Canonical structure:** [docs/DOCS_LAYOUT.md](docs/DOCS_LAYOUT.md) defines where new docs belong. The [docs-organization](docs/guides/docs-organization.md) tool uses pattern rules in `config/docs-organization.yaml`; keep patterns aligned with DOCS_LAYOUT when you add folders.
-- **Known errors log:** [docs/KNOWN_ERRORS.md](docs/KNOWN_ERRORS.md) and [docs/operational/automation-gaps.md](docs/operational/automation-gaps.md) — operational learning and automation limits.
-- **Cursor rules:** [.cursor/rules/README.md](.cursor/rules/README.md) — always-applied engineering rules plus conditional rules (e.g. TypeScript, shell scripts).
+- **Known errors log:** [docs/KNOWN_ERRORS.md](docs/KNOWN_ERRORS.md) and [docs/operational/automation-gaps.md](docs/operational/automation-gaps.md) â€” operational learning and automation limits.
+- **Cursor rules:** [.cursor/rules/README.md](.cursor/rules/README.md) â€” always-applied engineering rules plus conditional rules (e.g. TypeScript, shell scripts).
 
 ### Optional stack profile: Unreal Engine
 
-For game repositories with a **`.uproject`** file, this template ships **conditional** rules `21-unreal-engine.mdc` and `22-unreal-editor-ui.mdc` (Epic doc–aligned Editor UI guidance). They load when you work on Unreal project files. Suggested doc stubs: [docs/templates/unreal/README.md](docs/templates/unreal/README.md). Stack detection adds a hint when a `.uproject` is present.
+For game repositories with a **`.uproject`** file, this template ships **conditional** rules `21-unreal-engine.mdc` and `22-unreal-editor-ui.mdc` (Epic docâ€“aligned Editor UI guidance). They load when you work on Unreal project files. Suggested doc stubs: [docs/templates/unreal/README.md](docs/templates/unreal/README.md). Stack detection adds a hint when a `.uproject` is present.
 
 ## How It Works: The Doctor Workflow
 
@@ -155,12 +155,12 @@ npm run cleanup:apply   # Remove template boilerplate
 
 On every push, CI runs health checks:
 
-- ✅ Tests run automatically
-- ✅ Code is linted for consistency
-- ✅ Security scan checks dependencies
-- ✅ Health score tracked over time
+- âœ… Tests run automatically
+- âœ… Code is linted for consistency
+- âœ… Security scan checks dependencies
+- âœ… Health score tracked over time
 
-**See [docs/USAGE.md](docs/USAGE.md) for detailed commands and workflows.**
+**See [docs/guides/usage.md](docs/guides/usage.md) for detailed commands and workflows.**
 
 ## Common Tasks
 
@@ -198,25 +198,25 @@ After running doctor or pushing to GitHub:
 
 ## Why Indie Devs Love It
 
-**Fast Setup** → 5 minutes vs 4 hours of configuration  
-**Quality by Default** → Testing, CI, security included  
-**Free Tier** → Everything runs on GitHub's free 2000 min/month  
-**No Lock-In** → Standard tools (Jest, GitHub Actions, ESLint)  
-**Solo-Friendly** → No team jargon, no complex workflows
+**Fast Setup** â†’ 5 minutes vs 4 hours of configuration  
+**Quality by Default** â†’ Testing, CI, security included  
+**Free Tier** â†’ Everything runs on GitHub's free 2000 min/month  
+**No Lock-In** â†’ Standard tools (Jest, GitHub Actions, ESLint)  
+**Solo-Friendly** â†’ No team jargon, no complex workflows
 
 ## Use Cases
 
 **Building a SaaS?**  
-→ Get testing + CI + deployment in one command
+â†’ Get testing + CI + deployment in one command
 
 **Side Project?**  
-→ Ship with confidence, no technical debt
+â†’ Ship with confidence, no technical debt
 
 **Client Work?**  
-→ Professional setup without the setup time
+â†’ Professional setup without the setup time
 
 **Learning?**  
-→ See how pros structure projects
+â†’ See how pros structure projects
 
 ## Advanced Features
 
@@ -226,36 +226,32 @@ For power users, DevEnvTemplate includes:
 - **Performance tracking** (identify slow build steps)
 - **Cursor Plan Mode integration** (AI-guided development workflow)
 
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [docs/BEST-PRACTICES.md](docs/BEST-PRACTICES.md) for advanced usage.
+See [docs/architecture/overview.md](docs/architecture/overview.md) and [docs/BEST-PRACTICES.md](docs/BEST-PRACTICES.md) for advanced usage.
 
 ## Benefits
 
-- **⚡ Fast**: Setup in minutes, not hours
-- **🆓 Free**: Optimized for GitHub free tier
-- **🎯 Focused**: Solo dev-friendly, no enterprise bloat
-- **🔒 Secure**: Automated security scanning
-- **📈 Quality**: Testing and linting by default
-- **🚀 Deploy**: CI/CD ready for Vercel, Railway, Fly.io
+- **âš¡ Fast**: Setup in minutes, not hours
+- **ðŸ†“ Free**: Optimized for GitHub free tier
+- **ðŸŽ¯ Focused**: Solo dev-friendly, no enterprise bloat
+- **ðŸ”’ Secure**: Automated security scanning
+- **ðŸ“ˆ Quality**: Testing and linting by default
+- **ðŸš€ Deploy**: CI/CD ready for Vercel, Railway, Fly.io
 
 ## Documentation
 
-- **[AGENTS.md](AGENTS.md)** - Always-true project facts for Cursor (preferred agent entry)
-- **[BOOTSTRAP.md](BOOTSTRAP.md)** - Optional long-form setup and migration reference
-- **[docs/USAGE.md](docs/USAGE.md)** - Common commands and workflows
-- **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** - Project structure and design principles
-- **[docs/LLM-CONTEXT-GUIDE.md](docs/LLM-CONTEXT-GUIDE.md)** - Context guide for AI assistants
+- **[AGENTS.md](AGENTS.md)** - Always-true project facts. The agent entry point.
+- **[docs/README.md](docs/README.md)** - Documentation index
+- **[docs/guides/usage.md](docs/guides/usage.md)** - Common commands and workflows
+- **[docs/architecture/overview.md](docs/architecture/overview.md)** - Project structure and design principles
 - **[docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)** - Troubleshooting guide
-- **[docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)** - Build/test loop for editing the doctor
-- **[docs/RFC-standalone-doctor.md](docs/RFC-standalone-doctor.md)** - Research notes on future binary tooling
-- **[docs/PERF-BASELINE.md](docs/PERF-BASELINE.md)** - Current doctor runtimes (fast vs. full) and goals
-- **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** - Project structure and design principles
 - **[docs/BEST-PRACTICES.md](docs/BEST-PRACTICES.md)** - Technology-agnostic best practices
+- **[docs/DOCS_LAYOUT.md](docs/DOCS_LAYOUT.md)** - Where new documentation belongs
 
 ## Contributing
 
 Found a bug? Have a feature idea? PRs welcome!
 
-See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) for guidelines.
+See [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md) for the build/test loop and standards.
 
 ## License
 
@@ -265,4 +261,4 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 **Built for indie developers who want to ship quality code without the setup tax.**
 
-Star ⭐ this repo if DevEnvTemplate saves you time!
+Star â­ this repo if DevEnvTemplate saves you time!
