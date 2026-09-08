@@ -1,6 +1,6 @@
 ---
 name: testing-standards
-description: Use when adding or updating tests, setting up a test framework, or reviewing coverage - covers the test pyramid, AAA structure, isolation, per-tier time budgets, and this repo's node --test layout.
+description: Use when adding or updating tests, setting up a test framework, or reviewing coverage - covers the test pyramid, AAA structure, isolation, per-tier time budgets, testing boundaries rather than midpoints, and proving that a guard test fails when its regression returns.
 ---
 
 # Testing standards
@@ -16,6 +16,10 @@ paths; 100% is not the goal.
 - **End-to-end (~10%):** complete user workflows.
 
 ## How tests run in this repo
+
+> **Localize on copy.** The pyramid, structure, naming, isolation, and budgets above
+> travel to any project. This section does not: replace the runner, the file layout,
+> and the commands with the host's own.
 
 - Runner: the Node.js built-in test runner (`node --test`). No Jest, Vitest, or Mocha.
 - Location: `tests/unit/**/*.test.js` and `tests/integration/**/*.test.js`.
@@ -63,6 +67,29 @@ Describe the behavior and the scenario: `returns an error when the email is inva
 
 Cover the happy path, the error cases, and the edge cases: empty inputs, null values,
 boundary conditions, and concurrent access where it applies.
+
+**Test boundaries, not midpoints.** A value taken from the middle of a range is the
+value at which a correct implementation and a broken one are most likely to agree.
+Probe just inside and just outside each edge. Even-numbered sizes are a specific
+hazard wherever something gets halved: the halfway point lands exactly on an
+inclusive boundary, which can hide an off-by-half error for as long as nobody tests
+anywhere else.
+
+**Assert the effective value, not the requested one.** Where a value passes through
+anything that clamps, fits, truncates, or caps, the constant in the source is not
+necessarily what the system used. Read the value back at runtime and assert on that.
+If a test structurally cannot observe the effective value, say so in the test rather
+than leaving a green assertion that implies coverage it does not have.
+
+## Prove a guard test fails
+
+A test written to prevent a specific regression should be shown to catch it:
+reintroduce the regression, confirm the test fails and fails for the stated reason,
+restore the code, and note in the test's comment that this was done. An untested
+guard test is decoration.
+
+For the wider version of this — checks that pass while measuring nothing — read the
+`verification-evidence` skill.
 
 ## Isolation
 

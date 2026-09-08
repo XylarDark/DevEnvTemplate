@@ -30,6 +30,21 @@ automation — prefer these approaches in order:
 Third-party editor extensions are optional; when the team adopts one, follow that
 extension's documented workflow.
 
+## Resources only one caller can hold
+
+Before automating anything that drives a browser, an emulator, an attached device, a
+fixed port, or any other single-instance resource, read the
+`exclusive-resource-access` skill. Two rules from it are worth stating here because
+they apply to automation generally:
+
+- **Bound every wait.** An unbounded call turns a failure into a hang, and a hang
+  produces no error, no output, and no exit code to react to.
+- **Never retry a hang.** Retry only calls that returned, and only with the call
+  changed. Repeating an identical call re-enters the identical race, and a hang
+  cannot be cancelled from inside the caller. When you need to know whether a flaky
+  subsystem is healthy, read its logs rather than probing it — a probe can hang
+  exactly like the call it was meant to protect.
+
 ## Settings automation cannot reach
 
 When automation drives external tools, APIs, or product UIs, follow this procedure

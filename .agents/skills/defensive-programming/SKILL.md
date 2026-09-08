@@ -52,6 +52,28 @@ Validate at function entry points, at API boundaries, and at data transformation
 boundaries. Never trust data from an external source, including data that came from your
 own service on a previous hop.
 
+## Never degrade a check into a pass
+
+Graceful degradation is right for a feature and wrong for anything whose job is to
+verify. A helper that cannot find what it was asked to look for must throw, not
+return a partial result and let the caller carry on — a fallback inside a check
+reports success for reasons unrelated to its subject.
+
+```js
+// Wrong: a missing end marker silently widens the scan to the rest of the file.
+return end < 0 ? rest : rest.slice(0, end);
+
+// Right: the check is broken, and says so.
+if (end < 0) throw new Error(`end marker not found after ${startMarker}`);
+```
+
+Normalize line endings before scanning text (`.replace(/\r\n/g, '\n')`). With
+`core.autocrlf` enabled, a checkout delivers CRLF and a newline-anchored search
+never matches — which lands you straight in the fallback above, invisibly and only
+on some machines.
+
+See the `verification-evidence` skill for the wider pattern.
+
 ## Degrade gracefully
 
 - Provide fallbacks for non-critical features.

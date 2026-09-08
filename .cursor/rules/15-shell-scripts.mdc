@@ -19,7 +19,16 @@ version: 1.0
 
 ## PowerShell-Specific
 
-- Use `;` not `&&` for command chaining
+- Use `;` not `&&` for command chaining. `&&` is not a statement separator in
+  PowerShell, and a command using it fails to parse rather than failing to run
+- **PowerShell has no heredoc.** `git commit -F - <<'MSG'` and every other
+  `<<`-delimited form is a parse error, so the whole script dies before the first
+  statement executes. Use repeated `-m` flags, or write the text to a file first
+- Beware forwarded arguments in package-manager scripts. A manager that appends
+  arguments to the end of the script can fold your argument into the **previous
+  flag's value**, producing a valid-looking command with a nonsense target. The
+  failure then surfaces far from the cause. Pin such values in the tool's own config
+  file instead of forwarding them
 - Test paths before navigation: `if (Test-Path "path") { ... }`
 - Use `Join-Path` for path construction
 - Use `Push-Location`/`Pop-Location` for temporary navigation
