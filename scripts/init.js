@@ -3,35 +3,30 @@
 /**
  * DevEnvTemplate Init - One-command setup for indie developers
  *
- * Usage: npx devenv-init
+ * Usage: npx devenv-init [--layers agent-context,operational-memory] [--defaults]
  *
- * This is a simplified entry point that:
- * 1. Welcomes the user
- * 2. Runs the agent CLI with simplified questions
- * 3. Provides next steps
+ * Detects the host stack, lets you choose adoption layers, and scaffolds only what you pick.
  */
 
 const { spawn } = require('child_process');
 const path = require('path');
 
+const args = process.argv.slice(2);
+
 console.log(`
 ╔═══════════════════════════════════════════════════════════════╗
 ║                                                               ║
-║  🚀 DevEnvTemplate - Ship Quality Code Faster                ║
+║  DevEnvTemplate — adopt layers, not a monolith                ║
 ║                                                               ║
-║  For indie developers & solo founders                         ║
-║  Setup in < 5 minutes                                         ║
+║  agent context · operational memory · doctor (Node)           ║
 ║                                                               ║
 ╚═══════════════════════════════════════════════════════════════╝
 
-Let's set up your project with testing, CI/CD, and best practices!
-
-Answer 5 quick questions and we'll configure everything automatically.
+Choose which layers to copy. Each is independent — skip what you do not need.
 `);
 
-// Run the simplified agent CLI
-const agentCli = path.join(__dirname, 'agent', 'cli-simple.js');
-const child = spawn('node', [agentCli], {
+const agentInit = path.join(__dirname, '..', 'dist', 'scripts', 'agent', 'init.js');
+const child = spawn('node', [agentInit, ...args], {
   stdio: 'inherit',
   cwd: process.cwd(),
 });
@@ -40,31 +35,23 @@ child.on('exit', code => {
   if (code === 0) {
     console.log(`
 ╔═══════════════════════════════════════════════════════════════╗
-║                                                               ║
-║  ✅ Setup Complete!                                           ║
+║  Setup complete                                               ║
 ║                                                               ║
 ║  Next steps:                                                  ║
-║  1. git add .                                                 ║
-║  2. git commit -m "Add DevEnvTemplate"                        ║
-║  3. git push                                                  ║
-║                                                               ║
-║  Your CI/CD will run automatically on push!                   ║
-║                                                               ║
-║  Check .devenv/stack-report.json after pushing for your       ║
-║  quality audit.                                               ║
-║                                                               ║
-║  Need help? See USAGE.md or open an issue on GitHub          ║
+║  1. Review AGENTS.md and copied files                         ║
+║  2. If you adopted the doctor layer:                          ║
+║     cd .devenv && npm install && npm run build                  ║
+║  3. git add the new files and commit                          ║
 ║                                                               ║
 ╚═══════════════════════════════════════════════════════════════╝
 `);
   } else {
-    console.error(`\n❌ Setup failed with code ${code}`);
-    console.error('See error messages above for details.');
-    process.exit(code);
+    console.error(`\nSetup failed with code ${code}`);
+    process.exit(code ?? 1);
   }
 });
 
 child.on('error', err => {
-  console.error(`\n❌ Failed to start setup: ${err.message}`);
+  console.error(`\nFailed to start setup: ${err.message}`);
   process.exit(1);
 });
