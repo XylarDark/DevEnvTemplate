@@ -47,7 +47,7 @@ exports.runInit = runInit;
 const readline = __importStar(require("readline"));
 const path = __importStar(require("path"));
 const commander_1 = require("commander");
-const StackDetector = require("../tools/stack-detector");
+const stack_detector_1 = __importDefault(require("../tools/stack-detector"));
 const logger_1 = require("../utils/logger");
 const layers_1 = require("./layers");
 const cli_1 = __importDefault(require("./cli"));
@@ -148,7 +148,7 @@ async function runInit(options = {}) {
         rl.close();
     }
     logger.info('Detecting project stack (fast mode)...');
-    const detector = new StackDetector({ rootDir: projectRoot, quiet: true, mode: 'fast' });
+    const detector = new stack_detector_1.default({ rootDir: projectRoot, quiet: true, mode: 'fast' });
     const stackReport = await detector.detect();
     await detector.saveReport(stackReport);
     const summary = await (0, layers_1.adoptLayers)({

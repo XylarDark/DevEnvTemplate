@@ -10,7 +10,7 @@
 import * as readline from 'readline';
 import * as path from 'path';
 import { Command } from 'commander';
-import StackDetector = require('../tools/stack-detector');
+import StackDetector from '../tools/stack-detector';
 import { createLogger } from '../utils/logger';
 import {
   ALL_LAYERS,
