@@ -17,12 +17,14 @@
  * Three implementation constraints, all learned the hard way. With `failClosed` set, each of
  * these failure modes blocks every operation in the editor, so they matter more than usual:
  *
- * 1. `process.stdout` is a pipe and writes to it are asynchronous. Calling `process.exit()`
- *    straight after `write()` truncates the output and Cursor reports "returned no output".
- *    Exit from the write callback instead, once the bytes are flushed.
+ * 1. Write the decision with `fs.writeSync(1, ...)`, not `process.stdout.write`. On a Windows
+ *    pipe the latter is asynchronous and its callback fires when the data is queued rather than
+ *    delivered, so the payload can be lost whether you exit from the callback or let the process
+ *    end on its own. The audit log recorded complete writes on invocations Cursor reported as
+ *    returning no output. `writeSync` blocks until the OS accepts the bytes.
  *
- * 2. Equally, do not just let the process end on its own: stdin may stay open, the process
- *    lingers, and Cursor kills it at the configured timeout. Destroy stdin and exit explicitly.
+ * 2. Destroy stdin before exiting. Left open, the process lingers until Cursor kills it at the
+ *    configured timeout.
  *
  * 3. Cursor prefixes the payload with a UTF-8 BOM, which `JSON.parse` rejects.
  *
@@ -32,6 +34,9 @@
 
 const fs = require('fs');
 const path = require('path');
+
+/** Rotate the audit log past this size, keeping one previous generation. */
+const AUDIT_MAX_BYTES = 2 * 1024 * 1024;
 
 /**
  * Appends one line per invocation to a gitignored audit log: what was requested, what was
@@ -46,6 +51,18 @@ function audit(fields) {
     const logDir = path.join(__dirname, '..', '..', '.devenv');
     fs.mkdirSync(logDir, { recursive: true });
 
+    const logPath = path.join(logDir, 'hook-audit.log');
+
+    // This hook runs on every file read and every shell command, so an append-only log grows
+    // without limit. Keep one previous generation and start fresh past the cap.
+    try {
+      if (fs.statSync(logPath).size > AUDIT_MAX_BYTES) {
+        fs.renameSync(logPath, `${logPath}.1`);
+      }
+    } catch {
+      // No log yet, or it cannot be rotated. Either way, fall through and append.
+    }
+
     const line =
       JSON.stringify({
         at: new Date().toISOString(),
@@ -53,7 +70,7 @@ function audit(fields) {
         ...fields,
       }) + '\n';
 
-    fs.appendFileSync(path.join(logDir, 'hook-audit.log'), line);
+    fs.appendFileSync(logPath, line);
   } catch {
     // Ignored deliberately: see above.
   }
