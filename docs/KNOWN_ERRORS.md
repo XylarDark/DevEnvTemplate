@@ -194,4 +194,4 @@
 - [adr/001-agent-hook-failure-posture.md](adr/001-agent-hook-failure-posture.md) — why the secret-scan hook runs fail-open
 - [TROUBLESHOOTING.md](TROUBLESHOOTING.md) — broader operational issues
 - [docs/operational/automation-gaps.md](operational/automation-gaps.md) — what automation cannot do yet
-- `.agents/skills/defensive-programming/SKILL.md` — defensive coding and where to record errors
+- `.agents/skills-extras/defensive-programming/SKILL.md` — defensive coding and where to record errors

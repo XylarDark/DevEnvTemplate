@@ -13,18 +13,20 @@ This file is the canonical, always-loaded context. Everything else loads on dema
 
 - **`.cursor/rules/*.mdc`** — glob-scoped only. They load when you touch a matching file
   (TypeScript, Python, shell, Unreal, Unity, and so on).
-- **`.agents/skills/<name>/SKILL.md`** — procedural knowledge. Each skill stays dormant until its
-  `description` matches your task. Read one when its trigger applies.
+- **`.agents/skills/<name>/SKILL.md`** — core procedural knowledge (six skills). Each stays
+  dormant until its `description` matches your task. Optional skills live in
+  `.agents/skills-extras/`; see [`.agents/README.md`](.agents/README.md) to opt in.
 - **`docs/`** — reference material for humans and agents. Start at `docs/README.md`.
 
 Do not add always-applied rules. Context that loads on every turn measurably degrades accuracy,
 so the budget for this file is roughly 200 lines and the always-apply rule count is zero.
 
 **A skill's `description` is always-loaded too.** Only the body is deferred; every description is
-read each turn to decide relevance. Thirteen skills currently cost about 900 tokens per turn on
-top of this file's ~2,400, so the always-on budget is roughly 3,500 tokens in total. Adding a
-skill is a permanent charge against it. Before adding one, prefer extending an existing skill,
-and keep the `description` to a single sentence naming the trigger.
+read each turn to decide relevance. Six core skills currently cost about 420 tokens per turn on
+top of this file's ~2,400, so the always-on budget is roughly 2,820 tokens in total. Extras in
+`.agents/skills-extras/` cost nothing until copied into `.agents/skills/`. Adding a core skill is
+a permanent charge against the budget. Before adding one, prefer extending an existing skill or
+placing it in extras, and keep the `description` to a single sentence naming the trigger.
 
 ## Stack
 
@@ -175,9 +177,9 @@ This repo is developed on Windows and must work on macOS and Linux.
 ## Applying this template to another project
 
 Copy this repo into the host as `.devenv/` only when the host wants the Node doctor. For game and
-engine repositories, copy just the agent and docs layer: `AGENTS.md`, `.agents/skills/`, the
-glob-scoped `.cursor/rules/`, `docs/DOCS_LAYOUT.md`, `docs/KNOWN_ERRORS.md`, and
-`docs/operational/automation-gaps.md`.
+engine repositories, copy just the agent and docs layer: `AGENTS.md`, `.agents/skills/` (core),
+optionally `.agents/skills-extras/`, the glob-scoped `.cursor/rules/`, `docs/DOCS_LAYOUT.md`,
+`docs/KNOWN_ERRORS.md`, and `docs/operational/automation-gaps.md`. See `.agents/README.md`.
 
 Host projects write their **own** `AGENTS.md`. The copy in this repo describes this repo.
 

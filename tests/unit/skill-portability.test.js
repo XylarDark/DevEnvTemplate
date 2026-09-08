@@ -1,6 +1,6 @@
 /**
- * Every skill in `.agents/skills/` is copied verbatim into host projects, so anything a skill
- * says about *this* repository becomes a false statement about theirs.
+ * Core skills in `.agents/skills/` are copied verbatim into host projects by default, so anything a
+ * skill says about *this* repository becomes a false statement about theirs.
  *
  * This was found in the wild: a consuming project's copies of these skills instructed agents to
  * run `npm run check:doc-links`, `npm run lint` and `node --test`, none of which exist there —
@@ -67,8 +67,8 @@ describe('skill portability', () => {
   test('inspects a plausible number of skills', () => {
     // An empty or mis-rooted scan would let every assertion below pass by examining nothing.
     assert.ok(
-      skills.length >= 5,
-      `expected to find the shipped skills under .agents/skills, found ${skills.length}`
+      skills.length >= 6,
+      `expected to find the shipped core skills under .agents/skills, found ${skills.length}`
     );
   });
 

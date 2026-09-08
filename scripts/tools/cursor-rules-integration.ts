@@ -31,6 +31,10 @@ export interface IntegrationOptions {
   stackReport: StackReport;
   /** Defaults to `.agents/skills` alongside the template's `.cursor/`. */
   templateSkillsPath?: string;
+  /** Defaults to `.agents/skills-extras` alongside the template's `.cursor/`. */
+  templateSkillsExtrasPath?: string;
+  /** When true, also copy optional skills from `templateSkillsExtrasPath` into the host. */
+  includeSkillExtras?: boolean;
   dryRun?: boolean;
 }
 
@@ -203,6 +207,9 @@ export async function integrateCursorRules(
   // The skills live next to `.cursor/` in the template, two levels up from the rules directory.
   const templateSkillsPath =
     options.templateSkillsPath ?? path.join(templateRulesPath, '..', '..', '.agents', 'skills');
+  const templateSkillsExtrasPath =
+    options.templateSkillsExtrasPath ??
+    path.join(templateRulesPath, '..', '..', '.agents', 'skills-extras');
 
   const result: IntegrationResult = {
     copied: [],
@@ -238,6 +245,13 @@ export async function integrateCursorRules(
   result.copied.push(...skills.copied);
   result.skipped.push(...skills.preserved);
   result.needsLocalization.push(...skills.needsLocalization);
+
+  if (options.includeSkillExtras) {
+    const extras = await copySkills(templateSkillsExtrasPath, projectSkillsPath);
+    result.copied.push(...extras.copied);
+    result.skipped.push(...extras.preserved);
+    result.needsLocalization.push(...extras.needsLocalization);
+  }
 
   // Told at the moment of copying, because the alternative is an agent in the host project
   // running a command that only exists in this repository and getting no useful error.

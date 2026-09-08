@@ -68,19 +68,19 @@ export const RETIRED_ALWAYS_ON_FILES = [
 /** Where the retired rules' content now lives, for migration advice. */
 export const RETIRED_RULE_REPLACEMENTS: Record<string, string> = {
   '00-core-principles.mdc': 'AGENTS.md (working agreements)',
-  '01-code-quality.mdc': '.agents/skills/code-structure',
+  '01-code-quality.mdc': '.agents/skills-extras/code-structure',
   '02-security.mdc': '.agents/skills/secure-coding',
-  '03-testing.mdc': '.agents/skills/testing-standards',
+  '03-testing.mdc': '.agents/skills-extras/testing-standards',
   '04-git-workflow.mdc': 'AGENTS.md (conventions)',
-  '05-error-handling.mdc': '.agents/skills/defensive-programming',
-  '06-documentation.mdc': '.agents/skills/documentation',
+  '05-error-handling.mdc': '.agents/skills-extras/defensive-programming',
+  '06-documentation.mdc': '.agents/skills-extras/documentation',
   '07-ai-agent-behavior.mdc': '.agents/skills/agent-workflow',
   '08-project-context.mdc': 'AGENTS.md (written per host)',
-  '16-feature-debug-instrumentation.mdc': '.agents/skills/debug-instrumentation',
+  '16-feature-debug-instrumentation.mdc': '.agents/skills-extras/debug-instrumentation',
   '17-plan-first.mdc': '.agents/skills/plan-first',
-  '18-content-and-data-pipelines.mdc': '.agents/skills/data-pipeline-safety',
-  '19-docs-directory-structure.mdc': '.agents/skills/documentation',
-  'automation-standards.mdc': '.agents/skills/automation-standards',
+  '18-content-and-data-pipelines.mdc': '.agents/skills-extras/data-pipeline-safety',
+  '19-docs-directory-structure.mdc': '.agents/skills-extras/documentation',
+  'automation-standards.mdc': '.agents/skills-extras/automation-standards',
 };
 
 /**

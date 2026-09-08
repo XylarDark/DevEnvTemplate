@@ -2,7 +2,7 @@
 
 **Purpose:** Track settings or workflows that **cannot** be set reliably via API, CLI, or stable automation—so the team can prioritize fixes, tickets, or runbook steps.
 
-Use the [`automation-standards` skill](../../.agents/skills/automation-standards/SKILL.md) for the full procedure (identify → verify access → document → re-check on upgrade).
+Use the [`automation-standards` skill](../../.agents/skills-extras/automation-standards/SKILL.md) for the full procedure (identify → verify access → document → re-check on upgrade).
 
 ---
 
