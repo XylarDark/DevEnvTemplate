@@ -54,18 +54,26 @@
   often, and the audit log recorded a successful, complete write for the very same invocation that
   Cursor reported as empty. Invoking the hook by hand never reproduced it, at any payload size, in
   or out of a shell.
-- **Cause:** Three independent output-delivery bugs, all invisible without the audit log:
+- **Cause:** The decision was written **without a trailing newline**. Cursor's reader is
+  line-delimited, so a newline-less response can sit in its buffer as an incomplete line and be
+  discarded when the process exits. The audit log recorded complete 59-byte writes for the very
+  invocations Cursor called empty, and 59 bytes is exactly this payload with no newline. Cursor's
+  own documented example emits one. Larger payloads failed more reliably, which is what made it
+  look like a size or pipe problem. Three further latent bugs were found and fixed along the way:
   1. `process.stdin.destroy()` ran before the response was written. `beforeReadFile` carries the
-     entire file being read, so for a large file Cursor was still writing when the read end
-     closed, and the broken pipe cost the response. Small payloads had already arrived, which is
-     why it looked harmless.
-  2. `fs.writeSync` was called once and its return value ignored. A short write delivered partial
-     JSON, and `EAGAIN` on a non-blocking pipe threw and delivered nothing.
-  3. `readStdin` resolved on a 1500ms timer, so a large payload was parsed while incomplete.
-- **Fix:** Never destroy stdin; `unref` it instead. Loop writes until every byte is accepted,
-  retrying `EAGAIN`. Drop `process.exit()` in favour of `process.exitCode`, so a natural exit
-  cannot precede the flush. Raise the stdin safety timeout to 5s and record in the audit log when
-  it fires. See `.cursor/hooks/secret-scan.cjs`.
+     entire file being read, so for a large file Cursor could still be writing when the read end
+     closed.
+  2. `fs.writeSync` was called once and its return value ignored. A short write delivers partial
+     JSON, and `EAGAIN` on a non-blocking pipe threw the decision away.
+  3. `readStdin` resolved on a 1500ms timer, so a large payload could be parsed while incomplete.
+- **Fix:** Terminate the payload with `\n`. Never destroy stdin; `unref` it instead. Loop writes
+  until every byte is accepted, retrying `EAGAIN`. Drop `process.exit()` in favour of
+  `process.exitCode`, so a natural exit cannot precede the flush. Raise the stdin safety timeout
+  to 5s and record in the audit log when it fires. See `.cursor/hooks/secret-scan.cjs`.
+- **Not the cause, though it looked like it:** `timeout` in `hooks.json` really is in seconds, as
+  documented. A probe hook that busy-waits 500ms passes under `timeout: 2`. Raising the timeout
+  appeared to fix the problem only because editing `hooks.json` makes Cursor reload, which is what
+  actually picked up the corrected script.
 - **Prevention:** `Cursor fails open by default`, so an unwired or crashing hook is
   indistinguishable from a working one — but under `failClosed` it blocks the whole editor. The
   audit log at `.devenv/hook-audit.log` now records the event, target, and whether stdin timed

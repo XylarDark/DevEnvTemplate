@@ -11,15 +11,18 @@ const REPO_ROOT = path.join(__dirname, '..', '..');
 // every shell command in the editor. The extension is what keeps it CommonJS everywhere.
 const HOOK = path.join(REPO_ROOT, '.cursor', 'hooks', 'secret-scan.cjs');
 
-/** Runs the hook with the given stdin payload and returns its parsed decision. */
-function runHook(payload) {
-  const stdout = execFileSync(process.execPath, [HOOK], {
+/** Runs the hook with the given stdin payload and returns its raw stdout. */
+function runHookRaw(payload) {
+  return execFileSync(process.execPath, [HOOK], {
     input: typeof payload === 'string' ? payload : JSON.stringify(payload),
     encoding: 'utf8',
     timeout: 10000,
   });
+}
 
-  return JSON.parse(stdout);
+/** Runs the hook with the given stdin payload and returns its parsed decision. */
+function runHook(payload) {
+  return JSON.parse(runHookRaw(payload));
 }
 
 const readFile = fields => runHook({ hook_event_name: 'beforeReadFile', ...fields });
@@ -374,6 +377,37 @@ describe('secret-scan hook', () => {
       const command = `cat ${'-n '.repeat(10)}.env`;
 
       assert.strictEqual(shell(command).permission, 'deny');
+    });
+  });
+
+  describe('output delivery', () => {
+    // Regression: the decision was written without a trailing newline. Cursor's reader is
+    // line-delimited, so the response could sit as an incomplete line and be dropped on exit,
+    // surfacing as "returned no output" - which under failClosed blocks the operation. The audit
+    // log recorded complete writes for invocations Cursor reported as empty.
+    test('terminates the decision with a newline', () => {
+      const stdout = runHookRaw({ hook_event_name: 'beforeShellExecution', command: 'git status' });
+
+      assert.ok(stdout.endsWith('\n'), `stdout must end with a newline, got ${JSON.stringify(stdout)}`);
+    });
+
+    test('emits exactly one line', () => {
+      const stdout = runHookRaw({ hook_event_name: 'beforeShellExecution', command: 'git status' });
+
+      assert.strictEqual(stdout.trimEnd().split('\n').length, 1);
+    });
+
+    test('delivers the full decision for a large beforeReadFile payload', () => {
+      // beforeReadFile carries the entire file. This is the payload size that broke delivery.
+      const content = 'const value = 1;\n'.repeat(10000);
+      const stdout = runHookRaw({
+        hook_event_name: 'beforeReadFile',
+        file_path: 'src/generated/big.ts',
+        content,
+      });
+
+      assert.ok(stdout.endsWith('\n'));
+      assert.strictEqual(JSON.parse(stdout).permission, 'allow');
     });
   });
 });
