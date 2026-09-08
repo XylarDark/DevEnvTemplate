@@ -37,14 +37,21 @@ describe('hooks.json', () => {
         );
       });
 
-      test('fails closed', () => {
-        // Without this, a crash or timeout in the hook lets the operation through - which is the
-        // opposite of what a security control should do when it breaks.
+      test('states its failure posture explicitly', () => {
+        // The value is deliberate and currently `false`. Fail-closed is the correct posture for a
+        // security control in principle, and it was tried: Cursor intermittently reports
+        // `returned no output` for larger payloads even though the audit log records a complete,
+        // newline-terminated write, and under failClosed that blocks every file read and every
+        // shell command in the editor. See docs/operational/automation-gaps.md. Flip this back to
+        // true once that is fixed upstream.
+        //
+        // What matters here is that the field is never absent. Omitting it inherits Cursor's
+        // default silently, which is how the posture stops being a decision.
         for (const entry of config.hooks[event]) {
           assert.strictEqual(
-            entry.failClosed,
-            true,
-            `${event} entry must set failClosed: true`
+            typeof entry.failClosed,
+            'boolean',
+            `${event} entry must state failClosed explicitly, not inherit the default`
           );
         }
       });
