@@ -143,7 +143,9 @@ export type GapCategory =
   | 'docker'
   | 'environment'
   | 'git-hooks'
-  | 'git';
+  | 'git'
+  /** The instructions, rules, skills, and MCP config that AI agents read. */
+  | 'agent-context';
 
 export interface Gap {
   category: GapCategory;

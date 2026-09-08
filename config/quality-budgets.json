@@ -7,11 +7,12 @@
       "low": 0
     },
     "weights": {
-      "testing": 0.25,
-      "ci": 0.2,
-      "typeSafety": 0.2,
-      "quality": 0.2,
-      "security": 0.15
+      "testing": 0.22,
+      "ci": 0.18,
+      "typeSafety": 0.18,
+      "quality": 0.17,
+      "security": 0.15,
+      "agentContext": 0.1
     },
     "categoryMap": {
       "testing": "testing",
@@ -28,6 +29,7 @@
       "environment": "security",
       "dependencies": "security",
       "docker": "security",
+      "agent-context": "agentContext",
       "documentation": "documentation",
       "observability": "documentation"
     }

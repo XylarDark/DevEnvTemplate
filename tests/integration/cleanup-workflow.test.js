@@ -273,8 +273,6 @@ describe('Cleanup Workflow Integration', () => {
       const tempDir = await createTempFixture('basic-node-project');
       tempDirs.push(tempDir);
 
-      const reportPath = path.join(tempDir, 'cleanup-report.json');
-
       await executeCleanup({
         workingDir: tempDir,
         dryRun: true,

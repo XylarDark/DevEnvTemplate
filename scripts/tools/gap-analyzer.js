@@ -18,6 +18,9 @@ if (require.main === module) {
     .then(async report => {
       console.log(report);
       await analyzer.saveReport(report);
+      // The JSON is what the doctor and plan generator consume; the markdown is for humans.
+      // Omitting it left this entry point producing a report nothing downstream could read.
+      await analyzer.saveJsonReport();
     })
     .catch(error => {
       console.error('Gap analysis failed:', error.message);

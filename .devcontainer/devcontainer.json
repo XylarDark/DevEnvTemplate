@@ -1,0 +1,46 @@
+{
+  "name": "DevEnvTemplate",
+
+  // Pinned to the Node baseline in package.json engines and volta. Bump all three together.
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:1-24-bookworm",
+
+  "features": {
+    // The doctor inspects git history and hook configuration, so git must be a real install
+    // rather than whatever the base image happens to ship.
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+
+  // Install once at build time so an agent's first command is not a five-minute npm install.
+  "postCreateCommand": "npm ci",
+
+  // Prove the container is usable before an agent starts working in it. A container that builds
+  // but cannot run the test suite is worse than no container, because the failure surfaces later
+  // and looks like a code problem.
+  "postStartCommand": "npm run build",
+
+  "customizations": {
+    "vscode": {
+      "extensions": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"],
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "typescript.tsdk": "node_modules/typescript/lib"
+      }
+    }
+  },
+
+  // Run as the image's non-root user. An agent running as root inside the container can defeat
+  // most of the point of containing it, since it can rewrite the toolchain it is verified against.
+  "remoteUser": "node",
+
+  "mounts": [
+    // Keep the host's npm cache out of the container. A shared cache is a shared write surface,
+    // and it is the one path that survives rebuilding the container.
+    "source=devenvtemplate-npm-cache,target=/home/node/.npm,type=volume"
+  ],
+
+  "containerEnv": {
+    // Marks the environment for scripts and for anyone reading a failure report.
+    "DEVENV_SANDBOX": "1"
+  }
+}

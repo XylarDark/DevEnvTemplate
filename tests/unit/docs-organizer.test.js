@@ -8,11 +8,9 @@
  * - Conflict detection
  */
 
-const { describe, test, before } = require('node:test');
+const { describe, test } = require('node:test');
 const assert = require('node:assert');
 const path = require('path');
-const fs = require('fs').promises;
-const { promises: fsPromises } = require('fs');
 
 // Import compiled modules
 let docsOrganizer;
@@ -33,7 +31,6 @@ describe('Documentation Organizer', () => {
 
   describe('matchesPattern', () => {
     test('should match simple wildcard patterns', () => {
-      // Test pattern matching logic
       const testCases = [
         { pattern: '*_DEPLOYMENT.md', filename: 'RAILWAY_DEPLOYMENT.md', expected: true },
         { pattern: '*_DEPLOYMENT.md', filename: 'VERCEL_DEPLOYMENT.md', expected: true },
@@ -42,12 +39,29 @@ describe('Documentation Organizer', () => {
         { pattern: 'API*.md', filename: 'REST_API.md', expected: false },
       ];
 
-      // Note: matchesPattern is not exported, so we test through determineTargetDirectory
-      // This is a placeholder for when we export the function or test it indirectly
       testCases.forEach(({ pattern, filename, expected }) => {
-        // Pattern matching is tested indirectly through determineTargetDirectory
-        assert.ok(true, 'Pattern matching tested through integration');
+        assert.strictEqual(
+          docsOrganizer.matchesPattern(filename, pattern),
+          expected,
+          `${pattern} against ${filename} should be ${expected}`
+        );
       });
+    });
+
+    test('should anchor patterns at both ends', () => {
+      // Without anchoring, 'API*.md' would match 'REST_API_GUIDE.md' via a substring search.
+      // The case above depends on this, so assert the property directly.
+      assert.strictEqual(docsOrganizer.matchesPattern('REST_API_GUIDE.md', 'API*.md'), false);
+      assert.strictEqual(docsOrganizer.matchesPattern('API_GUIDE.md.bak', 'API*.md'), false);
+    });
+
+    test('should match case-insensitively', () => {
+      assert.strictEqual(docsOrganizer.matchesPattern('readme.md', 'README.md'), true);
+    });
+
+    test('should treat ? as a single character', () => {
+      assert.strictEqual(docsOrganizer.matchesPattern('v1.md', 'v?.md'), true);
+      assert.strictEqual(docsOrganizer.matchesPattern('v10.md', 'v?.md'), false);
     });
   });
 

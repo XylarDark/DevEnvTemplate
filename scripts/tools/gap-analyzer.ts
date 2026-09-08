@@ -142,6 +142,8 @@ class GapAnalyzer {
     await this.runStage('CI/CD', () => this.analyzeCI());
     await this.runStage('Boundaries', () => this.analyzeBoundaries());
     await this.runStage('Quality Gates', () => this.analyzeQualityGates());
+    // Cheap (a handful of file reads) and stack-independent, so it runs in fast mode too.
+    await this.runStage('Agent Context', () => this.analyzeAgentContext());
 
     if (this.isFastMode()) {
       await this.runStage('Dependencies', () => this.analyzeDependencies());
@@ -152,7 +154,7 @@ class GapAnalyzer {
         description:
           'Fast mode skips documentation, accessibility, Docker, environment, and git-hook checks.',
         impact: 'Some gaps only appear in full scans.',
-        recommendation: 'Re-run `npm run doctor --full` before releases for complete coverage.',
+        recommendation: 'Re-run `npm run doctor` (without --fast) before releases for complete coverage.',
         effort: 'low',
         files: [],
       });
@@ -957,6 +959,223 @@ echo "npm run lint && npm run format:check" > .husky/pre-commit`,
         effort: 'medium',
         files: ['mypy.ini', 'pyproject.toml'],
       });
+    }
+  }
+
+  /**
+   * Checks the layer AI agents actually read. These gaps are invisible to conventional linters
+   * and CI, because nothing here affects whether the code compiles - it affects whether an agent
+   * working in the repository is given accurate instructions or misleading ones.
+   */
+  private async analyzeAgentContext(): Promise<void> {
+    await this.checkAgentInstructions();
+    await this.checkAlwaysApplyBudget();
+    await this.checkShimDrift();
+    await this.checkMcpConfig();
+  }
+
+  /**
+   * A present-but-vague instructions file is worse than an absent one: it passes every "is
+   * AGENTS.md there?" check while telling the agent nothing it can execute.
+   */
+  private async checkAgentInstructions(): Promise<void> {
+    const content = await this.readFileOrNull('AGENTS.md');
+
+    if (content === null) {
+      this.gaps.push({
+        category: 'agent-context',
+        severity: 'high',
+        title: 'No AGENTS.md',
+        description:
+          'AGENTS.md is the cross-tool standard for agent instructions, read by Cursor, Claude Code, Codex, and Gemini CLI. Without it, every agent starts by guessing how this project works.',
+        impact: 'Agents infer commands and conventions, and infer them wrong',
+        recommendation:
+          'Add AGENTS.md at the repository root stating the stack, the exact commands to run, the directory layout, and the conventions that matter',
+        effort: 'medium',
+        files: ['AGENTS.md'],
+      });
+      return;
+    }
+
+    // Actionable means an agent can execute something from it. Commands appear either in fenced
+    // blocks or as inline code, so accept both rather than mandating one format.
+    const hasCommands = /```|`(npm|npx|yarn|pnpm|make|cargo|go|python|dotnet|pip|uv) /.test(
+      content
+    );
+
+    if (!hasCommands) {
+      this.gaps.push({
+        category: 'agent-context',
+        severity: 'medium',
+        title: 'AGENTS.md Contains No Commands',
+        description:
+          'AGENTS.md exists but names no command an agent can run. Agents execute what this file lists; prose about intentions is not executable.',
+        impact: 'Agents guess build and test commands instead of using yours',
+        recommendation:
+          'List the exact commands for building, testing, and linting, and note any argument conventions (for example that npm needs `--` before script flags)',
+        effort: 'low',
+        files: ['AGENTS.md'],
+      });
+    }
+
+    // The file is loaded on every turn, so its length is a per-turn tax. The threshold is
+    // generous; the point is to catch a file growing back into a bootstrap dump.
+    const lineCount = content.split('\n').length;
+
+    if (lineCount > 400) {
+      this.gaps.push({
+        category: 'agent-context',
+        severity: 'medium',
+        title: 'AGENTS.md Is Too Long',
+        description: `AGENTS.md is ${lineCount} lines and is loaded on every turn. Long always-loaded context measurably reduces accuracy, including when its content is relevant.`,
+        impact: 'Every conversation pays for context that most turns do not need',
+        recommendation:
+          'Keep AGENTS.md under roughly 200 lines. Move procedural detail into skills under .agents/skills/ and file-specific detail into glob-scoped rules',
+        effort: 'medium',
+        files: ['AGENTS.md'],
+      });
+    }
+  }
+
+  /**
+   * Always-applied rules are billed on every turn whether or not they are relevant, so the
+   * budget is measured in lines rather than in file count.
+   */
+  private async checkAlwaysApplyBudget(): Promise<void> {
+    let entries: string[];
+
+    try {
+      entries = await fs.readdir(path.join(this.rootDir, '.cursor', 'rules'));
+    } catch {
+      return;
+    }
+
+    const alwaysApplied: string[] = [];
+    let totalLines = 0;
+
+    for (const entry of entries) {
+      if (!entry.endsWith('.mdc')) {
+        continue;
+      }
+
+      const content = await this.readFileOrNull(path.join('.cursor', 'rules', entry));
+      if (content === null) {
+        continue;
+      }
+
+      if (/^alwaysApply:\s*true/m.test(content)) {
+        alwaysApplied.push(entry);
+        totalLines += content.split('\n').length;
+      } else if (!/^globs:\s*\S/m.test(content) && !/^description:\s*\S/m.test(content)) {
+        // Neither scoped nor described, so nothing tells Cursor when to load it.
+        this.gaps.push({
+          category: 'agent-context',
+          severity: 'low',
+          title: `Cursor Rule Has No Trigger: ${entry}`,
+          description: `${entry} sets neither globs nor a description, so Cursor has no signal for when to apply it.`,
+          impact: 'The rule may never load, or may load when it is irrelevant',
+          recommendation: `Add globs to scope ${entry} to specific files, or a description so the agent can decide`,
+          effort: 'low',
+          files: [`.cursor/rules/${entry}`],
+        });
+      }
+    }
+
+    if (totalLines > 200) {
+      this.gaps.push({
+        category: 'agent-context',
+        severity: 'high',
+        title: 'Always-Applied Rule Budget Exceeded',
+        description: `${alwaysApplied.length} always-applied rule(s) total ${totalLines} lines, loaded on every turn regardless of the task: ${alwaysApplied.join(', ')}.`,
+        impact: 'Thousands of tokens per turn of context that lowers accuracy when irrelevant',
+        recommendation:
+          'Move universal facts into AGENTS.md, procedural knowledge into .agents/skills/, and file-specific guidance into glob-scoped rules, then set alwaysApply: false',
+        effort: 'medium',
+        files: alwaysApplied.map(file => `.cursor/rules/${file}`),
+      });
+    }
+  }
+
+  /**
+   * Shims exist so each tool finds instructions where it looks. A shim that grew its own content
+   * is the documented failure mode: two sources of truth that drift, with no signal about which
+   * one is current.
+   */
+  private async checkShimDrift(): Promise<void> {
+    if (!(await this.fileExists('AGENTS.md'))) {
+      return;
+    }
+
+    const shims = [
+      { file: 'CLAUDE.md', tool: 'Claude Code' },
+      { file: path.join('.github', 'copilot-instructions.md'), tool: 'GitHub Copilot' },
+    ];
+
+    for (const { file, tool } of shims) {
+      const content = await this.readFileOrNull(file);
+      if (content === null || /AGENTS\.md/.test(content)) {
+        continue;
+      }
+
+      const substantiveLines = content
+        .split('\n')
+        .filter(line => line.trim() && !line.trim().startsWith('#')).length;
+
+      if (substantiveLines > 5) {
+        this.gaps.push({
+          category: 'agent-context',
+          severity: 'medium',
+          title: `Tool Shim Has Drifted: ${file}`,
+          description: `${file} carries its own instructions and never references AGENTS.md, so ${tool} reads different guidance than every other tool.`,
+          impact: 'Tools follow conflicting instructions and nobody can tell which is stale',
+          recommendation: `Reduce ${file} to a pointer at AGENTS.md so the content lives in one place`,
+          effort: 'low',
+          files: [file],
+        });
+      }
+    }
+  }
+
+  /**
+   * An MCP server entry is a command the agent executes with the caller's credentials, and both
+   * of Cursor's MCP vulnerabilities landed in this file. A literal secret here is committed to
+   * git and handed to a subprocess.
+   */
+  private async checkMcpConfig(): Promise<void> {
+    for (const candidate of [path.join('.cursor', 'mcp.json'), '.mcp.json']) {
+      const content = await this.readFileOrNull(candidate);
+      if (content === null) {
+        continue;
+      }
+
+      // A reference such as ${env:TOKEN} or ${TOKEN} is correct; a literal value is not.
+      const hasInlineSecret =
+        /"[A-Za-z0-9_]*(?:KEY|TOKEN|SECRET|PASSWORD|CREDENTIALS?)"\s*:\s*"(?!\$\{)[^"]{8,}"/i.test(
+          content
+        );
+
+      if (hasInlineSecret) {
+        this.gaps.push({
+          category: 'security',
+          severity: 'high',
+          title: 'MCP Config Contains an Inline Secret',
+          description: `${candidate} appears to hold a credential as a literal value rather than an environment reference.`,
+          impact:
+            'The credential is committed to git and passed to a subprocess the agent starts',
+          recommendation:
+            'Replace the literal with an environment reference (${env:NAME} for Cursor, ${NAME} for Claude Code), gitignore the real config, and rotate the exposed credential',
+          effort: 'low',
+          files: [candidate],
+        });
+      }
+    }
+  }
+
+  private async readFileOrNull(relativePath: string): Promise<string | null> {
+    try {
+      return await fs.readFile(path.join(this.rootDir, relativePath), 'utf8');
+    } catch {
+      return null;
     }
   }
 

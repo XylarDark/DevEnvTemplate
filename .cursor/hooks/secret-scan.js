@@ -342,16 +342,27 @@ async function main() {
     reason: decision.user_message || undefined,
   });
 
-  // Stop holding the input pipe open; otherwise the process can outlive its usefulness and
-  // get killed at the hook timeout, which reads as a hook failure.
+  // Release the input pipe so nothing keeps this process alive once the decision is written.
   process.stdin.destroy();
 
-  // Exit from the write callback so the bytes are flushed first. Exiting earlier truncates
-  // the decision; not exiting at all risks the timeout above.
-  process.stdout.write(payload, () => {
+  // Write synchronously to fd 1, then exit.
+  //
+  // `process.stdout.write()` is asynchronous on a Windows pipe, and its callback fires when the
+  // data is queued rather than delivered. Both obvious spellings therefore lose the payload:
+  // exiting after the callback can truncate it, and exiting naturally can drop it too. The audit
+  // log recorded a complete 59-byte write on invocations that Cursor reported as returning no
+  // output - and with `failClosed` set, no output blocks the operation.
+  //
+  // `fs.writeSync` blocks until the OS accepts the bytes, which removes the race entirely.
+  try {
+    fs.writeSync(1, payload);
     audit({ wrote: payload.length });
-    process.exit(0);
-  });
+  } catch (error) {
+    // EPIPE means Cursor stopped reading, so there is nothing left to report to.
+    audit({ writeFailed: error.message });
+  }
+
+  process.exit(0);
 }
 
 // Only read stdin when run as a hook; requiring this file (in tests) must not block on input.

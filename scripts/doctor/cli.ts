@@ -25,6 +25,8 @@ interface HealthScore {
   testing: number;
   ci: number;
   typeSafety: number;
+  /** Quality of the instructions, rules, and skills that AI agents read. */
+  agentContext: number;
   documentation: number;
 }
 
@@ -51,6 +53,11 @@ interface DoctorReport {
    * analyzer category cannot silently stop affecting the score.
    */
   unscoredCategories: string[];
+  /**
+   * Controls the doctor cannot inspect. Carried in the report itself so consumers of the JSON
+   * see the same caveat as readers of the console output.
+   */
+  notVerifiedFromRepositoryContents: string[];
 }
 
 /** Scoring configuration, loaded from config/quality-budgets.json. */
@@ -68,7 +75,14 @@ interface HealthScoreConfig {
  */
 const DEFAULT_HEALTH_SCORE_CONFIG: HealthScoreConfig = {
   penalties: { high: 20, medium: 10, low: 0 },
-  weights: { testing: 0.25, ci: 0.2, typeSafety: 0.2, quality: 0.2, security: 0.15 },
+  weights: {
+    testing: 0.22,
+    ci: 0.18,
+    typeSafety: 0.18,
+    quality: 0.17,
+    security: 0.15,
+    agentContext: 0.1,
+  },
   categoryMap: {
     testing: 'testing',
     ci: 'ci',
@@ -84,10 +98,25 @@ const DEFAULT_HEALTH_SCORE_CONFIG: HealthScoreConfig = {
     environment: 'security',
     dependencies: 'security',
     docker: 'security',
+    'agent-context': 'agentContext',
     documentation: 'documentation',
     observability: 'documentation',
   },
 };
+
+/**
+ * Controls this doctor cannot observe, because it reads the working tree and none of these live
+ * there. Reported on every run so that the absence of a finding is never mistaken for a finding
+ * of absence - the failure mode where "the scanner found nothing" is read as "we are covered".
+ */
+const UNVERIFIABLE_CONTROLS = [
+  'Branch protection rules and required status checks (stored in the host, not the repository)',
+  'Whether CI actually ran, and whether it ran these same commands',
+  'Environment approval rules and deployment gates',
+  'Which secrets exist in CI, and who can read them',
+  'Repository access, who can push, and who can merge',
+  'Whether published artifacts were built from this source',
+];
 
 /** Maps analyzer gap severity onto the doctor's issue severity. */
 const SEVERITY_TO_ISSUE: Record<GapSeverity, Issue['severity']> = {
@@ -481,6 +510,7 @@ function buildDoctorReport(gapReport: GapReport, config: HealthScoreConfig): Doc
     info,
     quickWins,
     unscoredCategories: [...unscoredCategories].sort(),
+    notVerifiedFromRepositoryContents: UNVERIFIABLE_CONTROLS,
   };
 }
 
@@ -502,6 +532,7 @@ function calculateHealthScore(gaps: Gap[], config: HealthScoreConfig): HealthSco
     'testing',
     'ci',
     'typeSafety',
+    'agentContext',
     'documentation',
   ];
 
@@ -529,6 +560,7 @@ function calculateHealthScore(gaps: Gap[], config: HealthScoreConfig): HealthSco
     testing: scoreFor('testing'),
     ci: scoreFor('ci'),
     typeSafety: scoreFor('typeSafety'),
+    agentContext: scoreFor('agentContext'),
     documentation: scoreFor('documentation'),
   };
 
@@ -568,6 +600,7 @@ function displayReport(report: DoctorReport) {
   console.log(`   Testing:       ${formatScore(report.healthScore.testing)}`);
   console.log(`   CI/CD:         ${formatScore(report.healthScore.ci)}`);
   console.log(`   Type Safety:   ${formatScore(report.healthScore.typeSafety)}`);
+  console.log(`   Agent Context: ${formatScore(report.healthScore.agentContext)}`);
   console.log(`   Documentation: ${formatScore(report.healthScore.documentation)}`);
   console.log('');
 
@@ -604,14 +637,22 @@ function displayReport(report: DoctorReport) {
     console.log('');
   }
 
-  // Good practices
-  const goodCount = Math.max(0, 15 - report.critical.length - report.warnings.length);
-  if (goodCount > 0) {
-    console.log(`🟢 Good Practices (${goodCount}):`);
-    console.log('   - Basic project structure present');
-    if (report.healthScore.security > 80) console.log('   - Security measures in place');
-    if (report.healthScore.testing > 80) console.log('   - Testing infrastructure present');
-    if (report.healthScore.ci > 80) console.log('   - CI/CD pipeline configured');
+  // Good practices, derived from the dimension scores rather than counted. The previous
+  // implementation printed `15 - issues` as the count, which was a number with no referent.
+  const strengths = (
+    [
+      ['security', 'Security baseline in place'],
+      ['testing', 'Testing infrastructure present'],
+      ['ci', 'CI pipeline configured'],
+      ['typeSafety', 'Type safety enforced'],
+      ['quality', 'Linting and formatting configured'],
+      ['agentContext', 'Agent instructions present and scoped'],
+    ] as const
+  ).filter(([dimension]) => report.healthScore[dimension] > 80);
+
+  if (strengths.length > 0) {
+    console.log(`🟢 Working well (${strengths.length}):`);
+    strengths.forEach(([, label]) => console.log(`   - ${label}`));
     console.log('');
   }
 
@@ -624,16 +665,25 @@ function displayReport(report: DoctorReport) {
     console.log('');
   }
 
-  // Next steps
+  // Controls the doctor cannot see. Printed on every run, including a clean one, so that a high
+  // score is never read as a statement about them.
+  console.log('❔ Not verified from repository contents:');
+  UNVERIFIABLE_CONTROLS.forEach(item => console.log(`   - ${item}`));
+  console.log('   These live outside the working tree. A clean report says nothing about them.');
+  console.log('');
+
+  // Next steps. Numbered from the steps that actually apply, rather than from a fixed list with
+  // gaps in it where a step was skipped.
+  const nextSteps = [
+    ...(report.critical.length > 0 ? ['Address critical issues first'] : []),
+    ...(report.quickWins.length > 0 ? ['Apply quick wins with: npm run doctor -- --fix'] : []),
+    'View full report: .devenv/health-report.json',
+    'Generate action plan: node scripts/tools/plan-generator.js',
+    'Verify with evidence: npm run verify',
+  ];
+
   console.log('📋 Next Steps:');
-  if (report.critical.length > 0) {
-    console.log('   1. Address critical issues first');
-  }
-  if (report.quickWins.length > 0) {
-    console.log('   2. Apply quick wins with: npm run doctor -- --fix');
-  }
-  console.log('   3. View full report: .devenv/health-report.json');
-  console.log('   4. Generate action plan: node scripts/tools/plan-generator.js');
+  nextSteps.forEach((step, index) => console.log(`   ${index + 1}. ${step}`));
 }
 
 /**

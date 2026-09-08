@@ -10,9 +10,8 @@
  * - Error handling
  */
 
-const { describe, test, before, after } = require('node:test');
+const { describe, test } = require('node:test');
 const assert = require('node:assert');
-const path = require('path');
 const { CleanupEngine, executeCleanup } = require('../../dist/scripts/cleanup/engine');
 const { createTempFixture, cleanupTempFixture } = require('../utils/fixture-helper');
 

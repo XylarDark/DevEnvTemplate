@@ -64,7 +64,7 @@ describe('CI Tools Workflow Integration', () => {
   it('should run stack-detector and generate stack report', async () => {
     const stackDetectorPath = stackDetectorBin(projectRoot);
 
-    const { stdout } = await execAsync(`node "${stackDetectorPath}"`, { cwd: tempDir });
+    await execAsync(`node "${stackDetectorPath}"`, { cwd: tempDir });
 
     // Verify stack report was created
     const stackReportPath = path.join(tempDir, '.devenv', 'stack-report.json');
@@ -101,7 +101,7 @@ describe('CI Tools Workflow Integration', () => {
 
     // Run gap analyzer
     const gapAnalyzerPath = gapAnalyzerBin(projectRoot);
-    const { stdout } = await execAsync(`node "${gapAnalyzerPath}"`, { cwd: tempDir });
+    await execAsync(`node "${gapAnalyzerPath}"`, { cwd: tempDir });
 
     // Verify gaps report was created
     const gapsReportPath = path.join(tempDir, '.devenv', 'gaps-report.md');
@@ -140,7 +140,7 @@ describe('CI Tools Workflow Integration', () => {
 
     // Run plan generator
     const planGeneratorPath = planGeneratorBin(projectRoot);
-    const { stdout } = await execAsync(`node "${planGeneratorPath}"`, { cwd: tempDir });
+    await execAsync(`node "${planGeneratorPath}"`, { cwd: tempDir });
 
     // Verify hardening plan was created
     const planPath = path.join(tempDir, '.devenv', 'hardening-plan.md');
