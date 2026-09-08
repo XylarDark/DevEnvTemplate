@@ -32,6 +32,12 @@ subdirectory that fits, not to this root.
 | [operational/automation-gaps.md](operational/automation-gaps.md) | What cannot be automated, and why.            |
 | [guides/mistake-patterns.md](guides/mistake-patterns.md)         | Recurring mistakes worth recognizing early.   |
 
+## Decisions
+
+| Document                                                                     | Decides                                       |
+| ---------------------------------------------------------------------------- | --------------------------------------------- |
+| [adr/001-agent-hook-failure-posture.md](adr/001-agent-hook-failure-posture.md) | Whether the secret-scan hook fails open or closed, and what that costs. |
+
 ## Agent context
 
 Start at [AGENTS.md](../AGENTS.md) in the repository root. It is the canonical, always-loaded

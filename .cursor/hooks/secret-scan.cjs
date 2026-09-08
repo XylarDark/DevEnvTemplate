@@ -14,8 +14,9 @@
  *   stdout - `{"permission": "allow" | "deny" | "ask", "user_message": ..., "agent_message": ...}`
  *            The message keys are snake_case; camelCase variants are silently discarded.
  *
- * Three implementation constraints, all learned the hard way. With `failClosed` set, each of
- * these failure modes blocks every operation in the editor, so they matter more than usual:
+ * Three implementation constraints, all learned the hard way. Each of these failure modes
+ * silently allows the operation under the configured fail-open posture, and would block every
+ * operation in the editor under fail-closed, so they matter either way:
  *
  * 1. Write the decision with `fs.writeSync(1, ...)`, not `process.stdout.write`. On a Windows
  *    pipe the latter is asynchronous and its callback fires when the data is queued rather than
@@ -28,8 +29,14 @@
  *
  * 3. Cursor prefixes the payload with a UTF-8 BOM, which `JSON.parse` rejects.
  *
- * Cursor fails *open* on crash, timeout, or unparsable output, so `failClosed: true` in
- * `.cursor/hooks.json` is what actually closes that hole.
+ * Cursor fails *open* on crash, timeout, or unparsable output. `failClosed: true` would close
+ * that hole, and this template deliberately does not set it: fail-closed was tried and an
+ * intermittent transport flake made it block routine file reads. The posture, what fail-open
+ * gives up, and the conditions under which you should choose differently are recorded in
+ * `docs/adr/001-agent-hook-failure-posture.md`. Do not flip the value without reading it.
+ *
+ * The audit log below is what makes fail-open observable at all: it is the only way to tell a
+ * hook that denied something from a hook that never ran.
  */
 
 const fs = require('fs');
