@@ -41,8 +41,21 @@ export interface IntegrationResult {
   skipped: string[];
   /** The host's own rules, which the template does not manage. */
   preserved: string[];
+  /**
+   * Skills copied into the host that contain a section describing *this* repository — its
+   * scripts, its docs layout — rather than the portable practice. The host must rewrite those
+   * sections, so they are named at the moment of copying rather than left to be discovered.
+   */
+  needsLocalization: string[];
   recommendations: string[];
 }
+
+/**
+ * Opens any part of a skill that is specific to the repository shipping it. A host that copies
+ * the skill has to replace that section: a skill naming `npm run lint` in a project with no
+ * linter sends agents to run a command that does not exist, and nothing fails loudly.
+ */
+const LOCALIZE_MARKER = 'Localize on copy';
 
 /**
  * Copy the glob-scoped rules that match the detected stack. Existing host files are never
@@ -95,9 +108,10 @@ async function copyStackRules(
 async function copySkills(
   templateSkillsPath: string,
   projectSkillsPath: string
-): Promise<{ copied: string[]; preserved: string[] }> {
+): Promise<{ copied: string[]; preserved: string[]; needsLocalization: string[] }> {
   const copied: string[] = [];
   const preserved: string[] = [];
+  const needsLocalization: string[] = [];
 
   let entries;
   try {
@@ -106,7 +120,7 @@ async function copySkills(
     if (error.code !== 'ENOENT') {
       logger.warn('Error reading template skills', { error: error.message });
     }
-    return { copied, preserved };
+    return { copied, preserved, needsLocalization };
   }
 
   for (const entry of entries) {
@@ -131,12 +145,16 @@ async function copySkills(
       await fs.mkdir(destinationDir, { recursive: true });
       await fs.copyFile(source, destination);
       copied.push(`${entry.name}/SKILL.md`);
+
+      if ((await fs.readFile(source, 'utf8')).includes(LOCALIZE_MARKER)) {
+        needsLocalization.push(entry.name);
+      }
     } catch (error: any) {
       logger.warn(`Error copying skill ${entry.name}`, { error: error.message });
     }
   }
 
-  return { copied, preserved };
+  return { copied, preserved, needsLocalization };
 }
 
 async function exists(target: string): Promise<boolean> {
@@ -190,6 +208,7 @@ export async function integrateCursorRules(
     copied: [],
     skipped: [],
     preserved: [],
+    needsLocalization: [],
     recommendations: [],
   };
 
@@ -218,6 +237,15 @@ export async function integrateCursorRules(
   const skills = await copySkills(templateSkillsPath, projectSkillsPath);
   result.copied.push(...skills.copied);
   result.skipped.push(...skills.preserved);
+  result.needsLocalization.push(...skills.needsLocalization);
+
+  // Told at the moment of copying, because the alternative is an agent in the host project
+  // running a command that only exists in this repository and getting no useful error.
+  if (result.needsLocalization.length > 0) {
+    result.recommendations.push(
+      `${result.needsLocalization.length} copied skill(s) contain a "${LOCALIZE_MARKER}" section describing this template's own commands and layout: ${result.needsLocalization.join(', ')}. Rewrite those sections for your project, or delete them. The rest of each skill is stack-agnostic and needs no changes.`
+    );
+  }
 
   if (result.preserved.length > 0) {
     result.recommendations.push(

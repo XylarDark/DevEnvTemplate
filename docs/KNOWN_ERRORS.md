@@ -14,6 +14,10 @@
 | **Fix**        | Exact steps or patch                         |
 | **Prevention** | Test, doc link, or rule update               |
 
+**Title the entry with the symptom, not the cause.** Nobody arrives here knowing the cause; they arrive with an error string and a behavior, so `Tests pass while asserting nothing` is findable and `helper returned the wrong slice` is not. Where it helps, record what looked like the cause and was not — that saves the next reader the same detour.
+
+**Augment, do not duplicate.** When a failure you already have an entry for reappears wearing a new face, add the new symptom to the existing entry. Two entries for one cause split the search results, and each copy then goes stale on its own schedule.
+
 ---
 
 ## Template examples (replace with your project’s real entries)
@@ -78,7 +82,8 @@
   indistinguishable from a working one — but under `failClosed` it blocks the whole editor. The
   audit log at `.devenv/hook-audit.log` now records the event, target, and whether stdin timed
   out, which is the only way this was diagnosable. Stress-verified at 15 invocations each for 65B,
-  20KB and 164KB payloads.
+  20KB and 164KB payloads. The posture this settled on, and what it gives up, is recorded in
+  [adr/001-agent-hook-failure-posture.md](adr/001-agent-hook-failure-posture.md).
 
 ### A fail-closed hook can lock you out of fixing it
 
@@ -121,10 +126,39 @@
 - **Prevention:** `tests/unit/hooks-config.test.js` requires the configured command to reference a
   `.cjs` script. Anything copied into a host project must not assume the host's module system.
 
+### Copied skills told a host project to run commands that only exist here
+
+- **Date:** 2026-09-08
+- **Symptom:** In a project that had integrated this template's agent layer, four copied skills
+  instructed agents to run `npm run check:doc-links`, `npm run lint`, and `node --test`. None of
+  those exist in that project — it has no link checker, no ESLint, and uses a different test
+  runner. The skills also carried a copy of *this* repository's docs-root inventory, which does
+  not match the host's `DOCS_LAYOUT.md`. Nothing failed loudly: an agent following the skill runs
+  a command that does not exist, or worse, files a document per an inventory that is not the
+  host's.
+- **Cause:** `copySkills` in `scripts/tools/cursor-rules-integration.ts` copies each `SKILL.md`
+  verbatim, which is correct — skills are stack-agnostic procedural knowledge and all of them
+  travel. But the skills themselves mixed portable practice with this repository's own commands
+  and file inventory, in the same prose, with nothing marking which was which. A consumer had no
+  way to tell what needed localizing short of reading every line against their own repo. The
+  deeper error is the template's: it assumed its toolchain would be adopted wholesale. The
+  consumer in question deliberately has no ESLint, Prettier, Husky or commitlint, and records
+  their absence as an accepted state rather than a gap to close.
+- **Fix:** Every repo-specific section in a shipped skill now opens with a **Localize on copy**
+  callout naming what must be replaced, and copied inventories were replaced with pointers to
+  the file that owns them (`DOCS_LAYOUT.md` owns the docs root list; the skill points at it).
+  The README now states which layers a consumer is expected to adopt and which are optional.
+- **Prevention:** `tests/unit/skill-portability.test.js` fails when a skill names a repo-local
+  script outside a marked section, and `integrateCursorRules` reports which copied skills contain
+  a localize marker so the host is told what to adapt at the moment it copies them. When writing
+  a skill, keep the practice and the commands in separate sections: the practice is why the skill
+  ships, the commands are an example of running it here.
+
 ---
 
 ## Related
 
+- [adr/001-agent-hook-failure-posture.md](adr/001-agent-hook-failure-posture.md) — why the secret-scan hook runs fail-open
 - [TROUBLESHOOTING.md](TROUBLESHOOTING.md) — broader operational issues
 - [docs/operational/automation-gaps.md](operational/automation-gaps.md) — what automation cannot do yet
 - `.agents/skills/defensive-programming/SKILL.md` — defensive coding and where to record errors

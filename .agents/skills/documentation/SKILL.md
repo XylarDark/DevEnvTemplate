@@ -1,6 +1,6 @@
 ---
 name: documentation
-description: Use when writing or updating code comments, README or API docs, or adding any file under docs/ - covers comment intent, the canonical docs/ layout from DOCS_LAYOUT.md, and verifying links with npm run check:doc-links.
+description: Use when writing or updating code comments, README or API docs, or adding any file under docs/ - covers comment intent, the canonical docs/ layout from DOCS_LAYOUT.md, the entry shapes for the known-errors and automation-gaps logs, and verifying that relative links still resolve after a move.
 ---
 
 # Documentation
@@ -32,8 +32,13 @@ what can be configured, how to contribute, and the license.
 All documentation lives under `docs/`, laid out per `docs/DOCS_LAYOUT.md`, which is the
 semantic source of truth for what belongs where.
 
-**The docs root is an exhaustive list of entry points.** Only these files belong at
-`docs/`:
+**The docs root is an exhaustive list of entry points.** `DOCS_LAYOUT.md` owns that
+inventory. Read it there rather than trusting the copy below — a second copy of a list
+is a second thing to keep current, and it is always the copy that goes stale.
+
+> **Localize on copy.** The two tables below and the link-checking command further down
+> describe DevEnvTemplate's docs tree and its tooling. A host project has its own layout
+> and may have no link checker at all; replace them rather than leaving them to mislead.
 
 | File                           | Purpose                                  |
 | ------------------------------ | ---------------------------------------- |
@@ -73,6 +78,37 @@ Rules for new docs:
 4. `config/docs-organization.yaml` drives pattern-based moves (see
    `docs/guides/docs-organization.md`). Automation may relocate a misplaced file, but author
    it in the right folder anyway.
+
+## The two operational logs, and why their shape matters
+
+Two documents are append-only records rather than explanations, and both earn their
+keep only if a future reader can find the entry they need.
+
+**`docs/KNOWN_ERRORS.md`** — one entry per expensive or non-obvious failure, with a
+fixed shape:
+
+| Field      | Holds                                                           |
+| ---------- | --------------------------------------------------------------- |
+| Date       | When it was diagnosed                                           |
+| Symptom    | What was observed, in the words a future reader will search for |
+| Cause      | The actual mechanism, not the first suspect                     |
+| Fix        | What was changed, with the commit or file                       |
+| Prevention | The test, rule, or guard that stops a recurrence                |
+
+Title the entry with the **symptom**, not the cause. Nobody arrives knowing the cause;
+they arrive with an error string and a behavior. "Tests pass while asserting nothing"
+is findable, "helper returned the wrong slice" is not. Where it helps, record what
+looked like the cause and was not — that saves the next reader the same detour.
+
+When a failure you already have an entry for shows up wearing a new face, **augment
+the existing entry with the new symptom** rather than filing a second one. Duplicates
+split the search results and each copy then decays separately.
+
+**`docs/operational/automation-gaps.md`** — limits that cannot be automated away: the
+setting with no API, the resource with no lock, the cleanup path that cannot run. Each
+entry records what is needed, why automation fails, the interim workaround, and what
+would close the gap. This file exists to stop the same doomed attempt being retried
+every few months, so an entry is only finished when it says what was _ruled out_.
 
 ## Links
 

@@ -107,6 +107,32 @@ describe('Cursor Rules Integration', () => {
     assert.match(skill, /name: plan-first/);
   });
 
+  test('should name the copied skills the host has to localize', async () => {
+    // A skill that names this template's own scripts is a false statement about the host, so the
+    // host is told which files to rewrite at the moment they land rather than discovering it when
+    // an agent runs a command that does not exist there.
+    await fs.writeFile(
+      path.join(templateSkillsDir, 'plan-first', 'SKILL.md'),
+      '---\nname: plan-first\ndescription: Use when testing.\n---\n\n' +
+        "> **Localize on copy.** These are the template's scripts, not your project's.\n\n" +
+        '```\nnpm run doctor\n```\n'
+    );
+
+    const result = await integrate();
+
+    assert.deepStrictEqual(result.needsLocalization, ['plan-first']);
+    assert.ok(
+      result.recommendations.some(text => text.includes('plan-first')),
+      'expected a recommendation naming the skill that needs localizing'
+    );
+  });
+
+  test('should not ask a host to localize a skill with no repo-specific section', async () => {
+    const result = await integrate();
+
+    assert.deepStrictEqual(result.needsLocalization, []);
+  });
+
   test('should copy Unreal and Unity rules when those stacks are detected', async () => {
     const result = await integrate({
       ...vanillaStack,

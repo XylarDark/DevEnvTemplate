@@ -80,6 +80,10 @@ Design checklist:
 
 ## Language and tooling conventions in this repo
 
+> **Localize on copy.** Everything above is stack-agnostic; this section is not. A
+> host project may use a different language, and may deliberately have **no linter
+> at all** — in which case say so here rather than leaving instructions to run one.
+
 - TypeScript in strict mode, targeting ES2022, on Node.js 24+.
 - Lint with ESLint flat config in `eslint.config.js`. The legacy `.eslintrc.*` format is
   dead — ESLint 10 ignores it entirely, so never add one.

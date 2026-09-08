@@ -10,6 +10,10 @@ commands, generate code, record errors, and finish cleanly.
 
 ## Project facts
 
+> **Localize on copy.** This section describes DevEnvTemplate itself. If you copied
+> this skill into a host project, rewrite it for that project — a skill that states
+> facts about the wrong repository is worse than one that states none.
+
 - Node.js **24+** is required. TypeScript is strict, ES2022, CommonJS.
 - `AGENTS.md` at the repo root (plus any nested `AGENTS.md`) is the canonical
   always-loaded project context. Treat it as always true.
@@ -18,6 +22,10 @@ commands, generate code, record errors, and finish cleanly.
   `docs/best-practices/`, `docs/operational/`, or `docs/archive/`.
 
 ## Commands
+
+> **Localize on copy.** These are DevEnvTemplate's scripts. A host project has its
+> own, and may deliberately have none for lint or format — see
+> [what a host is expected to adopt](../../../README.md#adopt-it-in-layers).
 
 ```
 npm run doctor            # health check
@@ -30,13 +38,34 @@ npm run clean             # remove build output
 npm run check:doc-links   # validate documentation links
 ```
 
-**Always use the `--` separator when passing a flag through an npm script.** npm
-consumes flags that appear before it, so the script never sees them:
+**Always use the `--` separator when passing a flag through an npm script.** This
+part is not local: npm consumes flags that appear before the separator, so the
+script never sees them.
 
 ```
 npm run doctor -- --fix     # correct: --fix reaches the CLI
 npm run doctor --fix        # wrong: npm swallows --fix
 ```
+
+A package manager can do worse than ignore a forwarded argument: it may append the
+argument to the end of the script, folding it into the **previous flag's value**. A
+script of `serve --host` invoked as `run serve -- --port 5174` becomes
+`serve --host --port 5174` if you are lucky and `serve --host 5174` if you are not,
+and the failure then surfaces as a name-resolution error far from the cause. When a
+value must be fixed, pin it in the tool's config file rather than passing it through
+the package manager.
+
+## Establish a baseline before your first edit
+
+Record what the repository looked like before you touched it: the test count and how
+many passed, whether the type check was clean, and which checks were already failing.
+Without that, any breakage you meet later is indistinguishable from something you
+caused, and proving otherwise is expensive. State the baseline next to the final
+numbers when you report.
+
+This matters most when you are not alone in the repository. If another agent or
+person may be working in the same tree at the same time, read the
+`multi-agent-collaboration` skill before staging anything.
 
 ## Conversation and context
 
