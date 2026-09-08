@@ -19,7 +19,7 @@ import type {
   EnvLoaderInfo,
   DependencyAuditInfo,
 } from '../types/gaps';
-import { STANDARD_CONDITIONAL_FILES, STANDARD_CORE_FILES } from './cursor-rules-adapter';
+import { STACK_SCOPED_FILES, RETIRED_ALWAYS_ON_FILES } from './cursor-rules-adapter';
 
 type DetectorMode = 'fast' | 'full';
 
@@ -190,9 +190,9 @@ class StackDetector {
       cursorRules: {
         present: false,
         existingFiles: [],
-        coreFiles: [],
-        conditionalFiles: [],
+        stackFiles: [],
         projectSpecificFiles: [],
+        retiredAlwaysOnFiles: [],
         needsIntegration: false,
       },
     } as StackReport;
@@ -1696,44 +1696,35 @@ class StackDetector {
 
       this.stack.cursorRules!.existingFiles = mdcFiles.sort();
 
-      // Categorize files
-      const coreFiles: string[] = [];
-      const conditionalFiles: string[] = [];
+      const stackFiles: string[] = [];
+      const retiredAlwaysOnFiles: string[] = [];
       const projectSpecificFiles: string[] = [];
 
-      const standardCoreFiles = STANDARD_CORE_FILES;
-      const standardConditionalFiles = STANDARD_CONDITIONAL_FILES;
-
       for (const file of mdcFiles) {
-        if (standardCoreFiles.includes(file)) {
-          coreFiles.push(file);
-        } else if (standardConditionalFiles.includes(file)) {
-          conditionalFiles.push(file);
+        if (STACK_SCOPED_FILES.includes(file)) {
+          stackFiles.push(file);
+        } else if (RETIRED_ALWAYS_ON_FILES.includes(file)) {
+          retiredAlwaysOnFiles.push(file);
         } else {
-          // Project-specific file
           projectSpecificFiles.push(file);
         }
       }
 
-      this.stack.cursorRules!.coreFiles = coreFiles;
-      this.stack.cursorRules!.conditionalFiles = conditionalFiles;
+      this.stack.cursorRules!.stackFiles = stackFiles;
+      this.stack.cursorRules!.retiredAlwaysOnFiles = retiredAlwaysOnFiles;
       this.stack.cursorRules!.projectSpecificFiles = projectSpecificFiles;
 
-      // Determine if integration is needed
-      // Integration needed if:
-      // 1. Missing core files
-      // 2. Has project-specific files (might need merging)
-      // 3. Has conditional files that don't match detected stack
-      const missingCoreFiles = standardCoreFiles.filter(f => !coreFiles.includes(f));
-      const needsIntegration = missingCoreFiles.length > 0 || projectSpecificFiles.length > 0;
+      // Integration has something to offer when the project has no stack-scoped rule yet, or
+      // when it still carries retired always-on rules that cost context on every turn.
+      const needsIntegration = stackFiles.length === 0 || retiredAlwaysOnFiles.length > 0;
 
       this.stack.cursorRules!.needsIntegration = needsIntegration;
 
       this.logDebug('Cursor rules detection complete', {
         present: true,
         totalFiles: mdcFiles.length,
-        coreFiles: coreFiles.length,
-        conditionalFiles: conditionalFiles.length,
+        stackFiles: stackFiles.length,
+        retiredAlwaysOnFiles: retiredAlwaysOnFiles.length,
         projectSpecificFiles: projectSpecificFiles.length,
         needsIntegration,
       });

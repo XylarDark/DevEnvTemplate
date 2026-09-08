@@ -427,5 +427,5 @@ When contributing to this project:
 
 - [Main README](../README.md) - Getting started
 - [Usage Guide](../guides/usage.md) - Detailed command reference
-- [LLM Context Guide](../LLM-CONTEXT-GUIDE.md) - For AI assistants
+- [AGENTS.md](../../AGENTS.md) - Canonical context for AI agents
 - [Troubleshooting](../TROUBLESHOOTING.md) - Common issues

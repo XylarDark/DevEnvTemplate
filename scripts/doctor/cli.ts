@@ -124,7 +124,7 @@ async function runDoctor(options: CliOptions = {}) {
     // Set offline flag for any child processes
     process.env.DEVENV_OFFLINE = 'true';
     if (!options.json) {
-      console.log('ðŸ“´ Offline mode enabled: network operations disabled\n');
+      console.log('📴 Offline mode enabled: network operations disabled\n');
     }
   }
 
@@ -132,9 +132,9 @@ async function runDoctor(options: CliOptions = {}) {
     process.env.LOG_LEVEL = 'DEBUG';
   }
   if (!options.json) {
-    console.log('ðŸ¥ Development Environment Health Check\n');
+    console.log('🏥 Development Environment Health Check\n');
     if (options.debug) {
-      console.log('ðŸª² Debug logging enabled (LOG_LEVEL=DEBUG)\n');
+      console.log('🪲 Debug logging enabled (LOG_LEVEL=DEBUG)\n');
     }
   }
 
@@ -142,7 +142,7 @@ async function runDoctor(options: CliOptions = {}) {
   const { projectRoot, autoDetected } = await resolveProjectRoot(currentDir, options.projectRoot);
   if (autoDetected && !options.json) {
     console.log(
-      `â„¹ï¸ Detected embedded .devenv folder. Analyzing parent project: ${projectRoot}\n`
+      `ℹ️ Detected embedded .devenv folder. Analyzing parent project: ${projectRoot}\n`
     );
   }
   if (projectRoot !== currentDir) {
@@ -157,14 +157,14 @@ async function runDoctor(options: CliOptions = {}) {
 
   // Apply preset override if specified
   if (options.preset && !options.json) {
-    console.log(`ðŸŽ¯ Using preset: ${options.preset}\n`);
+    console.log(`🎯 Using preset: ${options.preset}\n`);
   }
 
   // Step 1: Run stack detector
   if (!options.json) {
-    console.log('ðŸ” Analyzing project stack...');
+    console.log('🔍 Analyzing project stack...');
     if (scanMode === 'fast') {
-      console.log('âš¡ Fast mode enabled: skipping deep scans for quicker feedback\n');
+      console.log('⚡ Fast mode enabled: skipping deep scans for quicker feedback\n');
     }
   }
   const stackDetectorDistPath = path.join(__dirname, '../tools/stack-detector.js');
@@ -209,14 +209,14 @@ async function runDoctor(options: CliOptions = {}) {
 
     // Check if it's a JSON parsing error
     if (error instanceof SyntaxError || details.includes('JSON') || details.includes('parse')) {
-      console.error('âŒ Failed to parse stack detector output as JSON');
+      console.error('❌ Failed to parse stack detector output as JSON');
       console.error('   This usually means the stack detector output includes log messages.');
       console.error('   Try running with --json flag or check LOG_LEVEL environment variable.');
       if (stdout) {
         console.error(`   Output preview: ${stdout.substring(0, 200)}...`);
       }
     } else {
-      console.error('âŒ Failed to detect stack:', details);
+      console.error('❌ Failed to detect stack:', details);
       console.error(
         '   Make sure you are running from the project root or use --project-root flag.'
       );
@@ -230,7 +230,7 @@ async function runDoctor(options: CliOptions = {}) {
     (stackData.cursorRules && stackData.cursorRules.needsIntegration)
   ) {
     if (!options.json) {
-      console.log('ðŸ“‹ Integrating Cursor rules...');
+      console.log('📋 Integrating Cursor rules...');
     }
 
     try {
@@ -255,31 +255,32 @@ async function runDoctor(options: CliOptions = {}) {
           projectRoot: workingDir,
           templateRulesPath,
           stackReport: stackData,
-          overwriteCore: false,
           dryRun: options.dryRun || false,
         });
 
         if (!options.json) {
           if (integrationResult.copied.length > 0) {
-            console.log(`  âœ“ Copied ${integrationResult.copied.length} rule file(s)`);
+            console.log(`  ✓ Copied ${integrationResult.copied.length} file(s)`);
           }
-          if (integrationResult.updated.length > 0) {
-            console.log(`  âœ“ Updated ${integrationResult.updated.length} rule file(s)`);
+          if (integrationResult.skipped.length > 0) {
+            console.log(
+              `  ✓ Kept ${integrationResult.skipped.length} existing file(s) unchanged`
+            );
           }
           if (integrationResult.preserved.length > 0) {
             console.log(
-              `  âœ“ Preserved ${integrationResult.preserved.length} project-specific rule file(s)`
+              `  ✓ Preserved ${integrationResult.preserved.length} project-specific rule file(s)`
             );
           }
           if (integrationResult.recommendations.length > 0) {
             integrationResult.recommendations.forEach(rec => {
-              console.log(`  â„¹ï¸  ${rec}`);
+              console.log(`  ℹ️  ${rec}`);
             });
           }
         }
       } else {
         if (!options.json) {
-          console.log('  âš ï¸  .devenv/.cursor/rules/ not found. Skipping integration.');
+          console.log('  ⚠️  .devenv/.cursor/rules/ not found. Skipping integration.');
           console.log('     Ensure .devenv/.cursor/rules/ exists for cursor rules integration.');
         }
       }
@@ -297,7 +298,7 @@ async function runDoctor(options: CliOptions = {}) {
 
   // Step 2: Run gap analyzer
   if (!options.json) {
-    console.log('ðŸ”¬ Identifying gaps and issues...');
+    console.log('🔬 Identifying gaps and issues...');
   }
   const gapAnalyzerPath = path.join(__dirname, '../tools/gap-analyzer.js');
   let gapReport: GapReport;
@@ -342,13 +343,13 @@ async function runDoctor(options: CliOptions = {}) {
       throw new Error(`${path.relative(workingDir, gapsJsonPath)} has no 'gaps' array.`);
     }
   } catch (error: any) {
-    console.error('âŒ Failed to analyze gaps:', error.message);
+    console.error('❌ Failed to analyze gaps:', error.message);
     process.exit(1);
   }
 
   // Step 3: Score the gaps
   if (!options.json) {
-    console.log('ðŸ“Š Calculating health score...\n');
+    console.log('📊 Calculating health score...\n');
   }
   const healthScoreConfig = await loadHealthScoreConfig(workingDir);
   const report = buildDoctorReport(gapReport, healthScoreConfig);
@@ -365,21 +366,21 @@ async function runDoctor(options: CliOptions = {}) {
   await fs.writeFile(reportPath, JSON.stringify(report, null, 2));
 
   if (!options.json) {
-    console.log(`\nðŸ’¾ Full report saved: ${path.relative(workingDir, reportPath)}`);
+    console.log(`\n💾 Full report saved: ${path.relative(workingDir, reportPath)}`);
   }
 
   // Step 6: Auto-fix if requested
   if (options.fix) {
     if (options.dryRun) {
-      console.log('\nðŸ” DRY RUN - No changes will be applied\n');
+      console.log('\n🔍 DRY RUN - No changes will be applied\n');
     }
-    console.log('\nðŸ”§ Applying automatic fixes...');
+    console.log('\n🔧 Applying automatic fixes...');
     await applyQuickFixes(workingDir, stackData, options);
   }
 
   // Exit with error code if issues found (in strict mode)
   if (options.strict && (report.critical.length > 0 || report.warnings.length > 0)) {
-    console.log('\nâŒ Exiting with error code due to --strict flag');
+    console.log('\n❌ Exiting with error code due to --strict flag');
     process.exit(1);
   } else if (report.critical.length > 0) {
     process.exit(1);
@@ -555,13 +556,13 @@ function calculateHealthScore(gaps: Gap[], config: HealthScoreConfig): HealthSco
 function displayReport(report: DoctorReport) {
   // Overall health
   const healthColor =
-    report.healthScore.overall >= 80 ? 'ðŸŸ¢' : report.healthScore.overall >= 60 ? 'ðŸŸ¡' : 'ðŸ”´';
+    report.healthScore.overall >= 80 ? '🟢' : report.healthScore.overall >= 60 ? '🟡' : '🔴';
 
   console.log(`${healthColor} Project Health: ${report.healthScore.overall}/100`);
   console.log('');
 
   // Breakdown
-  console.log('ðŸ“Š Health Breakdown:');
+  console.log('📊 Health Breakdown:');
   console.log(`   Security:      ${formatScore(report.healthScore.security)}`);
   console.log(`   Code Quality:  ${formatScore(report.healthScore.quality)}`);
   console.log(`   Testing:       ${formatScore(report.healthScore.testing)}`);
@@ -572,7 +573,7 @@ function displayReport(report: DoctorReport) {
 
   if (report.unscoredCategories.length > 0) {
     console.log(
-      'âš ï¸  Gap categories missing from the scoring config (not reflected in the score):'
+      '⚠️  Gap categories missing from the scoring config (not reflected in the score):'
     );
     console.log(`   ${report.unscoredCategories.join(', ')}`);
     console.log('   Add them to healthScore.categoryMap in config/quality-budgets.json.');
@@ -581,7 +582,7 @@ function displayReport(report: DoctorReport) {
 
   // Critical issues
   if (report.critical.length > 0) {
-    console.log(`ðŸ”´ Critical Issues (${report.critical.length}):`);
+    console.log(`🔴 Critical Issues (${report.critical.length}):`);
     report.critical.slice(0, 5).forEach(issue => {
       console.log(`   - ${issue.message}`);
     });
@@ -593,7 +594,7 @@ function displayReport(report: DoctorReport) {
 
   // Warnings
   if (report.warnings.length > 0) {
-    console.log(`ðŸŸ¡ Warnings (${report.warnings.length}):`);
+    console.log(`🟡 Warnings (${report.warnings.length}):`);
     report.warnings.slice(0, 3).forEach(issue => {
       console.log(`   - ${issue.message}`);
     });
@@ -606,7 +607,7 @@ function displayReport(report: DoctorReport) {
   // Good practices
   const goodCount = Math.max(0, 15 - report.critical.length - report.warnings.length);
   if (goodCount > 0) {
-    console.log(`ðŸŸ¢ Good Practices (${goodCount}):`);
+    console.log(`🟢 Good Practices (${goodCount}):`);
     console.log('   - Basic project structure present');
     if (report.healthScore.security > 80) console.log('   - Security measures in place');
     if (report.healthScore.testing > 80) console.log('   - Testing infrastructure present');
@@ -616,15 +617,15 @@ function displayReport(report: DoctorReport) {
 
   // Quick wins
   if (report.quickWins.length > 0) {
-    console.log(`ðŸ’¡ Quick Wins (can fix in < 10 min):`);
+    console.log(`💡 Quick Wins (can fix in < 10 min):`);
     report.quickWins.slice(0, 5).forEach((issue, i) => {
-      console.log(`   ${i + 1}. ${issue.message} â†’ ${issue.estimatedFix}`);
+      console.log(`   ${i + 1}. ${issue.message} → ${issue.estimatedFix}`);
     });
     console.log('');
   }
 
   // Next steps
-  console.log('ðŸ“‹ Next Steps:');
+  console.log('📋 Next Steps:');
   if (report.critical.length > 0) {
     console.log('   1. Address critical issues first');
   }
@@ -639,8 +640,8 @@ function displayReport(report: DoctorReport) {
  * Format score with color
  */
 function formatScore(score: number): string {
-  const bar = 'â–ˆ'.repeat(Math.floor(score / 10)) + 'â–‘'.repeat(10 - Math.floor(score / 10));
-  const color = score >= 80 ? 'ðŸŸ¢' : score >= 60 ? 'ðŸŸ¡' : 'ðŸ”´';
+  const bar = '█'.repeat(Math.floor(score / 10)) + '░'.repeat(10 - Math.floor(score / 10));
+  const color = score >= 80 ? '🟢' : score >= 60 ? '🟡' : '🔴';
   return `${color} ${bar} ${score}/100`;
 }
 
@@ -744,13 +745,13 @@ async function applyQuickFixes(
 
   for (const quickWin of applicable) {
     if (!quickWin.autoFixable || !quickWin.fixAction) {
-      console.log(`   â†’ ${quickWin.title} (manual, ${quickWin.estimatedTime})`);
+      console.log(`   → ${quickWin.title} (manual, ${quickWin.estimatedTime})`);
       skippedCount++;
       continue;
     }
 
     if (options.noInstall && /install|dependenc/i.test(quickWin.description)) {
-      console.log(`   â†’ ${quickWin.title} (skipped, --no-install)`);
+      console.log(`   → ${quickWin.title} (skipped, --no-install)`);
       skippedCount++;
       continue;
     }
@@ -764,25 +765,25 @@ async function applyQuickFixes(
       const result = await quickWin.fixAction(context);
 
       if (result.success) {
-        console.log(`   âœ“ ${result.message}`);
+        console.log(`   ✓ ${result.message}`);
         fixedCount++;
       } else {
-        console.error(`   âœ— ${quickWin.title}: ${result.error || result.message}`);
+        console.error(`   ✗ ${quickWin.title}: ${result.error || result.message}`);
       }
     } catch (error: any) {
-      console.error(`   âœ— ${quickWin.title}: ${error.message}`);
+      console.error(`   ✗ ${quickWin.title}: ${error.message}`);
     }
   }
 
   if (options.dryRun) {
-    console.log(`\nðŸ“‹ Would apply ${applicable.length} fixes (dry run mode)`);
+    console.log(`\n📋 Would apply ${applicable.length} fixes (dry run mode)`);
     return;
   }
 
-  console.log(`\nâœ… Applied ${fixedCount} automatic fixes`);
+  console.log(`\n✅ Applied ${fixedCount} automatic fixes`);
 
   if (skippedCount > 0) {
-    console.log(`â„¹ï¸  ${skippedCount} quick win(s) need manual attention.`);
+    console.log(`ℹ️  ${skippedCount} quick win(s) need manual attention.`);
   }
 }
 
@@ -813,7 +814,7 @@ function parseArgs(): CliOptions {
           options.preset = nextArg as any;
           i++; // Skip next arg
         } else {
-          console.error('âŒ Invalid preset. Use: nextjs, vite, express, or vanilla');
+          console.error('❌ Invalid preset. Use: nextjs, vite, express, or vanilla');
           process.exit(1);
         }
         break;
@@ -848,7 +849,7 @@ function parseArgs(): CliOptions {
           options.mode = args[i + 1] as 'fast' | 'full';
           i++;
         } else {
-          console.error('âŒ Invalid value for --mode. Use "fast" or "full".');
+          console.error('❌ Invalid value for --mode. Use "fast" or "full".');
           process.exit(1);
         }
         break;
@@ -857,7 +858,7 @@ function parseArgs(): CliOptions {
           options.projectRoot = args[i + 1];
           i++;
         } else {
-          console.error('âŒ Missing value for --project-root');
+          console.error('❌ Missing value for --project-root');
           process.exit(1);
         }
         break;
@@ -874,14 +875,14 @@ function parseArgs(): CliOptions {
           if (value === 'fast' || value === 'full') {
             options.mode = value as 'fast' | 'full';
           } else {
-            console.error('âŒ Invalid value for --mode. Use "fast" or "full".');
+            console.error('❌ Invalid value for --mode. Use "fast" or "full".');
             process.exit(1);
           }
         } else if (!arg.startsWith('-') && !options.projectRoot) {
           // Positional project root (e.g., `npm run doctor -- ..`)
           options.projectRoot = arg;
         } else {
-          console.error(`âŒ Unknown option: ${arg}`);
+          console.error(`❌ Unknown option: ${arg}`);
           printHelp();
           process.exit(1);
         }
@@ -982,7 +983,7 @@ if (require.main === module) {
   const options = parseArgs();
 
   runDoctor(options).catch(error => {
-    console.error('âŒ Doctor check failed:', error.message);
+    console.error('❌ Doctor check failed:', error.message);
     process.exit(1);
   });
 }

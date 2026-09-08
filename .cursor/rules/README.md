@@ -1,68 +1,78 @@
-# Cursor Rules Directory
+# Cursor rules
 
-Project rules for Cursor. Cursor also loads root (and nested) `AGENTS.md` for always-true project facts — keep those files short.
+Every rule here is **glob-scoped**: it enters the context window only when the agent touches a
+matching file. Nothing in this directory is always applied, and that is deliberate.
 
-Official frontmatter fields are `description`, `globs`, and `alwaysApply`. Do not use a sibling `.cursorrules` file.
+Always-loaded context belongs in one of two other places:
 
-## Four apply modes
+- **`AGENTS.md`** (repository root) — facts that are true on every turn. Cursor loads it
+  automatically, as do Claude Code, Codex, and Gemini CLI, so one file serves every tool.
+- **`.agents/skills/<name>/SKILL.md`** — procedural knowledge. A skill costs only its
+  `description` until that description matches the task, then the agent reads the body.
 
-| Mode                        | Frontmatter                                                  | When to use                     |
-| --------------------------- | ------------------------------------------------------------ | ------------------------------- |
-| **Always Apply**            | `alwaysApply: true`                                          | Tiny set of universal standards |
-| **Apply Intelligently**     | `alwaysApply: false` plus a clear `description` (no `globs`) | Agent decides from the task     |
-| **Apply to Specific Files** | `globs:` plus `alwaysApply: false`                           | Language or path-specific       |
-| **Manual**                  | `alwaysApply: false`, no globs, narrow description           | User @-mentions the rule        |
+## Why nothing here is always-applied
 
-Keep always-on rules small. Prefer globs or intelligent apply over dumping a huge bootstrap file into every chat.
+This directory used to ship 14 always-applied rules totalling roughly 1,200 lines. That is
+12,000–15,000 tokens billed on every single turn, including turns that had nothing to do with the
+content. Long-context evaluations consistently find that irrelevant always-loaded context *lowers*
+accuracy, so the cost was not merely wasted — it was harmful.
 
-## Always-applied (keep this list short)
+That content now lives in `AGENTS.md` and `.agents/skills/`. If you are looking for a rule that
+used to be here, see the mapping in `RETIRED_RULE_REPLACEMENTS` in
+[`scripts/tools/cursor-rules-adapter.ts`](../../scripts/tools/cursor-rules-adapter.ts). The doctor
+reports any that reappear, so re-adding one is a visible decision rather than a quiet regression.
 
-- **00-core-principles.mdc** — Reasoning transparency, professional communication
-- **01-code-quality.mdc** — Organization, design, performance awareness
-- **02-security.mdc** — Secrets, OWASP baseline
-- **03-testing.mdc** — Test philosophy and structure
-- **04-git-workflow.mdc** — Commits, branches
-- **05-error-handling.mdc** — Defensive programming
-- **07-ai-agent-behavior.mdc** — Tool use, context, communication
-- **17-plan-first.mdc** — Plan before complex/multi-file work
-- **automation-standards.mdc** — API → script → UI last resort; gaps in `docs/operational/automation-gaps.md`
+## Apply modes
 
-**Template-only (not copied into hosts):**
+Cursor supports four modes. Only the third is used here.
 
-- **08-project-context.mdc** — DevEnvTemplate-specific context. Hosts write their own `08` and `AGENTS.md`.
+| Mode                    | Frontmatter                                   | Used here                        |
+| ----------------------- | --------------------------------------------- | -------------------------------- |
+| Always Apply            | `alwaysApply: true`                           | No — use `AGENTS.md`             |
+| Apply Intelligently     | `alwaysApply: false` plus a `description`      | No — use a skill                 |
+| Apply to Specific Files | `globs:` plus `alwaysApply: false`            | **Yes, all rules below**         |
+| Manual                  | `alwaysApply: false`, narrow `description`     | No — the user would @-mention it |
 
-## Intelligent or glob-scoped (copied to hosts, not always-on)
+## The rules
 
-- **06-documentation.mdc** — Comments and docs standards (intelligent)
-- **16-feature-debug-instrumentation.mdc** — Log-driven validation on new features (intelligent)
-- **18-content-and-data-pipelines.mdc** — Non-destructive authored-state pipelines (intelligent)
-- **19-docs-directory-structure.mdc** — Place docs per `docs/DOCS_LAYOUT.md` (`docs/**/*.md`)
+| Rule                        | Applies to                                                          |
+| --------------------------- | ------------------------------------------------------------------- |
+| `10-typescript.mdc`         | `**/*.ts`, `**/*.tsx`                                               |
+| `11-javascript.mdc`         | `**/*.js`, `**/*.jsx`                                               |
+| `12-python.mdc`             | `**/*.py`                                                           |
+| `13-markdown.mdc`           | `**/*.md`                                                           |
+| `14-json-yaml.mdc`          | `**/*.json`, `**/*.yaml`, `**/*.yml`                                |
+| `15-shell-scripts.mdc`      | `**/*.sh`, `**/*.ps1`, `**/*.bat`                                   |
+| `20-frontend-frameworks.mdc`| `**/components/**`, `**/pages/**`, `**/app/**`                      |
+| `21-unreal-engine.mdc`      | `*.uproject`, `*.uplugin`, `*Build.cs`, `Source/**`                 |
+| `22-unreal-editor-ui.mdc`   | the same Unreal paths; Editor UI must match Epic's pinned-version docs |
+| `23-unity-csharp.mdc`       | `*.cs`, `*.unity`, `*.asmdef`, `ProjectSettings/**`, `Packages/manifest.json` |
 
-## Stack-specific (conditional)
-
-- **10-typescript.mdc** — `**/*.ts`, `**/*.tsx`
-- **11-javascript.mdc** — `**/*.js`, `**/*.jsx`
-- **12-python.mdc** — `**/*.py`
-- **13-markdown.mdc** — `**/*.md`
-- **14-json-yaml.mdc** — `**/*.json`, `**/*.yaml`, `**/*.yml`
-- **15-shell-scripts.mdc** — `**/*.sh`, `**/*.ps1`, `**/*.bat`
-- **20-frontend-frameworks.mdc** — `**/components/**`, `**/pages/**`, `**/app/**`
-- **21-unreal-engine.mdc** — `.uproject`, `*Build.cs`, `Source/**`
-- **22-unreal-editor-ui.mdc** — Editor UI must match Epic docs for the pinned version
-- **23-unity-csharp.mdc** — `.cs`, `.unity`, `ProjectSettings/`, `Packages/manifest.json`
+The leading numbers group related rules for humans. Cursor ignores them, and it ignores any
+frontmatter key outside `description`, `globs`, and `alwaysApply` — including `name` and
+`priority`, which earlier versions of these files set to conflicting values.
 
 ## File format
 
 ```yaml
 ---
-description: What this rule does (shown in the rule picker)
+description: What this rule covers, shown in the rule picker
 globs: '**/*.ts'
 alwaysApply: false
 ---
 ```
 
-`globs` is the official field (not `glob`). Extra keys such as `name` or `priority` are ignored by Cursor; numbering in filenames is for humans.
+Write `globs`, plural. A singular `glob:` key is silently ignored, which produces a rule that
+looks scoped but never loads.
 
-## Host integration
+Do not add a `.cursorrules` or `.projectrules` file alongside this directory. Those formats are
+superseded, and having two sources of truth is how they drift.
 
-`integrateCursorRules` copies the always-on core (except template-only `08`), plus matching stack rules. Unreal rules copy when `unrealProjectDetected`; Unity rules copy when `unityProjectDetected`.
+## Copying into a host project
+
+`integrateCursorRules` copies the rules whose globs match the host's detected stack — Unreal rules
+when `unrealProjectDetected`, Unity rules when `unityProjectDetected`, and so on — along with
+every skill in `.agents/skills/`. Existing host files are never overwritten.
+
+`AGENTS.md` is deliberately **not** copied. It states facts about one specific repository, so a
+copied one would be wrong immediately. Hosts write their own; the doctor reports its absence.

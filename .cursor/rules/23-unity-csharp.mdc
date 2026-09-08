@@ -12,16 +12,16 @@ This rule applies when the repo layout indicates a **Unity** project (see globs)
 
 - Do **not** commit `Library/`, `Temp/`, `Logs/`, `obj/`, `UserSettings/`, or generated `.csproj` / `.sln` unless the team explicitly tracks them.
 - Commit `Assets/` (with `.meta` files), `Packages/manifest.json`, `Packages/packages-lock.json`, and `ProjectSettings/`.
-- Treat authored scenes, prefabs, and art as preserve-in-place work; see `18-content-and-data-pipelines.mdc`.
+- Treat authored scenes, prefabs, and art as preserve-in-place work; see the `data-pipeline-safety` skill.
 
 ## Editor and automation
 
 - Batchmode (`Unity.exe -batchmode`) requires a valid Unity license on that machine. If license activation fails (for example exit 198), do not invent workarounds that bypass licensing; record the gap in `docs/operational/automation-gaps.md` and use an in-repo playable or PlayMode tests the team can run locally.
 - Prefer official Unity 6 documentation for the **pinned** version. If docs conflict with the local Editor, trust the Editor and log it in `docs/KNOWN_ERRORS.md`.
-- Prefer public APIs, test runners, and documented CLI flags over clicking the Editor UI. UI automation is last resort (`automation-standards.mdc`).
+- Prefer public APIs, test runners, and documented CLI flags over clicking the Editor UI. UI automation is last resort; see the `automation-standards` skill.
 
 ## C# conventions
 
 - Match the project's assembly definitions and namespace. Keep gameplay scripts out of `Editor/` folders.
 - Prefer the Input System package when the project has `activeInputHandler: 1` in Project Settings.
-- Do not add score, timers, fail states, or other product-specific systems unless the project's `AGENTS.md` or `08-project-context.mdc` asks for them.
+- Do not add score, timers, fail states, or other product-specific systems unless the project's `AGENTS.md` asks for them.

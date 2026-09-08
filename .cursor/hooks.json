@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "hooks": {
+    "beforeReadFile": [
+      {
+        "command": "node .cursor/hooks/secret-scan.js",
+        "timeout": 30,
+        "failClosed": true
+      }
+    ],
+    "beforeShellExecution": [
+      {
+        "command": "node .cursor/hooks/secret-scan.js",
+        "timeout": 30,
+        "failClosed": true
+      }
+    ]
+  }
+}

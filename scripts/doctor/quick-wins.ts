@@ -359,35 +359,27 @@ export const QUICK_WINS: QuickWin[] = [
   // CURSOR RULES
   // ========================================
   {
-    id: 'setup-cursor-rules',
-    title: 'Set up Cursor rules',
-    description: 'Integrate DevEnvTemplate cursor rules adapted to your project stack',
+    id: 'setup-agent-layer',
+    title: 'Set up the agent context layer',
+    description:
+      'Copy the glob-scoped Cursor rules for your stack, plus the skills that carry procedural knowledge',
     estimatedTime: '2 min',
     autoFixable: true,
     category: 'env-hygiene',
     detectCondition: async ctx => {
-      const cursorRulesDir = '.cursor/rules';
-      const hasRules = await ctx.hasFile(cursorRulesDir);
-
-      if (!hasRules) {
-        return true; // No rules at all - needs setup
+      // The layer is in place when skills exist and at least one glob-scoped rule matches the
+      // detected stack. Absent either, there is something worth copying.
+      if (!(await ctx.hasFile('.agents/skills'))) {
+        return true;
       }
 
-      // Check if core rules are missing
-      const coreFiles = [
-        '00-core-principles.mdc',
-        '01-code-quality.mdc',
-        '02-security.mdc',
-        '03-testing.mdc',
-      ];
-
-      for (const coreFile of coreFiles) {
-        if (!(await ctx.hasFile(`${cursorRulesDir}/${coreFile}`))) {
-          return true; // Missing core files - needs integration
-        }
+      const rules = ctx.stack.cursorRules;
+      if (!rules?.present) {
+        return true;
       }
 
-      return false; // Has rules and core files present
+      // Retired always-on rules still cost context on every turn, so flag them for migration.
+      return rules.stackFiles.length === 0 || rules.retiredAlwaysOnFiles.length > 0;
     },
     fixAction: async ctx => {
       try {
@@ -421,15 +413,17 @@ export const QUICK_WINS: QuickWin[] = [
           projectRoot: ctx.rootDir,
           templateRulesPath,
           stackReport: ctx.stack,
-          overwriteCore: false,
           dryRun: false,
         });
 
-        const filesCreated = [...result.copied, ...result.updated];
+        const message = [`Copied ${result.copied.length} file(s)`, ...result.recommendations].join(
+          '. '
+        );
+
         return {
           success: true,
-          message: `Integrated ${filesCreated.length} cursor rule file(s)`,
-          filesCreated,
+          message,
+          filesCreated: result.copied,
         };
       } catch (error: any) {
         return {

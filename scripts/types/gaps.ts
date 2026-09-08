@@ -90,9 +90,15 @@ export interface StackCIInfo {
 export interface CursorRulesInfo {
   present: boolean;
   existingFiles: string[];
-  coreFiles: string[];
-  conditionalFiles: string[];
+  /** Glob-scoped rules this template ships, which load only on matching files. */
+  stackFiles: string[];
+  /** Rules the host wrote itself. Never overwritten. */
   projectSpecificFiles: string[];
+  /**
+   * Always-applied rules this template used to ship, before that content moved to `AGENTS.md`
+   * and `.agents/skills/`. A host still carrying these pays their token cost on every turn.
+   */
+  retiredAlwaysOnFiles: string[];
   needsIntegration: boolean;
 }
 

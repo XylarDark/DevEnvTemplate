@@ -107,13 +107,13 @@ When running from embedded `.devenv/`, generated files are placed in the **paren
 
 ```
 your-project/
-â”œâ”€â”€ .devenv/              # DevEnvTemplate checkout
-â”‚   â”œâ”€â”€ scripts/
-â”‚   â””â”€â”€ ...
-â””â”€â”€ .devenv/              # Generated reports (parent project)
-    â”œâ”€â”€ stack-report.json
-    â”œâ”€â”€ gaps-report.md
-    â””â”€â”€ health-report.json
+├── .devenv/              # DevEnvTemplate checkout
+│   ├── scripts/
+│   └── ...
+└── .devenv/              # Generated reports (parent project)
+    ├── stack-report.json
+    ├── gaps-report.md
+    └── health-report.json
 ```
 
 **Note**: The parent project's `.devenv/` directory is created automatically if it doesn't exist.
@@ -141,10 +141,10 @@ DEVENV_PROJECT_ROOT=.. npm run doctor --prefix .devenv
 **Solution**: Use `;` instead of `&&`:
 
 ```powershell
-# âŒ Wrong
+# ❌ Wrong
 cd .devenv && npm run doctor
 
-# âœ… Correct
+# ✅ Correct
 Set-Location .devenv; npm run doctor
 ```
 

@@ -12,5 +12,6 @@ Append-only log of agnostic rule/doc updates ported from practical use in game/e
 | 2026-08-16 | Cursor 2026 setup: root `AGENTS.md`; official frontmatter (`description`, `globs`, `alwaysApply`); slim always-on set; `08-project-context.mdc` is template-only (not copied to hosts). |
 | 2026-08-16 | `23-unity-csharp.mdc`, `docs/templates/unity/README.md`; `StackReport.unityProjectDetected`; adapter/integration copy Unreal **and** Unity conditional rules.                           |
 | 2026-08-16 | Converted `06`, `16`, `18`, `19` from always-on to intelligent/glob apply.                                                                                                              |
+| 2026-09-07 | Inverted the context layer: `AGENTS.md` is canonical, the 14 always-on rules became `.agents/skills/`, and `.cursor/rules/` is glob-scoped only. Added `.cursor/agents/`, a fail-closed `.cursor/hooks/secret-scan.js`, and `.cursor/mcp.json.example`. |
 
 **Not ported:** full-automation-no-manual-steps, PCG/GAS/Unreal API pitfall tables, product-specific MCP ports.

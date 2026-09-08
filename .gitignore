@@ -4,6 +4,12 @@
 !.env.example
 !.env.*.example
 
+# A real MCP config holds credentials and names commands the agent will execute. Only the
+# example is tracked; see docs/guides/mcp-hygiene.md.
+.cursor/mcp.json
+.mcp.json
+!.cursor/mcp.json.example
+
 # DevEnv reports and generated files. The doctor writes everything here, so ignore the
 # whole directory rather than naming individual report files - listing them by name is how
 # ad-hoc analysis output ended up committed.

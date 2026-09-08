@@ -34,8 +34,15 @@ subdirectory that fits, not to this root.
 
 ## Agent context
 
-Always-true project facts live in [AGENTS.md](../AGENTS.md) at the repository root, with
-scoped rules under [.cursor/rules/](../.cursor/rules/README.md). Start there rather than here.
+Start at [AGENTS.md](../AGENTS.md) in the repository root. It is the canonical, always-loaded
+context; everything else in the agent layer loads on demand:
+
+| Path                                                    | Loads when                                       |
+| ------------------------------------------------------- | ------------------------------------------------ |
+| [`.agents/skills/`](../.agents/skills/)                 | A skill's `description` matches the current task. |
+| [`.cursor/rules/`](../.cursor/rules/README.md)          | You open a file matching the rule's globs.        |
+| [`.cursor/agents/`](../.cursor/agents/)                 | You invoke that subagent.                         |
+| [guides/mcp-hygiene.md](guides/mcp-hygiene.md)          | You add or change an MCP server.                  |
 
 ## Archive
 

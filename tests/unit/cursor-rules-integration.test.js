@@ -13,101 +13,105 @@ try {
   integration = require('../../scripts/tools/cursor-rules-integration');
 }
 
+const vanillaStack = {
+  technologies: [],
+  quality: { typescript: false },
+  frameworks: { type: 'vanilla' },
+  files: { key_patterns: [] },
+};
+
 describe('Cursor Rules Integration', () => {
   let tempDir;
-  let templateDir;
+  let templateRulesDir;
+  let templateSkillsDir;
   let projectDir;
 
   beforeEach(async () => {
     tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'cursor-integration-test-'));
-    templateDir = path.join(tempDir, 'template', '.cursor', 'rules');
+    templateRulesDir = path.join(tempDir, 'template', '.cursor', 'rules');
+    templateSkillsDir = path.join(tempDir, 'template', '.agents', 'skills');
     projectDir = path.join(tempDir, 'project');
 
-    await fs.mkdir(templateDir, { recursive: true });
+    await fs.mkdir(templateRulesDir, { recursive: true });
     await fs.mkdir(projectDir, { recursive: true });
 
-    // Create template rule files
-    await fs.writeFile(path.join(templateDir, '00-core-principles.mdc'), '# Core Principles\n');
-    await fs.writeFile(path.join(templateDir, '01-code-quality.mdc'), '# Code Quality\n');
-    await fs.writeFile(path.join(templateDir, '10-typescript.mdc'), '# TypeScript\n');
-    await fs.writeFile(path.join(templateDir, '12-python.mdc'), '# Python\n');
-    await fs.writeFile(path.join(templateDir, '08-project-context.mdc'), '# Template context\n');
-    await fs.writeFile(path.join(templateDir, '21-unreal-engine.mdc'), '# Unreal\n');
-    await fs.writeFile(path.join(templateDir, '23-unity-csharp.mdc'), '# Unity\n');
-    await fs.writeFile(path.join(templateDir, 'README.md'), '# Cursor Rules\n');
+    await fs.writeFile(path.join(templateRulesDir, '10-typescript.mdc'), '# TypeScript\n');
+    await fs.writeFile(path.join(templateRulesDir, '12-python.mdc'), '# Python\n');
+    await fs.writeFile(path.join(templateRulesDir, '21-unreal-engine.mdc'), '# Unreal\n');
+    await fs.writeFile(path.join(templateRulesDir, '23-unity-csharp.mdc'), '# Unity\n');
+
+    // A retired always-on rule left in the template must still never be copied.
+    await fs.writeFile(path.join(templateRulesDir, '00-core-principles.mdc'), '# Core\n');
+
+    for (const skill of ['plan-first', 'secure-coding']) {
+      await fs.mkdir(path.join(templateSkillsDir, skill), { recursive: true });
+      await fs.writeFile(
+        path.join(templateSkillsDir, skill, 'SKILL.md'),
+        `---\nname: ${skill}\ndescription: Use when testing.\n---\n`
+      );
+    }
   });
 
   afterEach(async () => {
     await fs.rm(tempDir, { recursive: true, force: true });
   });
 
-  test('should copy core rules to new project', async () => {
-    const stackReport = {
-      technologies: [],
-      quality: { typescript: false },
-      frameworks: { type: 'vanilla' },
-      files: { key_patterns: [] },
-    };
-
-    const result = await integration.integrateCursorRules({
+  function integrate(stackReport = vanillaStack, overrides = {}) {
+    return integration.integrateCursorRules({
       projectRoot: projectDir,
-      templateRulesPath: templateDir,
+      templateRulesPath: templateRulesDir,
+      templateSkillsPath: templateSkillsDir,
       stackReport,
-      overwriteCore: false,
       dryRun: false,
+      ...overrides,
     });
+  }
 
-    // Template stub only includes 00 + 01 as core files on disk; integration also copies README.
-    assert.strictEqual(result.copied.length, 3);
-    assert.ok(result.copied.includes('00-core-principles.mdc'));
-    assert.ok(result.copied.includes('01-code-quality.mdc'));
-    assert.ok(result.copied.includes('README.md'));
-
-    // Verify files were actually copied
-    const rulesDir = path.join(projectDir, '.cursor', 'rules');
-    const copiedFile = await fs.readFile(path.join(rulesDir, '00-core-principles.mdc'), 'utf8');
-    assert.strictEqual(copiedFile, '# Core Principles\n');
-    assert.ok(!result.copied.includes('08-project-context.mdc'));
-    await assert.rejects(() => fs.access(path.join(rulesDir, '08-project-context.mdc')));
-  });
-
-  test('should copy conditional rules based on stack', async () => {
-    const stackReport = {
+  test('should copy the rules matching the detected stack', async () => {
+    const result = await integrate({
       technologies: [{ name: 'TypeScript', version: '5.0' }],
       quality: { typescript: true },
       frameworks: { type: 'vanilla' },
       files: { key_patterns: [] },
-    };
-
-    const result = await integration.integrateCursorRules({
-      projectRoot: projectDir,
-      templateRulesPath: templateDir,
-      stackReport,
-      overwriteCore: false,
-      dryRun: false,
     });
 
-    // Should include TypeScript rule but not Python
     assert.ok(result.copied.includes('10-typescript.mdc'));
     assert.ok(!result.copied.includes('12-python.mdc'));
+
+    const copied = await fs.readFile(
+      path.join(projectDir, '.cursor', 'rules', '10-typescript.mdc'),
+      'utf8'
+    );
+    assert.strictEqual(copied, '# TypeScript\n');
+  });
+
+  test('should never copy a retired always-on rule', async () => {
+    const result = await integrate();
+
+    assert.ok(!result.copied.includes('00-core-principles.mdc'));
+    await assert.rejects(() =>
+      fs.access(path.join(projectDir, '.cursor', 'rules', '00-core-principles.mdc'))
+    );
+  });
+
+  test('should copy every skill regardless of stack', async () => {
+    const result = await integrate();
+
+    assert.ok(result.copied.includes('plan-first/SKILL.md'));
+    assert.ok(result.copied.includes('secure-coding/SKILL.md'));
+
+    const skill = await fs.readFile(
+      path.join(projectDir, '.agents', 'skills', 'plan-first', 'SKILL.md'),
+      'utf8'
+    );
+    assert.match(skill, /name: plan-first/);
   });
 
   test('should copy Unreal and Unity rules when those stacks are detected', async () => {
-    const stackReport = {
-      technologies: [],
-      quality: { typescript: false },
-      frameworks: { type: 'vanilla' },
-      files: { key_patterns: [] },
+    const result = await integrate({
+      ...vanillaStack,
       unrealProjectDetected: true,
       unityProjectDetected: true,
-    };
-
-    const result = await integration.integrateCursorRules({
-      projectRoot: projectDir,
-      templateRulesPath: templateDir,
-      stackReport,
-      overwriteCore: false,
-      dryRun: false,
     });
 
     assert.ok(result.copied.includes('21-unreal-engine.mdc'));
@@ -115,125 +119,85 @@ describe('Cursor Rules Integration', () => {
   });
 
   test('should preserve project-specific rules', async () => {
-    // Create project with existing custom rule
     const projectRulesDir = path.join(projectDir, '.cursor', 'rules');
     await fs.mkdir(projectRulesDir, { recursive: true });
     await fs.writeFile(path.join(projectRulesDir, '99-custom.mdc'), '# Custom Project Rules\n');
 
-    const stackReport = {
-      technologies: [],
-      quality: { typescript: false },
-      frameworks: { type: 'vanilla' },
-      files: { key_patterns: [] },
-    };
-
-    const result = await integration.integrateCursorRules({
-      projectRoot: projectDir,
-      templateRulesPath: templateDir,
-      stackReport,
-      overwriteCore: false,
-      dryRun: false,
-    });
+    const result = await integrate();
 
     assert.ok(result.preserved.includes('99-custom.mdc'));
 
-    // Verify custom file still exists
     const customFile = await fs.readFile(path.join(projectRulesDir, '99-custom.mdc'), 'utf8');
     assert.strictEqual(customFile, '# Custom Project Rules\n');
   });
 
-  test('should not overwrite existing core files by default', async () => {
-    // Create project with existing core file
+  test('should keep a host edit to a template rule rather than overwrite it', async () => {
     const projectRulesDir = path.join(projectDir, '.cursor', 'rules');
     await fs.mkdir(projectRulesDir, { recursive: true });
-    await fs.writeFile(path.join(projectRulesDir, '00-core-principles.mdc'), '# Modified Core\n');
+    await fs.writeFile(path.join(projectRulesDir, '10-typescript.mdc'), '# Edited by the host\n');
 
-    const stackReport = {
-      technologies: [],
-      quality: { typescript: false },
+    const result = await integrate({
+      technologies: [{ name: 'TypeScript', version: '5.0' }],
+      quality: { typescript: true },
       frameworks: { type: 'vanilla' },
       files: { key_patterns: [] },
-    };
-
-    const result = await integration.integrateCursorRules({
-      projectRoot: projectDir,
-      templateRulesPath: templateDir,
-      stackReport,
-      overwriteCore: false,
-      dryRun: false,
     });
 
-    // Should not copy existing file
-    assert.ok(!result.copied.includes('00-core-principles.mdc'));
-    assert.ok(result.updated.includes('00-core-principles.mdc'));
+    assert.ok(!result.copied.includes('10-typescript.mdc'));
+    assert.ok(result.skipped.includes('10-typescript.mdc'));
 
-    // Verify file was not overwritten
-    const existingFile = await fs.readFile(
-      path.join(projectRulesDir, '00-core-principles.mdc'),
-      'utf8'
-    );
-    assert.strictEqual(existingFile, '# Modified Core\n');
+    const kept = await fs.readFile(path.join(projectRulesDir, '10-typescript.mdc'), 'utf8');
+    assert.strictEqual(kept, '# Edited by the host\n');
   });
 
-  test('should overwrite core files when overwriteCore=true', async () => {
-    // Create project with existing core file
+  test('should keep an existing skill rather than overwrite it', async () => {
+    const skillDir = path.join(projectDir, '.agents', 'skills', 'plan-first');
+    await fs.mkdir(skillDir, { recursive: true });
+    await fs.writeFile(path.join(skillDir, 'SKILL.md'), '# Host version\n');
+
+    const result = await integrate();
+
+    assert.ok(result.skipped.includes('plan-first/SKILL.md'));
+
+    const kept = await fs.readFile(path.join(skillDir, 'SKILL.md'), 'utf8');
+    assert.strictEqual(kept, '# Host version\n');
+  });
+
+  test('should recommend writing AGENTS.md when the host has none', async () => {
+    const result = await integrate();
+
+    assert.ok(
+      result.recommendations.some(text => text.includes('AGENTS.md')),
+      'expected a recommendation naming AGENTS.md'
+    );
+  });
+
+  test('should not recommend AGENTS.md when the host already has one', async () => {
+    await fs.writeFile(path.join(projectDir, 'AGENTS.md'), '# Host instructions\n');
+
+    const result = await integrate();
+
+    assert.ok(!result.recommendations.some(text => text.includes('No AGENTS.md')));
+  });
+
+  test('should tell a host where each retired rule moved', async () => {
     const projectRulesDir = path.join(projectDir, '.cursor', 'rules');
     await fs.mkdir(projectRulesDir, { recursive: true });
-    await fs.writeFile(path.join(projectRulesDir, '00-core-principles.mdc'), '# Modified Core\n');
+    await fs.writeFile(path.join(projectRulesDir, '07-ai-agent-behavior.mdc'), '# Behavior\n');
 
-    const stackReport = {
-      technologies: [],
-      quality: { typescript: false },
-      frameworks: { type: 'vanilla' },
-      files: { key_patterns: [] },
-    };
+    const result = await integrate();
 
-    const result = await integration.integrateCursorRules({
-      projectRoot: projectDir,
-      templateRulesPath: templateDir,
-      stackReport,
-      overwriteCore: true,
-      dryRun: false,
-    });
-
-    // Should copy and overwrite
-    assert.ok(result.copied.includes('00-core-principles.mdc'));
-
-    // Verify file was overwritten
-    const overwrittenFile = await fs.readFile(
-      path.join(projectRulesDir, '00-core-principles.mdc'),
-      'utf8'
-    );
-    assert.strictEqual(overwrittenFile, '# Core Principles\n');
+    const advice = result.recommendations.find(text => text.includes('07-ai-agent-behavior.mdc'));
+    assert.ok(advice, 'expected migration advice for the retired rule');
+    assert.match(advice, /agent-workflow/);
   });
 
-  test('should work in dry-run mode', async () => {
-    const stackReport = {
-      technologies: [],
-      quality: { typescript: false },
-      frameworks: { type: 'vanilla' },
-      files: { key_patterns: [] },
-    };
+  test('should write nothing in dry-run mode', async () => {
+    const result = await integrate(vanillaStack, { dryRun: true });
 
-    const result = await integration.integrateCursorRules({
-      projectRoot: projectDir,
-      templateRulesPath: templateDir,
-      stackReport,
-      overwriteCore: false,
-      dryRun: true,
-    });
-
-    // Should return empty results in dry-run
     assert.strictEqual(result.copied.length, 0);
 
-    // Verify no files were actually created
-    const rulesDir = path.join(projectDir, '.cursor', 'rules');
-    try {
-      await fs.access(rulesDir);
-      const files = await fs.readdir(rulesDir);
-      assert.strictEqual(files.length, 0);
-    } catch {
-      // Directory doesn't exist, which is fine for dry-run
-    }
+    await assert.rejects(() => fs.access(path.join(projectDir, '.cursor', 'rules')));
+    await assert.rejects(() => fs.access(path.join(projectDir, '.agents', 'skills')));
   });
 });

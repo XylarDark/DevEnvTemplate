@@ -2,7 +2,7 @@
 
 **Purpose:** Track settings or workflows that **cannot** be set reliably via API, CLI, or stable automation—so the team can prioritize fixes, tickets, or runbook steps.
 
-Use [automation-standards.mdc](../../.cursor/rules/automation-standards.mdc) for the full procedure (identify → verify access → document → re-check on upgrade).
+Use the [`automation-standards` skill](../../.agents/skills/automation-standards/SKILL.md) for the full procedure (identify → verify access → document → re-check on upgrade).
 
 ---
 
@@ -19,4 +19,15 @@ Use [automation-standards.mdc](../../.cursor/rules/automation-standards.mdc) for
 
 ---
 
-_(No project-specific gaps in the template—delete this line when the first real entry is added.)_
+## Open gaps
+
+### Skills are not linked into `.claude/skills/` for Claude Code
+
+| Field                | Detail                                                                                                                                                                                                                                                              |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Date                 | 2026-09-07                                                                                                                                                                                                                                                          |
+| Feature / area       | Agent Skills portability across tools                                                                                                                                                                                                                               |
+| What is needed       | The skills in `.agents/skills/` should also load in Claude Code, which reads `.claude/skills/`                                                                                                                                                                      |
+| Why automation fails | The natural fix is a checked-in symlink, but creating one on Windows needs Administrator rights or Developer Mode, and this repository's clone has `core.symlinks=false`, so git materializes a committed symlink as a text file containing the path instead of a link |
+| Interim              | Cursor needs nothing: it reads `.agents/skills/`, `.cursor/skills/`, `.claude/skills/`, and `.codex/skills/` natively. Claude Code users can create the link themselves, or copy the directory and accept that copies drift                                          |
+| Suggested follow-up  | Re-check whether Claude Code has adopted the tool-neutral `.agents/skills/` path. Copying the files is deliberately not done: ten duplicated files that drift silently is worse than one documented gap                                                              |

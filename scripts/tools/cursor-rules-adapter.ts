@@ -19,16 +19,36 @@ export interface CursorRulesInfoExtended extends CursorRulesInfo {
 }
 
 export interface RuleSelectionResult {
-  coreRules: string[];
-  conditionalRules: string[];
+  stackRules: string[];
   skippedRules: string[];
+  retiredRules: string[];
   reason: string;
 }
 
 /**
- * Standard core rule files (template catalog). Hosts get HOST_CORE_FILES.
+ * The rules this template ships. Every one is glob-scoped, so it costs nothing until the agent
+ * opens a matching file. Anything that must be true on every turn belongs in `AGENTS.md`, and
+ * anything procedural belongs in `.agents/skills/`.
  */
-export const STANDARD_CORE_FILES = [
+export const STACK_SCOPED_FILES = [
+  '10-typescript.mdc',
+  '11-javascript.mdc',
+  '12-python.mdc',
+  '13-markdown.mdc',
+  '14-json-yaml.mdc',
+  '15-shell-scripts.mdc',
+  '20-frontend-frameworks.mdc',
+  '21-unreal-engine.mdc',
+  '22-unreal-editor-ui.mdc',
+  '23-unity-csharp.mdc',
+];
+
+/**
+ * Always-applied rules this template shipped before the `AGENTS.md`-plus-skills inversion. They
+ * are no longer copied to hosts, but they are still recognized: a host that carries them is
+ * paying for ~1,200 lines of context on every turn, and should migrate rather than keep them.
+ */
+export const RETIRED_ALWAYS_ON_FILES = [
   '00-core-principles.mdc',
   '01-code-quality.mdc',
   '02-security.mdc',
@@ -45,25 +65,23 @@ export const STANDARD_CORE_FILES = [
   'automation-standards.mdc',
 ];
 
-/** Template-specific context; hosts write their own 08-project-context.mdc. */
-export const TEMPLATE_ONLY_CORE_FILES = ['08-project-context.mdc'];
-
-export const HOST_CORE_FILES = STANDARD_CORE_FILES.filter(
-  file => !TEMPLATE_ONLY_CORE_FILES.includes(file)
-);
-
-export const STANDARD_CONDITIONAL_FILES = [
-  '10-typescript.mdc',
-  '11-javascript.mdc',
-  '12-python.mdc',
-  '13-markdown.mdc',
-  '14-json-yaml.mdc',
-  '15-shell-scripts.mdc',
-  '20-frontend-frameworks.mdc',
-  '21-unreal-engine.mdc',
-  '22-unreal-editor-ui.mdc',
-  '23-unity-csharp.mdc',
-];
+/** Where the retired rules' content now lives, for migration advice. */
+export const RETIRED_RULE_REPLACEMENTS: Record<string, string> = {
+  '00-core-principles.mdc': 'AGENTS.md (working agreements)',
+  '01-code-quality.mdc': '.agents/skills/code-structure',
+  '02-security.mdc': '.agents/skills/secure-coding',
+  '03-testing.mdc': '.agents/skills/testing-standards',
+  '04-git-workflow.mdc': 'AGENTS.md (conventions)',
+  '05-error-handling.mdc': '.agents/skills/defensive-programming',
+  '06-documentation.mdc': '.agents/skills/documentation',
+  '07-ai-agent-behavior.mdc': '.agents/skills/agent-workflow',
+  '08-project-context.mdc': 'AGENTS.md (written per host)',
+  '16-feature-debug-instrumentation.mdc': '.agents/skills/debug-instrumentation',
+  '17-plan-first.mdc': '.agents/skills/plan-first',
+  '18-content-and-data-pipelines.mdc': '.agents/skills/data-pipeline-safety',
+  '19-docs-directory-structure.mdc': '.agents/skills/documentation',
+  'automation-standards.mdc': '.agents/skills/automation-standards',
+};
 
 /**
  * Detect existing cursor rules in project
@@ -74,9 +92,9 @@ export async function detectExistingRules(projectRoot: string): Promise<CursorRu
   const result: CursorRulesInfo = {
     present: false,
     existingFiles: [],
-    coreFiles: [],
-    conditionalFiles: [],
+    stackFiles: [],
     projectSpecificFiles: [],
+    retiredAlwaysOnFiles: [],
     needsIntegration: false,
   };
 
@@ -95,20 +113,20 @@ export async function detectExistingRules(projectRoot: string): Promise<CursorRu
 
     result.existingFiles = mdcFiles.sort();
 
-    // Categorize files
     for (const file of mdcFiles) {
-      if (STANDARD_CORE_FILES.includes(file)) {
-        result.coreFiles.push(file);
-      } else if (STANDARD_CONDITIONAL_FILES.includes(file)) {
-        result.conditionalFiles.push(file);
+      if (STACK_SCOPED_FILES.includes(file)) {
+        result.stackFiles.push(file);
+      } else if (RETIRED_ALWAYS_ON_FILES.includes(file)) {
+        result.retiredAlwaysOnFiles.push(file);
       } else {
         result.projectSpecificFiles.push(file);
       }
     }
 
-    // Determine if integration is needed
-    const missingCoreFiles = STANDARD_CORE_FILES.filter(f => !result.coreFiles.includes(f));
-    result.needsIntegration = missingCoreFiles.length > 0 || result.projectSpecificFiles.length > 0;
+    // Integration has something to offer when no stack rule is present yet, or when retired
+    // always-on rules are still costing the host context on every turn.
+    result.needsIntegration =
+      result.stackFiles.length === 0 || result.retiredAlwaysOnFiles.length > 0;
   } catch (error: any) {
     if (error.code !== 'ENOENT') {
       logger.warn('Error detecting existing cursor rules', { error: error.message });
@@ -175,8 +193,9 @@ export function shouldIncludeRule(ruleFile: string, stackReport: StackReport): b
     case '23-unity-csharp.mdc':
       return stackReport.unityProjectDetected === true;
     default:
-      // Core files copied to hosts (template-only 08 is not selected here)
-      return HOST_CORE_FILES.includes(ruleFile);
+      // Only the glob-scoped set is copied. Retired always-on rules and the host's own rules
+      // both land here and are deliberately left alone.
+      return false;
   }
 }
 
@@ -200,29 +219,10 @@ export async function adaptRulesForStack(
       }
     }
 
-    // Always include host core rules (skip template-only project context)
-    for (const coreFile of HOST_CORE_FILES) {
-      if (availableRules.includes(coreFile)) {
-        selectedRules.push(coreFile);
+    for (const stackFile of STACK_SCOPED_FILES) {
+      if (availableRules.includes(stackFile) && shouldIncludeRule(stackFile, stackReport)) {
+        selectedRules.push(stackFile);
       }
-    }
-
-    // Conditionally include based on stack
-    for (const conditionalFile of STANDARD_CONDITIONAL_FILES) {
-      if (
-        availableRules.includes(conditionalFile) &&
-        shouldIncludeRule(conditionalFile, stackReport)
-      ) {
-        selectedRules.push(conditionalFile);
-      }
-    }
-
-    // Always include README if it exists
-    try {
-      await fs.access(path.join(templateRulesPath, 'README.md'));
-      // README is not a rule file, but we'll note it separately
-    } catch {
-      // README doesn't exist, that's fine
     }
 
     logger.debug('Adapted rules for stack', {
@@ -245,36 +245,39 @@ export function getRuleSelection(
   stackReport: StackReport,
   availableRules: string[]
 ): RuleSelectionResult {
-  const coreRules: string[] = [];
-  const conditionalRules: string[] = [];
+  const stackRules: string[] = [];
   const skippedRules: string[] = [];
+  const retiredRules: string[] = [];
 
   for (const rule of availableRules) {
-    if (STANDARD_CORE_FILES.includes(rule)) {
-      coreRules.push(rule);
-    } else if (STANDARD_CONDITIONAL_FILES.includes(rule)) {
+    if (STACK_SCOPED_FILES.includes(rule)) {
       if (shouldIncludeRule(rule, stackReport)) {
-        conditionalRules.push(rule);
+        stackRules.push(rule);
       } else {
         skippedRules.push(rule);
       }
+    } else if (RETIRED_ALWAYS_ON_FILES.includes(rule)) {
+      retiredRules.push(rule);
     }
   }
 
   const reasons: string[] = [];
+  if (stackRules.length > 0) {
+    reasons.push(`Included ${stackRules.length} rule(s) for detected technologies`);
+  }
   if (skippedRules.length > 0) {
     reasons.push(`Skipped ${skippedRules.length} rule(s) not matching detected stack`);
   }
-  if (conditionalRules.length > 0) {
+  if (retiredRules.length > 0) {
     reasons.push(
-      `Included ${conditionalRules.length} conditional rule(s) for detected technologies`
+      `Found ${retiredRules.length} retired always-on rule(s); migrate to AGENTS.md and .agents/skills/`
     );
   }
 
   return {
-    coreRules,
-    conditionalRules,
+    stackRules,
     skippedRules,
-    reason: reasons.join('; ') || 'All available rules selected',
+    retiredRules,
+    reason: reasons.join('; ') || 'No template rules available',
   };
 }

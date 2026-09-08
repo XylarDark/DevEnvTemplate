@@ -24,12 +24,10 @@ describe('Cursor Rules Adapter', () => {
     await fs.rm(tempDir, { recursive: true, force: true });
   });
 
-  test('should detect existing rules when .cursor/rules/ exists', async () => {
-    // Create .cursor/rules directory with some files
+  test('should sort existing rules into stack, retired, and project-specific', async () => {
     const rulesDir = path.join(tempDir, '.cursor', 'rules');
     await fs.mkdir(rulesDir, { recursive: true });
 
-    // Create some rule files
     await fs.writeFile(path.join(rulesDir, '00-core-principles.mdc'), '# Core Principles\n');
     await fs.writeFile(path.join(rulesDir, '10-typescript.mdc'), '# TypeScript Rules\n');
     await fs.writeFile(path.join(rulesDir, '99-custom.mdc'), '# Custom Rules\n');
@@ -38,10 +36,62 @@ describe('Cursor Rules Adapter', () => {
 
     assert.strictEqual(result.present, true);
     assert.strictEqual(result.existingFiles.length, 3);
-    assert.strictEqual(result.coreFiles.length, 1);
-    assert.strictEqual(result.conditionalFiles.length, 1);
-    assert.strictEqual(result.projectSpecificFiles.length, 1);
-    assert.strictEqual(result.projectSpecificFiles[0], '99-custom.mdc');
+    assert.deepStrictEqual(result.stackFiles, ['10-typescript.mdc']);
+    assert.deepStrictEqual(result.retiredAlwaysOnFiles, ['00-core-principles.mdc']);
+    assert.deepStrictEqual(result.projectSpecificFiles, ['99-custom.mdc']);
+  });
+
+  test('should need integration when a retired always-on rule is still present', async () => {
+    const rulesDir = path.join(tempDir, '.cursor', 'rules');
+    await fs.mkdir(rulesDir, { recursive: true });
+
+    // A stack rule is present, so the only reason to act is the retired rule's per-turn cost.
+    await fs.writeFile(path.join(rulesDir, '10-typescript.mdc'), '# TypeScript Rules\n');
+    await fs.writeFile(path.join(rulesDir, '07-ai-agent-behavior.mdc'), '# Behavior\n');
+
+    const result = await adapter.detectExistingRules(tempDir);
+
+    assert.strictEqual(result.needsIntegration, true);
+  });
+
+  test('should not need integration when only stack and project rules are present', async () => {
+    const rulesDir = path.join(tempDir, '.cursor', 'rules');
+    await fs.mkdir(rulesDir, { recursive: true });
+
+    await fs.writeFile(path.join(rulesDir, '10-typescript.mdc'), '# TypeScript Rules\n');
+    await fs.writeFile(path.join(rulesDir, '99-custom.mdc'), '# Custom Rules\n');
+
+    const result = await adapter.detectExistingRules(tempDir);
+
+    assert.strictEqual(result.needsIntegration, false);
+  });
+
+  test('every shipped rule is glob-scoped and none is always-applied', async () => {
+    // The architecture's core claim: nothing in .cursor/rules/ costs context on every turn.
+    const rulesDir = path.join(__dirname, '..', '..', '.cursor', 'rules');
+    const entries = await fs.readdir(rulesDir);
+    const rules = entries.filter(name => name.endsWith('.mdc'));
+
+    assert.ok(rules.length > 0, 'expected at least one rule to be shipped');
+
+    for (const rule of rules) {
+      const content = await fs.readFile(path.join(rulesDir, rule), 'utf8');
+
+      assert.match(
+        content,
+        /^globs:\s*\S/m,
+        `${rule} has no globs, so it is not scoped to any file type`
+      );
+      assert.doesNotMatch(
+        content,
+        /^alwaysApply:\s*true/m,
+        `${rule} is always-applied; that content belongs in AGENTS.md or a skill`
+      );
+      assert.ok(
+        adapter.STACK_SCOPED_FILES.includes(rule),
+        `${rule} is not listed in STACK_SCOPED_FILES, so it would never be copied to a host`
+      );
+    }
   });
 
   test('should return present=false when .cursor/rules/ does not exist', async () => {
@@ -103,20 +153,30 @@ describe('Cursor Rules Adapter', () => {
     assert.strictEqual(adapter.shouldIncludeRule('20-frontend-frameworks.mdc', stackReport), true);
   });
 
-  test('should always include core rules', () => {
+  test('should never select a retired always-on rule', () => {
     const stackReport = {
       technologies: [],
       quality: { typescript: false },
       frameworks: { type: 'vanilla' },
     };
 
-    assert.strictEqual(adapter.shouldIncludeRule('00-core-principles.mdc', stackReport), true);
-    assert.strictEqual(adapter.shouldIncludeRule('01-code-quality.mdc', stackReport), true);
-    assert.strictEqual(
-      adapter.shouldIncludeRule('19-docs-directory-structure.mdc', stackReport),
-      true
-    );
-    assert.strictEqual(adapter.shouldIncludeRule('08-project-context.mdc', stackReport), false);
+    for (const retired of adapter.RETIRED_ALWAYS_ON_FILES) {
+      assert.strictEqual(
+        adapter.shouldIncludeRule(retired, stackReport),
+        false,
+        `${retired} was retired and must not be copied into a host`
+      );
+    }
+  });
+
+  test('should name a replacement for every retired rule', () => {
+    // Without this, the doctor tells a host to delete a rule and cannot say where it went.
+    for (const retired of adapter.RETIRED_ALWAYS_ON_FILES) {
+      assert.ok(
+        adapter.RETIRED_RULE_REPLACEMENTS[retired],
+        `${retired} has no documented replacement`
+      );
+    }
   });
 
   test('should include Unreal rules when unrealProjectDetected', () => {
@@ -165,11 +225,9 @@ describe('Cursor Rules Adapter', () => {
   });
 
   test('should adapt rules for stack', async () => {
-    // Create template rules directory
     const templateDir = path.join(tempDir, 'template', '.cursor', 'rules');
     await fs.mkdir(templateDir, { recursive: true });
 
-    // Create rule files
     await fs.writeFile(path.join(templateDir, '00-core-principles.mdc'), '# Core\n');
     await fs.writeFile(path.join(templateDir, '10-typescript.mdc'), '# TS\n');
     await fs.writeFile(path.join(templateDir, '11-javascript.mdc'), '# JS\n');
@@ -183,10 +241,32 @@ describe('Cursor Rules Adapter', () => {
 
     const selected = await adapter.adaptRulesForStack(stackReport, templateDir);
 
-    // Should include core and TypeScript, but not JavaScript or Python
-    assert.ok(selected.includes('00-core-principles.mdc'));
     assert.ok(selected.includes('10-typescript.mdc'));
     assert.ok(!selected.includes('11-javascript.mdc'));
     assert.ok(!selected.includes('12-python.mdc'));
+    assert.ok(
+      !selected.includes('00-core-principles.mdc'),
+      'retired always-on rules must not be selected even when present in the template'
+    );
+  });
+
+  test('getRuleSelection separates stack, skipped, and retired rules', () => {
+    const stackReport = {
+      technologies: [{ name: 'TypeScript', version: '5.0' }],
+      quality: { typescript: true },
+      frameworks: { type: 'vanilla' },
+      files: { key_patterns: [] },
+    };
+
+    const selection = adapter.getRuleSelection(stackReport, [
+      '10-typescript.mdc',
+      '12-python.mdc',
+      '02-security.mdc',
+    ]);
+
+    assert.deepStrictEqual(selection.stackRules, ['10-typescript.mdc']);
+    assert.deepStrictEqual(selection.skippedRules, ['12-python.mdc']);
+    assert.deepStrictEqual(selection.retiredRules, ['02-security.mdc']);
+    assert.match(selection.reason, /retired/i);
   });
 });

@@ -1,25 +1,143 @@
-# DevEnvTemplate — agent notes
+# DevEnvTemplate — agent instructions
 
-This is the **doctor** template for development environments: diagnose, prescribe, and keep repos healthy while coding with LLMs. It is optimized for indie developers and solo founders.
+DevEnvTemplate is the **doctor** for development environments: it diagnoses repository health,
+prescribes fixes, and keeps codebases sound while you code with LLMs. It targets indie developers
+and solo founders, so it optimizes for the GitHub Actions free tier and has no team approval gates.
 
-## Cursor setup (current)
+This file is the canonical, always-loaded context. Everything else loads on demand:
 
-- **Always-true facts** live here (`AGENTS.md`) and in a short always-on rule set under `.cursor/rules/`.
-- **Do not** load `BOOTSTRAP.md` at session start. That file is a long optional reference for setup/migration, not the primary agent context.
-- **Do not** use `.cursorrules` or `.projectrules` alongside `.cursor/rules/`.
-- Keep always-on rules small. Stack rules use `globs` or intelligent apply (`description` + `alwaysApply: false`).
-- Host projects must write their **own** `08-project-context.mdc` and root `AGENTS.md`. The copy in this repo is template-specific and is **not** copied into hosts.
+- **`.cursor/rules/*.mdc`** — glob-scoped only. They load when you touch a matching file
+  (TypeScript, Python, shell, Unreal, Unity, and so on).
+- **`.agents/skills/<name>/SKILL.md`** — procedural knowledge. Each skill stays dormant until its
+  `description` matches your task. Read one when its trigger applies.
+- **`docs/`** — reference material for humans and agents. Start at `docs/README.md`.
+
+Do not add always-applied rules. Context that loads on every turn measurably degrades accuracy,
+so the budget for this file is roughly 200 lines and the always-apply rule count is zero.
 
 ## Stack
 
-- TypeScript (strict, ES2020, CommonJS), Node.js 24+ (Active LTS)
-- Node.js test runner (`npm test` builds then runs `tests/**/*.test.js`)
-- Commands: `npm run doctor`, `npm run doctor:fix`, `npm run build`, `npm test`
+- TypeScript, strict mode, ES2022 target, CommonJS modules.
+- Node.js 24+ (Active LTS). The floor is pinned in `package.json` `engines`, `volta`, and `.nvmrc`.
+- Node's built-in test runner (`node --test`). No Jest, no Vitest.
+- ESLint flat config in `eslint.config.js`. The `.eslintrc.*` format is dead; ESLint 10 ignores it.
+- Prettier, single quotes, configured in `.prettierrc`.
 
-## Apply to a host
+## Commands
 
-Clone or copy this repo into the host as `.devenv/` only when the host wants the Node doctor. For game/engine repos, copy the **Cursor/docs layer** (rules, `AGENTS.md`, `docs/DOCS_LAYOUT.md`, `docs/KNOWN_ERRORS.md`, `docs/operational/automation-gaps.md`) instead of embedding the doctor.
+Run these from the repository root.
 
-Unity hosts: ensure `.cursor/rules/23-unity-csharp.mdc` is present; pin the editor version from `ProjectSettings/ProjectVersion.txt`. See `docs/templates/unity/README.md`.
+| Command | Purpose |
+| --- | --- |
+| `npm run doctor` | Health check: stack detection, gap analysis, scoring |
+| `npm run doctor:fix` | Health check, then apply automatic fixes |
+| `npm run build` | Type-check, then compile to `dist/` |
+| `npm run build:clean` | Purge `dist/` first, then build |
+| `npm test` | Build, then run `tests/**/*.test.js` |
+| `npm run lint` | ESLint over the repo |
+| `npm run format` | Prettier write; `format:check` verifies without writing |
+| `npm run clean` | Remove `dist/` and `tsconfig.tsbuildinfo` |
+| `npm run check:doc-links` | Verify every relative markdown link resolves |
+| `npm run check:encoding` | Detect double-encoded UTF-8 (mojibake) |
 
-Unreal hosts: `.cursor/rules/21-unreal-engine.mdc` and `22-unreal-editor-ui.mdc`; see `docs/templates/unreal/README.md`.
+**Pass script flags after `--`.** `npm run doctor -- --fix` forwards the flag to the doctor;
+`npm run doctor --fix` gives it to npm instead, which silently ignores it. This has been a
+recurring source of no-op commands in this repo's own docs and CI.
+
+Useful doctor flags: `--fix`, `--no-install`, `--preset <framework>`, `--dry-run`, `--json`,
+`--strict` (fail on warnings), `--fast` (skip docs, accessibility, Docker, git hooks),
+`--project-root <path>`.
+
+## Layout
+
+- `scripts/doctor/` — the doctor CLI, checks, and the quick-wins registry.
+- `scripts/tools/` — stack detector, gap analyzer, plan generator, and repo utilities.
+- `scripts/cleanup/` — the cleanup engine and its CLI.
+- `scripts/utils/` — shared helpers (logging, caching, paths, JSONC parsing).
+- `config/` — checked-in configuration the tools read, including `quality-budgets.json`.
+- `tests/unit/`, `tests/integration/`, `tests/fixtures/` — tests and fixture projects.
+- `docs/` — documentation, organized per `docs/DOCS_LAYOUT.md`.
+- `.devenv/` — generated reports. Gitignored; never commit anything from here.
+
+The tools exchange structured data: the stack detector writes `.devenv/stack-report.json`, the
+gap analyzer writes both `.devenv/gaps-report.json` (consumed by the doctor and plan generator)
+and `.devenv/gaps-report.md` (for humans). Read the JSON; never parse the markdown back.
+
+## Working agreements
+
+**Verify, don't assume.** Read a file before editing it. Run the build, tests, and linter before
+claiming work is done. When you assert something about the repo, base it on file contents.
+
+**Finish what you start.** No `TODO` without an issue reference, no placeholder implementations,
+no committing a known-broken state. If you must defer, say so explicitly and explain why.
+
+**Be idempotent.** Any script that creates a file or resource must check first, reuse or skip if
+it already exists, and log which it did. Re-running must not duplicate or destroy.
+
+**Clean up.** Delete one-off diagnostic scripts, result dumps, and scratch files before you
+report a task complete. Keep only reusable, referenced tooling.
+
+**Record failures.** When a build, test, or lint step fails, note the cause and the fix in
+`docs/KNOWN_ERRORS.md`. Check it before making similar changes. If the cause is a tool that
+cannot be scripted, record it in `docs/operational/automation-gaps.md` instead.
+
+**Plan multi-file work.** For changes spanning several modules, or that touch architecture or
+public APIs, propose a short plan before editing. See the `plan-first` skill.
+
+## Conventions
+
+- **Commits:** Conventional Commits (`feat`, `fix`, `docs`, `refactor`, `perf`, `test`, `chore`,
+  `style`, `ci`). Imperative mood, first line under 72 characters, no emoji. Body lines wrap at
+  100 characters. Commitlint enforces this in a hook.
+- **Branches:** `feat/`, `fix/`, `refactor/`, `perf/`, `docs/`, `test/`, `chore/`.
+- **Files:** kebab-case (`user-service.ts`). Name the file after its primary export.
+- **Naming:** functions are verbs, types are nouns, booleans read as questions, constants are
+  `UPPER_SNAKE_CASE`.
+- **Docs:** place new documents per `docs/DOCS_LAYOUT.md`. The docs root is a closed set of entry
+  points; topic documents belong in a subdirectory. Run `npm run check:doc-links` after moving
+  or renaming anything.
+
+## Testing
+
+- Unit tests finish in under 5 seconds total; integration tests in under 60.
+- Every test needs a timeout, must run independently, and must clean up in `afterEach`.
+- Use real temporary directories (`fs.mkdtemp`), not `mock-fs` — this repo runs on Windows too.
+- Test behavior, not implementation. Cover the error and edge cases, not just the happy path.
+- Prefer a failing test as the definition of done. If you skip tests, say why.
+
+## Security baseline
+
+- Never commit secrets. `.env` and `.env.*` are gitignored; `.env.example` templates are tracked
+  and carry placeholder values only.
+- Validate and sanitize anything crossing a trust boundary. Use parameterized queries.
+- Never log credentials, tokens, or personal data.
+- Treat changes to MCP configuration as production changes: review the server command and args,
+  not just the server name. Reference credentials as `${env:NAME}`; never inline them. Start from
+  `.cursor/mcp.json.example` and read `docs/guides/mcp-hygiene.md`.
+- Dependency updates arrive weekly via Dependabot. CI gates on `npm audit --audit-level=high`
+  and `npm audit signatures`.
+
+## Windows and PowerShell
+
+This repo is developed on Windows and must work on macOS and Linux.
+
+- Chain commands with `;`, never `&&`.
+- Build paths with `path.join`; never hardcode separators.
+- Check a path exists before navigating to it.
+- Keep commit messages ASCII. Non-ASCII text elsewhere must be valid UTF-8: this repo has twice
+  had emoji double-encoded into mojibake, once breaking the linter and once garbling every
+  generated plan. `npm run check:encoding` detects it and `fix-mojibake.js --write` repairs it.
+
+## Applying this template to another project
+
+Copy this repo into the host as `.devenv/` only when the host wants the Node doctor. For game and
+engine repositories, copy just the agent and docs layer: `AGENTS.md`, `.agents/skills/`, the
+glob-scoped `.cursor/rules/`, `docs/DOCS_LAYOUT.md`, `docs/KNOWN_ERRORS.md`, and
+`docs/operational/automation-gaps.md`.
+
+Host projects write their **own** `AGENTS.md`. The copy in this repo describes this repo.
+
+- **Unity:** keep `.cursor/rules/23-unity-csharp.mdc` and pin the editor version from
+  `ProjectSettings/ProjectVersion.txt`. See `docs/templates/unity/README.md`.
+- **Unreal:** keep `.cursor/rules/21-unreal-engine.mdc` and `22-unreal-editor-ui.mdc`. See
+  `docs/templates/unreal/README.md`.

@@ -48,4 +48,4 @@
 
 - [TROUBLESHOOTING.md](TROUBLESHOOTING.md) — broader operational issues
 - [docs/operational/automation-gaps.md](operational/automation-gaps.md) — what automation cannot do yet
-- `.cursor/rules/05-error-handling.mdc` — defensive coding and where to record errors
+- `.agents/skills/defensive-programming/SKILL.md` — defensive coding and where to record errors

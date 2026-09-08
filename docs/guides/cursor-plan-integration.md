@@ -29,7 +29,7 @@ When you drop DevEnvTemplate into your repository:
 
 **Use Cursor Plan mode as your primary planning tool:**
 
-1. **Open Plan Mode** (`Cmd/Ctrl + Shift + P` â†’ "Plan Mode")
+1. **Open Plan Mode** (`Cmd/Ctrl + Shift + P` → "Plan Mode")
 2. **Attach CI artifacts** for comprehensive context:
    - Download `.devenv/stack-report.json` from CI artifacts
    - Download `.devenv/gaps-report.md` from CI artifacts

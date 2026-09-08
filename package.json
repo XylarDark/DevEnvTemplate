@@ -31,7 +31,8 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "check:doc-links": "node scripts/tools/check-doc-links.js"
+    "check:doc-links": "node scripts/tools/check-doc-links.js",
+    "check:encoding": "node scripts/tools/fix-mojibake.js --check"
   },
   "engines": {
     "node": ">=24.0.0"

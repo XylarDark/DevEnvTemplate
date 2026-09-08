@@ -25,7 +25,7 @@ git clone https://github.com/XylarDark/DevEnvTemplate .devenv
 Do **not** clone this repo into `.devenv/` unless you actually want the Node doctor. For Unity/Unreal (or any non-Node product repo), copy the **Cursor/docs layer** instead:
 
 - Root `AGENTS.md` (host-specific facts) plus nested `AGENTS.md` next to the engine project if useful
-- `.cursor/rules/` host core (not template `08-project-context.mdc`) and matching stack rules (`23-unity-csharp.mdc` or Unreal `21`/`22`)
+- `.agents/skills/` (all of them; each stays dormant until its description matches a task) and the matching stack rules from `.cursor/rules/` (`23-unity-csharp.mdc`, or Unreal `21`/`22`)
 - `docs/DOCS_LAYOUT.md`, `docs/KNOWN_ERRORS.md`, `docs/operational/automation-gaps.md`
 - `.cursorignore` and workspace `.vscode/settings.json`
 
