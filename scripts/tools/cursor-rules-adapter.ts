@@ -26,9 +26,9 @@ export interface RuleSelectionResult {
 }
 
 /**
- * Standard core rule files
+ * Standard core rule files (template catalog). Hosts get HOST_CORE_FILES.
  */
-const STANDARD_CORE_FILES = [
+export const STANDARD_CORE_FILES = [
   '00-core-principles.mdc',
   '01-code-quality.mdc',
   '02-security.mdc',
@@ -45,7 +45,14 @@ const STANDARD_CORE_FILES = [
   'automation-standards.mdc'
 ];
 
-const STANDARD_CONDITIONAL_FILES = [
+/** Template-specific context; hosts write their own 08-project-context.mdc. */
+export const TEMPLATE_ONLY_CORE_FILES = ['08-project-context.mdc'];
+
+export const HOST_CORE_FILES = STANDARD_CORE_FILES.filter(
+  file => !TEMPLATE_ONLY_CORE_FILES.includes(file)
+);
+
+export const STANDARD_CONDITIONAL_FILES = [
   '10-typescript.mdc',
   '11-javascript.mdc',
   '12-python.mdc',
@@ -54,7 +61,8 @@ const STANDARD_CONDITIONAL_FILES = [
   '15-shell-scripts.mdc',
   '20-frontend-frameworks.mdc',
   '21-unreal-engine.mdc',
-  '22-unreal-editor-ui.mdc'
+  '22-unreal-editor-ui.mdc',
+  '23-unity-csharp.mdc'
 ];
 
 /**
@@ -154,9 +162,11 @@ export function shouldIncludeRule(ruleFile: string, stackReport: StackReport): b
     case '21-unreal-engine.mdc':
     case '22-unreal-editor-ui.mdc':
       return stackReport.unrealProjectDetected === true;
+    case '23-unity-csharp.mdc':
+      return stackReport.unityProjectDetected === true;
     default:
-      // Core files are always included when requested via shouldIncludeRule
-      return STANDARD_CORE_FILES.includes(ruleFile);
+      // Core files copied to hosts (template-only 08 is not selected here)
+      return HOST_CORE_FILES.includes(ruleFile);
   }
 }
 
@@ -180,8 +190,8 @@ export async function adaptRulesForStack(
       }
     }
 
-    // Always include core rules
-    for (const coreFile of STANDARD_CORE_FILES) {
+    // Always include host core rules (skip template-only project context)
+    for (const coreFile of HOST_CORE_FILES) {
       if (availableRules.includes(coreFile)) {
         selectedRules.push(coreFile);
       }

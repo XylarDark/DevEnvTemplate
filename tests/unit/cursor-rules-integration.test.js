@@ -31,6 +31,9 @@ describe('Cursor Rules Integration', () => {
     await fs.writeFile(path.join(templateDir, '01-code-quality.mdc'), '# Code Quality\n');
     await fs.writeFile(path.join(templateDir, '10-typescript.mdc'), '# TypeScript\n');
     await fs.writeFile(path.join(templateDir, '12-python.mdc'), '# Python\n');
+    await fs.writeFile(path.join(templateDir, '08-project-context.mdc'), '# Template context\n');
+    await fs.writeFile(path.join(templateDir, '21-unreal-engine.mdc'), '# Unreal\n');
+    await fs.writeFile(path.join(templateDir, '23-unity-csharp.mdc'), '# Unity\n');
     await fs.writeFile(path.join(templateDir, 'README.md'), '# Cursor Rules\n');
   });
 
@@ -64,6 +67,8 @@ describe('Cursor Rules Integration', () => {
     const rulesDir = path.join(projectDir, '.cursor', 'rules');
     const copiedFile = await fs.readFile(path.join(rulesDir, '00-core-principles.mdc'), 'utf8');
     assert.strictEqual(copiedFile, '# Core Principles\n');
+    assert.ok(!result.copied.includes('08-project-context.mdc'));
+    await assert.rejects(() => fs.access(path.join(rulesDir, '08-project-context.mdc')));
   });
 
   test('should copy conditional rules based on stack', async () => {
@@ -85,6 +90,28 @@ describe('Cursor Rules Integration', () => {
     // Should include TypeScript rule but not Python
     assert.ok(result.copied.includes('10-typescript.mdc'));
     assert.ok(!result.copied.includes('12-python.mdc'));
+  });
+
+  test('should copy Unreal and Unity rules when those stacks are detected', async () => {
+    const stackReport = {
+      technologies: [],
+      quality: { typescript: false },
+      frameworks: { type: 'vanilla' },
+      files: { key_patterns: [] },
+      unrealProjectDetected: true,
+      unityProjectDetected: true
+    };
+
+    const result = await integration.integrateCursorRules({
+      projectRoot: projectDir,
+      templateRulesPath: templateDir,
+      stackReport,
+      overwriteCore: false,
+      dryRun: false
+    });
+
+    assert.ok(result.copied.includes('21-unreal-engine.mdc'));
+    assert.ok(result.copied.includes('23-unity-csharp.mdc'));
   });
 
   test('should preserve project-specific rules', async () => {

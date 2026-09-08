@@ -113,6 +113,8 @@ export interface StackReport {
   cursorRules?: CursorRulesInfo;
   /** True when a `*.uproject` exists at the repository root (Unreal Engine layout). */
   unrealProjectDetected?: boolean;
+  /** True when `ProjectSettings/ProjectVersion.txt` exists at repo root or one directory down (Unity layout). */
+  unityProjectDetected?: boolean;
   /** Short hints for humans/integrations (e.g. enable Unreal Cursor rules). */
   stackHints?: string[];
   [key: string]: any;

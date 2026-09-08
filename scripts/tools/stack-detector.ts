@@ -19,6 +19,7 @@ import type {
   EnvLoaderInfo,
   DependencyAuditInfo
 } from '../types/gaps';
+import { STANDARD_CONDITIONAL_FILES, STANDARD_CORE_FILES } from './cursor-rules-adapter';
 
 type DetectorMode = 'fast' | 'full';
 
@@ -59,7 +60,13 @@ const DEFAULT_IGNORED_DIRS = [
   'venv',
   '.pytest_cache',
   '.mypy_cache',
-  '__pycache__'
+  '__pycache__',
+  'library',
+  'temp',
+  'logs',
+  'obj',
+  'usersettings',
+  'memorycaptures'
 ];
 
 const FAST_ONLY_IGNORED_DIRS = [
@@ -269,6 +276,7 @@ class StackDetector {
     await this.detectSecretsHygiene();
     await this.detectCursorRules();
     await this.detectUnrealProject();
+    await this.detectUnityProject();
     this.assignProfiles();
 
     return this.stack;
@@ -300,6 +308,57 @@ class StackDetector {
     } catch (error: any) {
       if (error.code !== 'ENOENT') {
         this.logDebug('detectUnrealProject failed', { error: error.message });
+      }
+    }
+  }
+
+  /**
+   * Detect Unity project via ProjectSettings/ProjectVersion.txt at repo root or one directory down (e.g. game/).
+   */
+  private async detectUnityProject(): Promise<void> {
+    try {
+      const versionRelPaths: string[] = [
+        path.join('ProjectSettings', 'ProjectVersion.txt'),
+      ];
+      const entries = await fs.readdir(this.rootDir, { withFileTypes: true });
+      for (const entry of entries) {
+        if (!entry.isDirectory()) {
+          continue;
+        }
+        if (this.ignoredDirectories.has(entry.name.toLowerCase())) {
+          continue;
+        }
+        versionRelPaths.push(path.join(entry.name, 'ProjectSettings', 'ProjectVersion.txt'));
+      }
+
+      let foundRel: string | null = null;
+      for (const rel of versionRelPaths) {
+        try {
+          await fs.access(path.join(this.rootDir, rel));
+          foundRel = rel;
+          break;
+        } catch {
+          // keep looking
+        }
+      }
+      if (!foundRel) {
+        return;
+      }
+
+      this.stack.unityProjectDetected = true;
+      if (!this.stack.stackHints) {
+        this.stack.stackHints = [];
+      }
+      this.stack.stackHints.push(
+        `Unity-like repo: ${foundRel.replace(/\\/g, '/')}. Ensure .cursor/rules/23-unity-csharp.mdc is present; see docs/templates/unity/README.md.`
+      );
+      this.addTechnology('Unity', {
+        source: 'stack-detector',
+        detector: 'project-version'
+      });
+    } catch (error: any) {
+      if (error.code !== 'ENOENT') {
+        this.logDebug('detectUnityProject failed', { error: error.message });
       }
     }
   }
@@ -1603,29 +1662,8 @@ class StackDetector {
       const conditionalFiles: string[] = [];
       const projectSpecificFiles: string[] = [];
       
-      // Standard DevEnvTemplate core files (00-08)
-      const standardCoreFiles = [
-        '00-core-principles.mdc',
-        '01-code-quality.mdc',
-        '02-security.mdc',
-        '03-testing.mdc',
-        '04-git-workflow.mdc',
-        '05-error-handling.mdc',
-        '06-documentation.mdc',
-        '07-ai-agent-behavior.mdc',
-        '08-project-context.mdc'
-      ];
-      
-      // Standard conditional files (10+)
-      const standardConditionalFiles = [
-        '10-typescript.mdc',
-        '11-javascript.mdc',
-        '12-python.mdc',
-        '13-markdown.mdc',
-        '14-json-yaml.mdc',
-        '15-shell-scripts.mdc',
-        '20-frontend-frameworks.mdc'
-      ];
+      const standardCoreFiles = STANDARD_CORE_FILES;
+      const standardConditionalFiles = STANDARD_CONDITIONAL_FILES;
       
       for (const file of mdcFiles) {
         if (standardCoreFiles.includes(file)) {

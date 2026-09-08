@@ -112,8 +112,8 @@ describe('Cursor Rules Adapter', () => {
 
     assert.strictEqual(adapter.shouldIncludeRule('00-core-principles.mdc', stackReport), true);
     assert.strictEqual(adapter.shouldIncludeRule('01-code-quality.mdc', stackReport), true);
-    assert.strictEqual(adapter.shouldIncludeRule('08-project-context.mdc', stackReport), true);
     assert.strictEqual(adapter.shouldIncludeRule('19-docs-directory-structure.mdc', stackReport), true);
+    assert.strictEqual(adapter.shouldIncludeRule('08-project-context.mdc', stackReport), false);
   });
 
   test('should include Unreal rules when unrealProjectDetected', () => {
@@ -137,6 +137,28 @@ describe('Cursor Rules Adapter', () => {
 
     assert.strictEqual(adapter.shouldIncludeRule('21-unreal-engine.mdc', stackReport), false);
     assert.strictEqual(adapter.shouldIncludeRule('22-unreal-editor-ui.mdc', stackReport), false);
+  });
+
+  test('should include Unity rule when unityProjectDetected', () => {
+    const stackReport = {
+      technologies: [],
+      quality: { typescript: false },
+      frameworks: { type: 'vanilla' },
+      unityProjectDetected: true
+    };
+
+    assert.strictEqual(adapter.shouldIncludeRule('23-unity-csharp.mdc', stackReport), true);
+    assert.strictEqual(adapter.shouldIncludeRule('21-unreal-engine.mdc', stackReport), false);
+  });
+
+  test('should omit Unity rule when unityProjectDetected is unset', () => {
+    const stackReport = {
+      technologies: [],
+      quality: { typescript: false },
+      frameworks: { type: 'vanilla' }
+    };
+
+    assert.strictEqual(adapter.shouldIncludeRule('23-unity-csharp.mdc', stackReport), false);
   });
 
   test('should adapt rules for stack', async () => {

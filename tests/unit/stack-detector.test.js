@@ -235,5 +235,41 @@ describe('StackDetector', () => {
       );
     });
   });
+
+  describe('Unity detection', () => {
+    test('should detect Unity when ProjectVersion.txt is under game/', async () => {
+      const fs = require('fs').promises;
+      const os = require('os');
+      const tmp = await fs.mkdtemp(path.join(os.tmpdir(), 'unity-detect-'));
+      try {
+        await fs.mkdir(path.join(tmp, 'game', 'ProjectSettings'), { recursive: true });
+        await fs.writeFile(
+          path.join(tmp, 'game', 'ProjectSettings', 'ProjectVersion.txt'),
+          'm_EditorVersion: 6000.5.8f1\n'
+        );
+
+        const detector = new StackDetector({ rootDir: tmp, quiet: true });
+        const stack = await detector.detect();
+
+        assert.strictEqual(stack.unityProjectDetected, true);
+        assert.ok(stack.technologies.some(t => t.name === 'Unity'));
+      } finally {
+        await fs.rm(tmp, { recursive: true, force: true });
+      }
+    });
+
+    test('should not detect Unity without ProjectVersion.txt', async () => {
+      const fs = require('fs').promises;
+      const os = require('os');
+      const tmp = await fs.mkdtemp(path.join(os.tmpdir(), 'no-unity-'));
+      try {
+        const detector = new StackDetector({ rootDir: tmp, quiet: true });
+        const stack = await detector.detect();
+        assert.notStrictEqual(stack.unityProjectDetected, true);
+      } finally {
+        await fs.rm(tmp, { recursive: true, force: true });
+      }
+    });
+  });
 });
 

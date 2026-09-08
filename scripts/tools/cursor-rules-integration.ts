@@ -10,7 +10,13 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import type { StackReport, CursorRulesInfo } from '../types/gaps';
 import { createLogger } from '../utils/logger';
-import { detectExistingRules, adaptRulesForStack, shouldIncludeRule } from './cursor-rules-adapter';
+import {
+  detectExistingRules,
+  shouldIncludeRule,
+  HOST_CORE_FILES,
+  STANDARD_CORE_FILES,
+  STANDARD_CONDITIONAL_FILES
+} from './cursor-rules-adapter';
 
 const logger = createLogger({ context: 'cursor-rules-integration' });
 
@@ -31,23 +37,6 @@ export interface IntegrationResult {
   recommendations: string[];
 }
 
-const STANDARD_CORE_FILES = [
-  '00-core-principles.mdc',
-  '01-code-quality.mdc',
-  '02-security.mdc',
-  '03-testing.mdc',
-  '04-git-workflow.mdc',
-  '05-error-handling.mdc',
-  '06-documentation.mdc',
-  '07-ai-agent-behavior.mdc',
-  '08-project-context.mdc',
-  '16-feature-debug-instrumentation.mdc',
-  '17-plan-first.mdc',
-  '18-content-and-data-pipelines.mdc',
-  '19-docs-directory-structure.mdc',
-  'automation-standards.mdc'
-];
-
 /**
  * Copy core rules from template to project
  */
@@ -61,7 +50,7 @@ async function copyCoreRules(
   // Ensure project directory exists
   await fs.mkdir(projectPath, { recursive: true });
 
-  for (const coreFile of STANDARD_CORE_FILES) {
+  for (const coreFile of HOST_CORE_FILES) {
     const templateFile = path.join(templatePath, coreFile);
     const projectFile = path.join(projectPath, coreFile);
 
@@ -101,18 +90,7 @@ async function copyConditionalRules(
   // Ensure project directory exists
   await fs.mkdir(projectPath, { recursive: true });
 
-  // Get list of conditional files to include
-  const conditionalFiles = [
-    '10-typescript.mdc',
-    '11-javascript.mdc',
-    '12-python.mdc',
-    '13-markdown.mdc',
-    '14-json-yaml.mdc',
-    '15-shell-scripts.mdc',
-    '20-frontend-frameworks.mdc'
-  ];
-
-  for (const conditionalFile of conditionalFiles) {
+  for (const conditionalFile of STANDARD_CONDITIONAL_FILES) {
     if (!shouldIncludeRule(conditionalFile, stackReport)) {
       continue;
     }
@@ -155,12 +133,9 @@ async function preserveProjectRules(projectPath: string): Promise<string[]> {
     for (const entry of entries) {
       if (entry.isFile() && entry.name.endsWith('.mdc')) {
         // Check if it's a project-specific file (not in standard list)
-        const isStandard = STANDARD_CORE_FILES.includes(entry.name) ||
-          entry.name.startsWith('10-') || entry.name.startsWith('11-') ||
-          entry.name.startsWith('12-') || entry.name.startsWith('13-') ||
-          entry.name.startsWith('14-') || entry.name.startsWith('15-') ||
-          entry.name.startsWith('20-') || entry.name.startsWith('21-') ||
-          entry.name.startsWith('22-');
+        const isStandard =
+          STANDARD_CORE_FILES.includes(entry.name) ||
+          STANDARD_CONDITIONAL_FILES.includes(entry.name);
 
         if (!isStandard) {
           preserved.push(entry.name);
@@ -257,7 +232,7 @@ export async function integrateCursorRules(
 
   // For existing core files that weren't overwritten, mark as updated if they exist
   if (existingRules.present && !overwriteCore) {
-    for (const coreFile of STANDARD_CORE_FILES) {
+    for (const coreFile of HOST_CORE_FILES) {
       if (existingRules.coreFiles.includes(coreFile) && !copiedCore.includes(coreFile)) {
         result.updated.push(coreFile);
       }
@@ -285,8 +260,8 @@ export async function integrateCursorRules(
     );
   }
 
-  if (existingRules.present && existingRules.coreFiles.length < STANDARD_CORE_FILES.length) {
-    const missing = STANDARD_CORE_FILES.filter(f => !existingRules.coreFiles.includes(f));
+  if (existingRules.present && existingRules.coreFiles.filter(f => HOST_CORE_FILES.includes(f)).length < HOST_CORE_FILES.length) {
+    const missing = HOST_CORE_FILES.filter(f => !existingRules.coreFiles.includes(f));
     result.recommendations.push(
       `Added ${missing.length} missing core rule file(s).`
     );
