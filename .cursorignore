@@ -1,0 +1,11 @@
+﻿# Keep generated and vendor trees out of agent indexing.
+node_modules/
+dist/
+.devenv/
+.git/
+coverage/
+**/Library/
+**/Temp/
+**/Logs/
+**/obj/
+
