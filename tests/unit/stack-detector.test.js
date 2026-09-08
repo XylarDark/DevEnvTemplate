@@ -363,4 +363,102 @@ describe('StackDetector', () => {
       assert.ok(!stack.tooling.testing.frameworks.some(f => f.name === 'Node test runner'));
     });
   });
+
+  describe('JS test framework detection', () => {
+    const fs = require('fs').promises;
+    const os = require('os');
+
+    /**
+     * Build a temporary project and detect its stack.
+     *
+     * @param {object} spec Project shape.
+     * @param {object} [spec.pkg] package.json contents.
+     * @param {string[]} [spec.files] Relative file paths to create as empty files.
+     * @returns {Promise<object>} The stack report.
+     */
+    async function detectProject({ pkg = {}, files = [] }) {
+      const tmp = await fs.mkdtemp(path.join(os.tmpdir(), 'js-testing-'));
+      try {
+        await fs.writeFile(
+          path.join(tmp, 'package.json'),
+          JSON.stringify({ name: 'fixture', ...pkg }, null, 2)
+        );
+
+        for (const file of files) {
+          const full = path.join(tmp, file);
+          await fs.mkdir(path.dirname(full), { recursive: true });
+          await fs.writeFile(full, '');
+        }
+
+        const detector = new StackDetector({ rootDir: tmp, quiet: true });
+        return await detector.detect();
+      } finally {
+        await fs.rm(tmp, { recursive: true, force: true });
+      }
+    }
+
+    // Regression: a Next.js app with Vitest and three nested test files was reported as having
+    // no unit tests at all, because the config list held only .ts and .js.
+    for (const extension of ['ts', 'mts', 'cts', 'js', 'mjs', 'cjs']) {
+      test(`should detect Vitest configured as vitest.config.${extension}`, async () => {
+        const stack = await detectProject({ files: [`vitest.config.${extension}`] });
+
+        assert.ok(
+          stack.tooling.testing.frameworks.some(f => f.name === 'Vitest'),
+          `vitest.config.${extension} should register Vitest`
+        );
+        assert.strictEqual(stack.tooling.testing.present, true);
+      });
+    }
+
+    test('should detect Vitest from the dependency when it has no config file', async () => {
+      // Vitest is frequently configured inside vite.config.ts, so there is nothing to find.
+      const stack = await detectProject({ pkg: { devDependencies: { vitest: '^5.0.0' } } });
+
+      assert.ok(stack.tooling.testing.frameworks.some(f => f.name === 'Vitest'));
+      assert.strictEqual(stack.tooling.testing.present, true);
+    });
+
+    test('should detect Jest and Playwright from their dependencies', async () => {
+      const stack = await detectProject({
+        pkg: { devDependencies: { jest: '^30.0.0', '@playwright/test': '^1.50.0' } },
+      });
+
+      const names = stack.tooling.testing.frameworks.map(f => f.name);
+      assert.ok(names.includes('Jest'), 'Jest should be detected');
+      assert.ok(names.includes('Playwright'), 'Playwright should be detected');
+    });
+
+    test('should report no frameworks for a project with none', async () => {
+      const stack = await detectProject({ pkg: { devDependencies: { typescript: '^5.0.0' } } });
+
+      assert.deepStrictEqual(stack.tooling.testing.frameworks, []);
+      assert.strictEqual(stack.tooling.testing.present, false);
+    });
+
+    test('should find test files nested well below src/', async () => {
+      // The previous implementation read only the top level of src/, so co-located tests -
+      // the normal layout - never counted.
+      const stack = await detectProject({
+        files: ['src/features/billing/invoice.test.ts'],
+      });
+
+      assert.strictEqual(stack.quality.testing, true);
+    });
+
+    test('should find co-located tests under app/ and lib/', async () => {
+      for (const dir of ['app', 'lib', 'components']) {
+        const stack = await detectProject({ files: [`${dir}/thing/thing.spec.tsx`] });
+        assert.strictEqual(stack.quality.testing, true, `${dir}/ should be searched`);
+      }
+    });
+
+    test('should not count a test file inside node_modules', async () => {
+      const stack = await detectProject({
+        files: ['src/vendor/node_modules/pkg/index.test.js'],
+      });
+
+      assert.strictEqual(stack.quality.testing, false);
+    });
+  });
 });

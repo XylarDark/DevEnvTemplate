@@ -1158,6 +1158,64 @@ class StackDetector {
     }
   }
 
+  /**
+   * Locate a tool's config file, trying every extension it might carry.
+   *
+   * `vitest.config.mts` is common in ESM projects and `jest.config.mjs` in others, so a fixed
+   * `.ts`/`.js` pair silently misses real configurations.
+   *
+   * @param base Config filename without extension, e.g. `vitest.config`.
+   * @returns The filename that exists, or null.
+   */
+  private async findConfigFile(base: string): Promise<string | null> {
+    for (const extension of ['ts', 'mts', 'cts', 'js', 'mjs', 'cjs', 'json']) {
+      const candidate = `${base}.${extension}`;
+      try {
+        await fs.access(path.join(this.rootDir, candidate));
+        return candidate;
+      } catch {
+        // Try the next extension.
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Report whether a directory tree contains a test file.
+   *
+   * Depth-limited and skips ignored directories, so this stays cheap on large trees. It stops at
+   * the first match, since the caller only needs to know whether any exist.
+   *
+   * @param dir Directory to search.
+   * @param depth Remaining levels to descend.
+   * @returns True if a `*.test.*` or `*.spec.*` file is found.
+   */
+  private async containsTestFile(dir: string, depth = 4): Promise<boolean> {
+    if (depth < 0) return false;
+
+    let entries;
+    try {
+      entries = await fs.readdir(dir, { withFileTypes: true });
+    } catch {
+      return false;
+    }
+
+    const subdirectories = [];
+    for (const entry of entries) {
+      if (entry.isFile()) {
+        if (entry.name.includes('.test.') || entry.name.includes('.spec.')) return true;
+      } else if (entry.isDirectory() && !this.ignoredDirectories.has(entry.name.toLowerCase())) {
+        subdirectories.push(entry.name);
+      }
+    }
+
+    for (const subdirectory of subdirectories) {
+      if (await this.containsTestFile(path.join(dir, subdirectory), depth - 1)) return true;
+    }
+
+    return false;
+  }
+
   async detectTesting(): Promise<void> {
     const testingFrameworks: ToolingFramework[] = [];
 
@@ -1172,68 +1230,52 @@ class StackDetector {
         this.stack.quality.testing = true;
         this.stack.files.key_patterns.push('__tests__/ (test directory)');
       } catch (error: any) {
-        // Check for test files in src
-        try {
-          const files = await fs.readdir(path.join(this.rootDir, 'src'));
-          if (files.some(f => f.includes('.test.') || f.includes('.spec.'))) {
+        // Look for co-located test files. This walk has to recurse: tests normally sit beside
+        // the module they cover, several directories down. Reading only the top level of `src/`
+        // reported a Next.js app with three nested test files as having none.
+        const testDirs = ['src', 'app', 'lib', 'components'];
+        for (const dir of testDirs) {
+          if (await this.containsTestFile(path.join(this.rootDir, dir))) {
             this.stack.quality.testing = true;
-            this.stack.files.key_patterns.push('src/**/*.test.* (test files)');
+            this.stack.files.key_patterns.push(`${dir}/**/*.test.* (test files)`);
+            break;
           }
-        } catch (error: any) {
-          // No tests detected
         }
       }
     }
 
-    // Check for Jest config
-    const jestConfigs = ['jest.config.js', 'jest.config.ts', 'jest.config.json'];
-    for (const configFile of jestConfigs) {
-      try {
-        await fs.access(path.join(this.rootDir, configFile));
-        this.stack.configurations.push({
-          type: 'jest',
-          configFile,
-        });
-        this.stack.files.configs.push(configFile);
-        testingFrameworks.push({ name: 'Jest', config: configFile });
-        break;
-      } catch (error: any) {
-        // Continue checking
-      }
-    }
+    // Detect each JS test framework from its dependency first, then locate its config file.
+    //
+    // The dependency is the authoritative signal: a project cannot run a framework it does not
+    // depend on, and it may configure one without a file of its own (Vitest is often configured
+    // inside `vite.config.ts`). Matching on config filenames alone missed a Next.js app using
+    // `vitest.config.mts`, and the analyzer then reported it as having no unit tests at all.
+    const jsTestFrameworks = [
+      { name: 'Jest', pkg: 'jest', type: 'jest', configBase: 'jest.config' },
+      { name: 'Vitest', pkg: 'vitest', type: 'vitest', configBase: 'vitest.config' },
+      {
+        name: 'Playwright',
+        pkg: '@playwright/test',
+        type: 'playwright',
+        configBase: 'playwright.config',
+      },
+    ];
 
-    // Check for Vitest config
-    const vitestConfigs = ['vitest.config.ts', 'vitest.config.js'];
-    for (const configFile of vitestConfigs) {
-      try {
-        await fs.access(path.join(this.rootDir, configFile));
-        this.stack.configurations.push({
-          type: 'vitest',
-          configFile,
-        });
-        this.stack.files.configs.push(configFile);
-        testingFrameworks.push({ name: 'Vitest', config: configFile });
-        break;
-      } catch (error: any) {
-        // Continue checking
-      }
-    }
+    for (const framework of jsTestFrameworks) {
+      const configFile = await this.findConfigFile(framework.configBase);
+      const declared = !!this.packageJsonDeps?.[framework.pkg];
 
-    // Check for Playwright config
-    const playwrightConfigs = ['playwright.config.ts', 'playwright.config.js'];
-    for (const configFile of playwrightConfigs) {
-      try {
-        await fs.access(path.join(this.rootDir, configFile));
-        this.stack.configurations.push({
-          type: 'playwright',
-          configFile,
-        });
+      if (!configFile && !declared) continue;
+
+      if (configFile) {
+        this.stack.configurations.push({ type: framework.type, configFile });
         this.stack.files.configs.push(configFile);
-        testingFrameworks.push({ name: 'Playwright', config: configFile });
-        break;
-      } catch (error: any) {
-        // Continue checking
       }
+
+      testingFrameworks.push({
+        name: framework.name,
+        config: configFile || 'package.json',
+      });
     }
 
     // Node's built-in test runner has no config file to find, so detect it from the test
