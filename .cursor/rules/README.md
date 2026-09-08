@@ -1,108 +1,68 @@
 # Cursor Rules Directory
 
-This directory contains comprehensive, technology-agnostic Cursor rules for the DevEnvTemplate project. These rules guide AI assistants to behave like a senior engineer who has been on the project for 2 years.
+Project rules for Cursor. Cursor also loads root (and nested) `AGENTS.md` for always-true project facts — keep those files short.
 
-## Structure
+Official frontmatter fields are `description`, `globs`, and `alwaysApply`. Do not use a sibling `.cursorrules` file.
 
-Rules are organized by priority and scope:
+## Four apply modes
 
-### Always-Applied Rules (Core)
+| Mode | Frontmatter | When to use |
+|------|-------------|-------------|
+| **Always Apply** | `alwaysApply: true` | Tiny set of universal standards |
+| **Apply Intelligently** | `alwaysApply: false` plus a clear `description` (no `globs`) | Agent decides from the task |
+| **Apply to Specific Files** | `globs:` plus `alwaysApply: false` | Language or path-specific |
+| **Manual** | `alwaysApply: false`, no globs, narrow description | User @-mentions the rule |
 
-These rules apply to all code regardless of file type:
+Keep always-on rules small. Prefer globs or intelligent apply over dumping a huge bootstrap file into every chat.
 
-- **00-core-principles.mdc** - Reasoning transparency, professional communication, pre-flight checklist
-- **01-code-quality.mdc** - Code organization, design principles, performance awareness
-- **02-security.mdc** - OWASP Top 10, secrets management, security checklist
-- **03-testing.mdc** - Testing philosophy, test pyramid, test structure
-- **04-git-workflow.mdc** - Commit messages, branch naming, git best practices
-- **05-error-handling.mdc** - Defensive programming, error patterns, edge cases
-- **06-documentation.mdc** - Code comments, API docs, documentation standards
-- **07-ai-agent-behavior.mdc** - Meta-rules for AI agent tool usage, session cleanup, error recording, and communication
-- **08-project-context.mdc** - DevEnvTemplate-specific context and conventions
-- **16-feature-debug-instrumentation.mdc** - Debug instrumentation policy for new features (log-driven validation)
-- **17-plan-first.mdc** - Plan before code for complex/multi-file work; when to save plans to `.cursor/plans/`
-- **18-content-and-data-pipelines.mdc** - Non-destructive pipelines: authored state, migrations, binaries in VCS, explicit destructive flags
-- **19-docs-directory-structure.mdc** - Place docs per [docs/DOCS_LAYOUT.md](../../docs/DOCS_LAYOUT.md); `docs-organization` tooling implements pattern moves—DOCS_LAYOUT is canonical
-- **automation-standards.mdc** - Automation preference order (API → script → UI as last resort); document gaps in `docs/operational/automation-gaps.md`
+## Always-applied (keep this list short)
 
-### Stack-Specific Rules (Conditional)
+- **00-core-principles.mdc** — Reasoning transparency, professional communication
+- **01-code-quality.mdc** — Organization, design, performance awareness
+- **02-security.mdc** — Secrets, OWASP baseline
+- **03-testing.mdc** — Test philosophy and structure
+- **04-git-workflow.mdc** — Commits, branches
+- **05-error-handling.mdc** — Defensive programming
+- **07-ai-agent-behavior.mdc** — Tool use, context, communication
+- **17-plan-first.mdc** — Plan before complex/multi-file work
+- **automation-standards.mdc** — API → script → UI last resort; gaps in `docs/operational/automation-gaps.md`
 
-These rules apply only to specific file types or project layouts via glob patterns:
+**Template-only (not copied into hosts):**
 
-- **10-typescript.mdc** - TypeScript-specific rules (`**/*.ts`, `**/*.tsx`)
-- **11-javascript.mdc** - JavaScript-specific rules (`**/*.js`, `**/*.jsx`)
-- **12-python.mdc** - Python-specific rules (`**/*.py`)
-- **13-markdown.mdc** - Markdown documentation standards (`**/*.md`)
-- **14-json-yaml.mdc** - JSON/YAML config standards (`**/*.json`, `**/*.yaml`, `**/*.yml`)
-- **15-shell-scripts.mdc** - Shell script standards (`**/*.sh`, `**/*.ps1`, `**/*.bat`)
-- **20-frontend-frameworks.mdc** - Frontend best practices (`**/components/**`, `**/pages/**`, `**/app/**`)
-- **21-unreal-engine.mdc** - Unreal Engine projects: version-specific docs, LFS, build/content split (`.uproject`, `*Build.cs`, `Source/**/*.cpp`, etc.)
-- **22-unreal-editor-ui.mdc** - Editor UI steps must match Epic docs for the pinned engine version; no guessed menu paths
+- **08-project-context.mdc** — DevEnvTemplate-specific context. Hosts write their own `08` and `AGENTS.md`.
 
-## File Format
+## Intelligent or glob-scoped (copied to hosts, not always-on)
 
-Each rule file uses the `.mdc` (Markdown Cursor) format with YAML frontmatter:
+- **06-documentation.mdc** — Comments and docs standards (intelligent)
+- **16-feature-debug-instrumentation.mdc** — Log-driven validation on new features (intelligent)
+- **18-content-and-data-pipelines.mdc** — Non-destructive authored-state pipelines (intelligent)
+- **19-docs-directory-structure.mdc** — Place docs per `docs/DOCS_LAYOUT.md` (`docs/**/*.md`)
+
+## Stack-specific (conditional)
+
+- **10-typescript.mdc** — `**/*.ts`, `**/*.tsx`
+- **11-javascript.mdc** — `**/*.js`, `**/*.jsx`
+- **12-python.mdc** — `**/*.py`
+- **13-markdown.mdc** — `**/*.md`
+- **14-json-yaml.mdc** — `**/*.json`, `**/*.yaml`, `**/*.yml`
+- **15-shell-scripts.mdc** — `**/*.sh`, `**/*.ps1`, `**/*.bat`
+- **20-frontend-frameworks.mdc** — `**/components/**`, `**/pages/**`, `**/app/**`
+- **21-unreal-engine.mdc** — `.uproject`, `*Build.cs`, `Source/**`
+- **22-unreal-editor-ui.mdc** — Editor UI must match Epic docs for the pinned version
+- **23-unity-csharp.mdc** — `.cs`, `.unity`, `ProjectSettings/`, `Packages/manifest.json`
+
+## File format
 
 ```yaml
 ---
-name: "Rule Name"
-description: "Brief description"
-alwaysApply: true  # or false for conditional rules
-glob: ["**/*.ts"]  # optional, for conditional rules
-priority: 1        # lower numbers = higher priority
+description: What this rule does (shown in the rule picker)
+globs: "**/*.ts"
+alwaysApply: false
 ---
 ```
 
-## How Rules Are Applied
+`globs` is the official field (not `glob`). Extra keys such as `name` or `priority` are ignored by Cursor; numbering in filenames is for humans.
 
-1. **Always-Applied Rules**: Loaded for every Cursor session (~2000 tokens)
-2. **Conditional Rules**: Loaded only when editing matching files (~500-1000 tokens each)
-3. **Total Token Usage**: ~3000-4000 tokens per session (vs 8000+ for monolithic)
+## Host integration
 
-## Rule Priorities
-
-Rules are numbered to indicate priority:
-- `00-09`: Core always-applied rules
-- `10-15`, `20-22`: Stack-specific conditional rules (language, frontend, Unreal)
-- `16-19`: Additional always-applied rules (instrumentation, planning, pipelines, docs layout)
-- `automation-standards.mdc`: Always-applied (automation and gaps)
-
-## Composability
-
-Rules can reference each other:
-- Use `@rule` references: "Follow error handling patterns from `05-error-handling.mdc`"
-- Use `@file` references: "See `scripts/utils/logger.ts` for logging patterns"
-- Cross-reference related rules: "See security rules in `02-security.mdc`"
-
-## Maintenance
-
-- Keep each file < 450 lines (split if larger)
-- Update rules based on real usage
-- Document rule changes in commit messages
-- Test rules with actual code changes
-
-## Migration from .projectrules
-
-This rules system replaces the legacy `.projectrules` file. The new system provides:
-- Better token efficiency (conditional loading)
-- Improved maintainability (separated concerns)
-- Modern Cursor standard (`.cursor/rules/*.mdc`)
-- Better composability (glob patterns, references)
-
-## Verification
-
-To verify rules are loading correctly:
-1. Ask Cursor: "What are the core principles for error handling?"
-2. Make a code change and verify AI follows rules
-3. Check that stack-specific rules trigger for matching files
-
-## Contributing
-
-When adding new rules:
-1. Determine if it should be always-applied or conditional
-2. Choose appropriate priority number
-3. Add glob patterns if conditional
-4. Keep file size < 450 lines
-5. Reference related rules to avoid duplication
-6. Test with actual code changes
-
+`integrateCursorRules` copies the always-on core (except template-only `08`), plus matching stack rules. Unreal rules copy when `unrealProjectDetected`; Unity rules copy when `unityProjectDetected`.

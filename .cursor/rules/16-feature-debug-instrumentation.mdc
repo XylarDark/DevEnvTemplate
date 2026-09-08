@@ -1,8 +1,6 @@
 ---
-name: "Feature debug instrumentation"
-description: "Add minimal debug instrumentation when implementing new features for log-driven validation"
-alwaysApply: true
-priority: 10
+description: Add minimal debug instrumentation when implementing new features for log-driven validation
+alwaysApply: false
 ---
 
 # Feature debug instrumentation (policy)

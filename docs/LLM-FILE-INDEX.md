@@ -8,7 +8,8 @@ This index lists the minimal set of files an AI assistant should load before edi
 
 | File | Why it matters |
 |------|----------------|
-| **`BOOTSTRAP.md`** | **Single-file-loads-all for LLM sessions. Load this first - contains all essential information.** |
+| **`AGENTS.md`** | Always-true project facts. Cursor loads this automatically; keep it short. |
+| `BOOTSTRAP.md` | Optional long-form setup/migration reference. Do not load at session start. |
 | `docs/PROJECTRULES-UPDATE-v3.0.md` | Canonical engineering rules (shell, Unicode, cross-stack guidelines, stack profile expectations). |
 | `docs/LLM-CONTEXT-GUIDE.md` | Complete DevEnvTemplate command and workflow context for AI agents (technology-agnostic). |
 | `docs/LLM-REFERENCE.md` | Technology-agnostic template for project-specific extensions. Projects should copy and extend this file. |
@@ -47,18 +48,19 @@ This index lists the minimal set of files an AI assistant should load before edi
 
 | File | Use When | Content Focus |
 |------|----------|---------------|
-| **BOOTSTRAP.md** | **Starting a new AI session** | **Single-file-loads-all - contains all essential information. Load this first.** |
+| **AGENTS.md** | **Starting a new AI session** | Always-true facts. Cursor loads this automatically. |
+| **BOOTSTRAP.md** | Embedding, migrating rules, or copying into a host | Long-form setup reference — not the default session start |
 | **LLM-FILE-INDEX.md** | Need navigation checklist | Navigation checklist - tells you which files to load if you need more detail |
 | **LLM-CONTEXT-GUIDE.md** | Need DevEnvTemplate command details | Technology-agnostic DevEnvTemplate commands, workflows, decision trees |
 | **LLM-REFERENCE.md** | Creating project-specific extension | Technology-agnostic template - copy and extend with project-specific content |
 
 **Quick Decision Tree:**
-- **"Starting a new session?"** → **Load `BOOTSTRAP.md` only** - it contains everything you need
-- **"Need detailed DevEnvTemplate commands?"** → Load `docs/LLM-CONTEXT-GUIDE.md` (referenced in BOOTSTRAP.md)
+- **"Starting a new session?"** → Rely on `AGENTS.md` and `.cursor/rules/` — do not load `BOOTSTRAP.md` first
+- **"Need detailed DevEnvTemplate commands?"** → Load `docs/LLM-CONTEXT-GUIDE.md`
 - **"Creating project-specific extension?"** → Use `docs/LLM-REFERENCE.md` as a template
-- **"Need file navigation?"** → Load `docs/LLM-FILE-INDEX.md` (referenced in BOOTSTRAP.md)
+- **"Need file navigation?"** → Load `docs/LLM-FILE-INDEX.md`
 
 ---
 
-**Usage Tip:** **For new LLM sessions, load `BOOTSTRAP.md` at session start. It contains all essential information and references to detailed documentation. Do NOT load README.md - BOOTSTRAP.md includes essential README content to avoid redundancy.**
+**Usage Tip:** Keep `AGENTS.md` short. Use `.cursor/rules/*.mdc` with `alwaysApply`, `globs`, or intelligent apply. `BOOTSTRAP.md` is optional setup/migration context, not a session dump.
 

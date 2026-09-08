@@ -9,6 +9,8 @@ Append-only log of agnostic rule/doc updates ported from practical use in game/e
 | 2026-03-26 | `docs/DOCS_LAYOUT.md`, `19-docs-directory-structure.mdc`, `18-content-and-data-pipelines.mdc`, `docs/KNOWN_ERRORS.md`, `docs/operational/automation-gaps.md`. |
 | 2026-03-26 | `21-unreal-engine.mdc`, `22-unreal-editor-ui.mdc` (conditional globs); `docs/templates/unreal/README.md`. |
 | 2026-03-26 | `StackReport` + `detectUnrealProject()` hint; cursor-rules integration copies extended core + Unreal when `unrealProjectDetected`. |
-| 2026-03-26 | `STANDARD_CORE_FILES` in integration/adapter includes `16`–`19`, `automation-standards.mdc`. |
+| 2026-08-16 | Cursor 2026 setup: root `AGENTS.md`; official frontmatter (`description`, `globs`, `alwaysApply`); slim always-on set; `08-project-context.mdc` is template-only (not copied to hosts). |
+| 2026-08-16 | `23-unity-csharp.mdc`, `docs/templates/unity/README.md`; `StackReport.unityProjectDetected`; adapter/integration copy Unreal **and** Unity conditional rules. |
+| 2026-08-16 | Converted `06`, `16`, `18`, `19` from always-on to intelligent/glob apply. |
 
 **Not ported:** full-automation-no-manual-steps, PCG/GAS/Unreal API pitfall tables, product-specific MCP ports.

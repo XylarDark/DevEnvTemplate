@@ -10,6 +10,7 @@ version: 1.1
 
 ## Conversation and context
 
+- **Project facts:** Treat root `AGENTS.md` (and nested `AGENTS.md`) as always-true. Do not load `BOOTSTRAP.md` unless the task is setup, migration, or embedding.
 - **New logical task:** Prefer a new chat for a new unit of work so the agent stays focused. Bring in only the prior context you need (e.g. `@file`, past summary) instead of very long threads.
 - **Long threads:** If context becomes noisy or contradictory, summarize progress and start a fresh chat with that summary as the first message.
 

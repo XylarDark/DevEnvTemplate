@@ -216,7 +216,8 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [docs/BEST-PRACTICES.md](do
 
 ## Documentation
 
-- **[BOOTSTRAP.md](BOOTSTRAP.md)** - Single-file-loads-all for LLM-assisted development (load this first)
+- **[AGENTS.md](AGENTS.md)** - Always-true project facts for Cursor (preferred agent entry)
+- **[BOOTSTRAP.md](BOOTSTRAP.md)** - Optional long-form setup and migration reference
 - **[docs/USAGE.md](docs/USAGE.md)** - Common commands and workflows
 - **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** - Project structure and design principles
 - **[docs/LLM-CONTEXT-GUIDE.md](docs/LLM-CONTEXT-GUIDE.md)** - Context guide for AI assistants

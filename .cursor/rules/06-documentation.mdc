@@ -1,9 +1,6 @@
 ---
-name: "Documentation Standards"
-description: "Follow documentation and commenting standards when writing code or docs to keep knowledge current and accessible"
-alwaysApply: true
-priority: 7
-version: 1.0
+description: Follow documentation and commenting standards when writing code or docs
+alwaysApply: false
 ---
 
 # Documentation Standards

@@ -1,9 +1,7 @@
 ---
-name: "Docs directory structure"
-description: "When generating or adding documentation under docs/, follow DOCS_LAYOUT.md; keep roots clean."
-alwaysApply: true
-priority: 19
-version: 1.0
+description: When generating or adding documentation under docs/, follow DOCS_LAYOUT.md; keep roots clean
+globs: "docs/**/*.md,docs/**/*.mdc,.cursor/rules/*.mdc"
+alwaysApply: false
 ---
 
 # Documentation directory structure

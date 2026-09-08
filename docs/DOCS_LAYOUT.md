@@ -34,7 +34,7 @@ Adjust names to match your fork; keep **DOCS_LAYOUT** updated when you add or re
 | **setup/** | Environment, tools, editor config | MCP, CI runner, local secrets policy |
 | **security/** | Threat modeling notes, security checklists | OWASP mapping, dependency policy |
 | **operational/** | Automation gaps, maintenance | [`automation-gaps.md`](operational/automation-gaps.md), recurring chores |
-| **templates/** | Fork-specific stubs (optional) | [`templates/unreal/`](templates/unreal/README.md) |
+| **templates/** | Fork-specific stubs (optional) | [`templates/unreal/`](templates/unreal/README.md), [`templates/unity/`](templates/unity/README.md) |
 | **deployment/** | Release and infra docs | `*_DEPLOYMENT.md` (also matched by organizer) |
 | **api/** | API design and references | `*_API.md` |
 
@@ -54,3 +54,5 @@ If a pattern moves a file to a path not listed here, **update DOCS_LAYOUT** in t
 ## Optional: game-engine projects
 
 If you use the **Unreal optional rules** (`.cursor/rules/21-unreal-engine.mdc`), add a **`docs/UE/`** (or `docs/engine/`) folder for engine version notes, import conventions, and project-specific API pitfalls—**not** in this template’s default layout until you need it. Starter notes: [templates/unreal/README.md](templates/unreal/README.md).
+
+If you use the **Unity optional rule** (`.cursor/rules/23-unity-csharp.mdc`), add **`docs/unity/`** (or `docs/engine/`) for the pinned editor version and Editor pitfalls. Starter notes: [templates/unity/README.md](templates/unity/README.md).

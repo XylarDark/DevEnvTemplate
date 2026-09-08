@@ -1,9 +1,6 @@
 ---
-name: "Content and data pipelines"
-description: "Preserve authored state, create-if-missing, update-in-place; destructive work only behind explicit flags (migrations, CMS, binaries, IaC, game content)"
-alwaysApply: true
-priority: 18
-version: 1.0
+description: Preserve authored state in content and data pipelines; destructive work only behind explicit flags
+alwaysApply: false
 ---
 
 # Content and data pipelines (agnostic)

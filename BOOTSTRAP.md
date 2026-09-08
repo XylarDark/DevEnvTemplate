@@ -1,24 +1,24 @@
 # DevEnvTemplate Bootstrap Guide
 
-**Version:** Technology-Agnostic Template (Cursor Rules v1.0)  
-**Purpose:** Single-file-loads-all reference for LLM-assisted development sessions  
-**Last Updated:** 2025  
-**Rules System:** Modern `.cursor/rules/*.mdc` system (replaces legacy `.projectrules`)
+**Version:** Cursor rules + AGENTS.md (2026)  
+**Purpose:** Optional long-form setup and migration reference  
+**Last Updated:** 2026-08-16  
+**Rules System:** `.cursor/rules/*.mdc` plus root `AGENTS.md`
 
-> **For LLM Sessions:** Load this file at session start. This file contains all essential DevEnvTemplate information. Do NOT load README.md - this file includes essential README content to avoid redundancy.
+> **For LLM Sessions:** Read `AGENTS.md` and `.cursor/rules/` first. Do **not** load this file at session start. This document is a deep reference for embedding, migrating off `.projectrules`, and copying rules into a host.
 
 ---
 
 ## How to Use This File
 
 **For LLM Sessions:**
-1. **Load this file first** - It contains all essential DevEnvTemplate information
-2. **Reference detailed docs** - Use links to dive deeper when needed
-3. **Follow tool references** - All tools and commands are documented here
+1. **Start with `AGENTS.md`** — short always-true facts. Cursor loads it automatically.
+2. **Use `.cursor/rules/*.mdc`** — always-on core plus glob/intelligent stack rules.
+3. **Open this file only** when you need setup, copy, or migration steps.
 
 **For Human Developers:**
 - See [README.md](README.md) for human-readable overview
-- This file is optimized for LLM consumption
+- See [AGENTS.md](AGENTS.md) for what agents should assume about this repo
 
 ---
 
@@ -29,6 +29,8 @@
 **Documentation:** Place new markdown under the folders described in [docs/DOCS_LAYOUT.md](docs/DOCS_LAYOUT.md). Record recurring failures in [docs/KNOWN_ERRORS.md](docs/KNOWN_ERRORS.md); record automation limits in [docs/operational/automation-gaps.md](docs/operational/automation-gaps.md).
 
 **Unreal Engine:** If the repo has a `.uproject`, ensure `.cursor/rules/21-unreal-engine.mdc` and `22-unreal-editor-ui.mdc` are in `.cursor/rules/` (they ship with this template). Pin the engine version in your docs; use Epic’s documentation for that version—never rely on model training data for APIs or Editor menus. See [docs/templates/unreal/README.md](docs/templates/unreal/README.md). Stack detection emits a hint when `*.uproject` is found at the repository root.
+
+**Unity:** If the repo has `ProjectSettings/ProjectVersion.txt` (at the root or one folder down, e.g. `game/`), ensure `.cursor/rules/23-unity-csharp.mdc` is present. Pin the editor version from that file. See [docs/templates/unity/README.md](docs/templates/unity/README.md).
 
 ---
 
@@ -587,25 +589,29 @@ When running doctor, these files are created in the parent project's `.devenv/` 
 
 ### How LLMs Should Use This File
 
-1. **Load at Session Start**: This file should be loaded first in new LLM sessions
-2. **Reference When Needed**: Use this file to understand available tools and workflows
-3. **Follow Workflows**: Execute complete workflows, not just single commands
-4. **Check Documentation**: Use links to dive deeper into specific topics
+1. **Do not load this file at session start.** Cursor already has `AGENTS.md` and `.cursor/rules/`.
+2. **Reference When Needed:** Use this file for embedding, rule copy, or migration off `.projectrules`.
+3. **Follow Workflows:** Execute complete workflows, not just single commands
+4. **Check Documentation:** Use links to dive deeper into specific topics
 
 ### Decision Tree for LLMs
 
 ```
 Start Session
   ↓
-Load BOOTSTRAP.md
+AGENTS.md + .cursor/rules/ (automatic)
+  ↓
+Need setup / embed / migrate?
+  → Yes: Open BOOTSTRAP.md
+  → No: Stay on AGENTS.md
   ↓
 Need detailed command reference?
   → Yes: Load docs/LLM-CONTEXT-GUIDE.md
-  → No: Continue with BOOTSTRAP.md
+  → No: Continue
   ↓
 Working on project-specific code?
   → Yes: Load project's extended docs/LLM-REFERENCE.md
-  → No: Continue with BOOTSTRAP.md
+  → No: Continue
   ↓
 Need to sync with template updates?
   → Yes: Use sync-from-template.sh/ps1 (see Workflow 5)
@@ -1336,29 +1342,30 @@ cycle_closeout:
 
 ---
 
-## Relationship Between BOOTSTRAP.md and .cursor/rules/
+## Relationship Between AGENTS.md, BOOTSTRAP.md, and .cursor/rules/
 
 ### File Purposes
 
-- **`.cursor/rules/*.mdc`**: Modern Cursor rules system with composable, technology-agnostic rules. Uses glob patterns for conditional loading and better token efficiency. This is the recommended format for all new projects.
-- **`BOOTSTRAP.md`**: Human/LLM-readable reference guide that provides context and instructions for setting up `.cursor/rules/`.
-- **`.projectrules`** (Legacy): Deprecated YAML-like format kept for backward compatibility. New projects should not use this.
+- **`AGENTS.md`**: Short always-true project facts. Cursor loads this automatically.
+- **`.cursor/rules/*.mdc`**: Composable rules with `alwaysApply`, `globs`, or intelligent apply. Official frontmatter: `description`, `globs`, `alwaysApply`.
+- **`BOOTSTRAP.md`**: Optional setup/migration reference. Do not dump it into every session.
+- **`.projectrules` / `.cursorrules`**: Do not use alongside `.cursor/rules/`.
 
 ### How They Work Together
 
-1. **For LLMs**: Load `BOOTSTRAP.md` to get complete context including all project information. Then automatically copy `.cursor/rules/` from DevEnvTemplate to project root using the instructions above.
-2. **For Cursor**: Cursor automatically loads `.cursor/rules/*.mdc` files based on glob patterns. Always-applied rules (00-08 series) load for every session, while conditional rules (10+) load only when editing matching file types.
-3. **For Humans**: Can read `BOOTSTRAP.md` for context, and `.cursor/rules/README.md` for rules structure. The rules themselves are in `.mdc` files.
+1. **For LLMs**: Start from `AGENTS.md`. Copy `.cursor/rules/` from this template into a host when applying the Cursor layer. Hosts write their own `08-project-context.mdc`.
+2. **For Cursor**: Always-on rules stay small. Stack rules (10+, 21–23) load via globs or stack detection. `06`, `16`, `18`, `19` are intelligent or glob-scoped, not always-on.
+3. **For Humans**: `AGENTS.md` for facts, `.cursor/rules/README.md` for the rule catalog, this file for copy/embed steps.
 
 ### Copy Process
 
-- **When setting up new project**: Copy `.cursor/rules/` directory from DevEnvTemplate to project root.
-- **When updating existing project**: Copy missing files and update core files (00-08 series), preserving project-specific customizations.
-- **For legacy projects**: Projects using `.projectrules` can migrate to `.cursor/rules/` by copying the directory structure.
+- **When setting up a new project**: Copy host core rules (not template `08`) plus matching stack rules. Add root `AGENTS.md`.
+- **When updating an existing project**: Copy missing files and update core files, preserving project-specific customizations including host `08`.
+- **For legacy projects**: Migrate `.projectrules` / `.cursorrules` into `.cursor/rules/*.mdc`.
 
 ### Key Principle
 
-`BOOTSTRAP.md` provides the setup instructions and context. `.cursor/rules/` contains the actual rules that Cursor uses. The rules are technology-agnostic and composable, allowing for better maintainability and token efficiency compared to the monolithic `.projectrules` format.
+Keep always-on context small. `AGENTS.md` plus a short always-on rule set beats a 1700-line bootstrap dump.
 
 ---
 

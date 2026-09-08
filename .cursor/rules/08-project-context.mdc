@@ -1,9 +1,6 @@
 ---
-name: "DevEnvTemplate Project Context"
-description: "Provide project-specific context when working on DevEnvTemplate to ensure consistency with architecture and conventions"
+description: DevEnvTemplate-specific context and conventions (template repo only; hosts write their own 08)
 alwaysApply: true
-priority: 8
-version: 1.0
 ---
 
 # DevEnvTemplate Project Context
@@ -45,12 +42,12 @@ DevEnvTemplate is a "doctor" for development environments - it diagnoses issues,
 
 ## Important Files
 
-- `.projectrules` - Project rules (legacy, being migrated)
-- `BOOTSTRAP.md` - Single-file-loads-all for LLMs
-- `README.md` - Human-readable overview
-- `package.json` - Dependencies and scripts
-- `docs/DOCS_LAYOUT.md` - Canonical documentation directory layout (`19-docs-directory-structure.mdc`)
-- `docs/KNOWN_ERRORS.md` / `docs/operational/automation-gaps.md` - Recurring errors and automation limits
+- `AGENTS.md` — Always-true project facts for Cursor (preferred over BOOTSTRAP.md)
+- `BOOTSTRAP.md` — Optional long-form setup/migration reference; do not load at session start
+- `README.md` — Human-readable overview
+- `package.json` — Dependencies and scripts
+- `docs/DOCS_LAYOUT.md` — Canonical documentation directory layout (`19-docs-directory-structure.mdc`)
+- `docs/KNOWN_ERRORS.md` / `docs/operational/automation-gaps.md` — Recurring errors and automation limits
 
 ## Conventions
 

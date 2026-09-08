@@ -20,6 +20,17 @@ git clone https://github.com/XylarDark/DevEnvTemplate .devenv
 
 > ℹ️ Commit `.devenv/` like any other tool. Individual doctor reports (`.devenv/stack-report.json`, etc.) stay gitignored inside the host repo.
 
+### Game / engine hosts (Unity, Unreal)
+
+Do **not** clone this repo into `.devenv/` unless you actually want the Node doctor. For Unity/Unreal (or any non-Node product repo), copy the **Cursor/docs layer** instead:
+
+- Root `AGENTS.md` (host-specific facts) plus nested `AGENTS.md` next to the engine project if useful
+- `.cursor/rules/` host core (not template `08-project-context.mdc`) and matching stack rules (`23-unity-csharp.mdc` or Unreal `21`/`22`)
+- `docs/DOCS_LAYOUT.md`, `docs/KNOWN_ERRORS.md`, `docs/operational/automation-gaps.md`
+- `.cursorignore` and workspace `.vscode/settings.json`
+
+`integrateCursorRules` copies Unreal rules when `unrealProjectDetected` and Unity rules when `unityProjectDetected`.
+
 ## 2. Install & Build DevEnvTemplate Once
 
 ```bash
