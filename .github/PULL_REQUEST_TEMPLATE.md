@@ -9,16 +9,19 @@ Brief description of the changes in this PR.
 **Goals:** [List the specific goals this change achieves]
 
 ### Assumptions & Validation
+
 - [ ] All assumptions from context contract have been validated
 - [ ] Unknowns have been investigated and resolved
 - [ ] Dependencies are available and compatible
 
 ### Impact Assessment
+
 - [ ] Files changed align with impact analysis predictions
 - [ ] No unexpected side effects identified
 - [ ] Performance impact assessed and acceptable
 
 ### Questions & Clarifications
+
 [If you had questions during implementation, document them and the answers here]
 
 ## Type of Change

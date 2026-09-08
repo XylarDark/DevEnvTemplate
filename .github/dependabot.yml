@@ -1,5 +1,10 @@
 # Dependabot configuration
 # https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+#
+# Note on cooldowns: Dependabot applies a 3-day cooldown by default and exempts security
+# updates from it. Do not additionally set a resolver-level delay (npm's `min-release-age`
+# in .npmrc, or the pnpm/Yarn equivalents) - those have no security exception, so stacking
+# them would also delay security patches.
 
 version: 2
 updates:
@@ -7,15 +12,35 @@ updates:
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 5
-    reviewers:
-      - "your-username" # Replace with actual maintainer usernames
-    assignees:
-      - "your-username" # Replace with actual maintainer usernames
     commit-message:
       prefix: "chore"
       prefix-development: "chore"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "automated"
+    groups:
+      # One PR per ecosystem area keeps review cheap on the Actions free tier.
+      dev-dependencies:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
+      production-dependencies:
+        dependency-type: "production"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # Keep workflow actions current; pinned SHAs still need bumping.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "ci"
       include: "scope"
     labels:
       - "dependencies"

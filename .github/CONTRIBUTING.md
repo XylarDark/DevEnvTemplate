@@ -131,12 +131,12 @@ The project tests must work on Windows, macOS, and Linux. Follow these patterns:
 **Temporary Directory Handling:**
 
 ```javascript
-const os = require("os");
-const path = require("path");
-const { promises: fs } = require("fs");
+const os = require('os');
+const path = require('path');
+const { promises: fs } = require('fs');
 
 // Create temp directory
-const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "test-prefix-"));
+const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'test-prefix-'));
 
 // Cleanup in afterEach
 await fs.rm(tempDir, { recursive: true, force: true });
@@ -149,8 +149,8 @@ await fs.rm(tempDir, { recursive: true, force: true });
 const match = line.match(/[🔴🟡🟢]/); // FAILS on multi-byte UTF-8
 
 // DO: Use string methods
-const isHighPriority = line.includes("🔴");
-const title = line.replace(/^### [🔴🟡🟢] /, "");
+const isHighPriority = line.includes('🔴');
+const title = line.replace(/^### [🔴🟡🟢] /, '');
 ```
 
 **Inter-Tool Communication:**
@@ -193,17 +193,17 @@ npm run cleanup -- --performance --apply
 
 ```javascript
 // Test performance tracker
-const { PerformanceTracker } = require("../../dist/scripts/types/performance");
+const { PerformanceTracker } = require('../../dist/scripts/types/performance');
 
-it("should track rule execution", () => {
+it('should track rule execution', () => {
   const tracker = new PerformanceTracker();
   tracker.start();
-  tracker.trackRuleExecution("test-rule", 100, 5, false);
+  tracker.trackRuleExecution('test-rule', 100, 5, false);
   tracker.end();
 
   const report = tracker.generateReport();
   assert.strictEqual(report.rules.length, 1);
-  assert.strictEqual(report.rules[0].ruleId, "test-rule");
+  assert.strictEqual(report.rules[0].ruleId, 'test-rule');
 });
 ```
 
@@ -252,7 +252,7 @@ When implementing parallel processing:
 **Code Example:**
 
 ```typescript
-import { parallel } from "../utils/parallel";
+import { parallel } from '../utils/parallel';
 
 // Process items with concurrency control
 const result = await parallel(
@@ -277,7 +277,7 @@ const failedItems = result.errors.map(e => e.item);
 **Testing Parallel Code:**
 
 ```javascript
-it("should respect concurrency limit", async () => {
+it('should respect concurrency limit', async () => {
   let maxConcurrent = 0;
   let currentConcurrent = 0;
 
@@ -307,7 +307,7 @@ it("should respect concurrency limit", async () => {
 **Memory Profiling:**
 
 ```javascript
-it("should be memory efficient with large arrays", async () => {
+it('should be memory efficient with large arrays', async () => {
   const startMemory = process.memoryUsage().heapUsed;
 
   await parallel(largeArray, worker, { concurrency: 10 });
@@ -335,13 +335,13 @@ When adding performance-critical features, include benchmarks to track regressio
 **Statistical Testing:**
 
 ```javascript
-const { BenchmarkRunner } = require("../../dist/benchmark/runner");
+const { BenchmarkRunner } = require('../../dist/benchmark/runner');
 
-it("should calculate statistical metrics correctly", () => {
+it('should calculate statistical metrics correctly', () => {
   const runner = new BenchmarkRunner();
   const times = [100, 200, 300, 400, 500];
 
-  const stats = runner["calculateStats"](times);
+  const stats = runner['calculateStats'](times);
 
   assert.strictEqual(stats.mean, 300);
   assert.strictEqual(stats.median, 300);
@@ -355,15 +355,15 @@ it("should calculate statistical metrics correctly", () => {
 **Regression Detection:**
 
 ```javascript
-it("should detect performance regression", async () => {
+it('should detect performance regression', async () => {
   const baseline = {
-    name: "Test",
+    name: 'Test',
     stats: { mean: 100, median: 100, min: 90, max: 110, stdDev: 5 },
     // ... other fields
   };
 
   const current = {
-    name: "Test",
+    name: 'Test',
     stats: { mean: 150, median: 150, min: 140, max: 160, stdDev: 5 },
     // ... other fields
   };
@@ -380,16 +380,16 @@ it("should detect performance regression", async () => {
 ```typescript
 // scripts/benchmark/suites.ts
 export const BENCHMARK_SUITES: Record<string, BenchmarkConfig[]> = {
-  "my-feature-comparison": [
+  'my-feature-comparison': [
     {
-      name: "Baseline",
-      fixture: "tests/fixtures/my-project",
+      name: 'Baseline',
+      fixture: 'tests/fixtures/my-project',
       iterations: 5,
       options: { myFeature: false },
     },
     {
-      name: "With Feature",
-      fixture: "tests/fixtures/my-project",
+      name: 'With Feature',
+      fixture: 'tests/fixtures/my-project',
       iterations: 5,
       options: { myFeature: true },
     },

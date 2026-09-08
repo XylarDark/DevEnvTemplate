@@ -1,8 +1,8 @@
 ---
 name: Security Issue
 description: Report a security vulnerability (DO NOT use for public disclosure)
-title: "[SECURITY] Brief description of security issue"
-labels: ["security", "vulnerability"]
+title: '[SECURITY] Brief description of security issue'
+labels: ['security', 'vulnerability']
 assignees: []
 ---
 

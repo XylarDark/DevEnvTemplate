@@ -14,11 +14,13 @@ This PR establishes the implementation plan for a feature. Code implementation w
 [Brief summary from context contract]
 
 **Goals:**
+
 - [Goal 1]
 - [Goal 2]
 - [Additional goals]
 
 **Key Constraints:**
+
 - [Technical constraints]
 - [Business constraints]
 - [Timeline constraints]
@@ -73,14 +75,17 @@ All implementation must pass these acceptance criteria:
 ## Risk Assessment
 
 **Technical Risks:**
+
 - [Risk 1] - Impact: [High/Medium/Low], Mitigation: [Strategy]
 
 **Business Risks:**
+
 - [Risk 1] - Impact: [High/Medium/Low], Mitigation: [Strategy]
 
 ## Rollback Strategy
 
 If deployment fails, rollback by:
+
 1. [Step 1]
 2. [Step 2]
 3. [Timeline estimate]

@@ -14,6 +14,7 @@
 [Brief summary from context contract]
 
 **Goals:**
+
 - [Goal 1]
 - [Goal 2]
 - [Additional goals from contract]
@@ -23,6 +24,7 @@
 **Approved Plan:** [Link to plan document or plan-only PR]
 
 **Key Plan Elements:**
+
 - [ ] All acceptance criteria from plan addressed
 - [ ] Implementation follows approved approach
 - [ ] No deviations from plan scope
@@ -95,11 +97,13 @@
 **Status:** ✅ **Passed** / ❌ **Failed** / ⚠️ **Warnings**
 
 **Command Run:**
+
 ```bash
 npm run agent:lint:context -c [contract-file].json
 ```
 
 **Results:**
+
 - [Context validation output]
 - [Any warnings or issues addressed]
 
@@ -110,11 +114,13 @@ npm run agent:lint:context -c [contract-file].json
 **Status:** ✅ **Aligned** / ⚠️ **Minor Deviations** / ❌ **Major Deviations**
 
 **Command Run:**
+
 ```bash
 npm run agent:impact -c [contract-file].json --compare-branch
 ```
 
 **Analysis:**
+
 - **Predicted Files:** [From plan]
 - **Actual Files:** [From this PR]
 - **Alignment:** [How well they match]
@@ -124,11 +130,13 @@ npm run agent:impact -c [contract-file].json --compare-branch
 **Status:** ✅ **All Passed** / ⚠️ **Warnings** / ❌ **Failed**
 
 **Command Run:**
+
 ```bash
 npm run deploy:prepare
 ```
 
 **Results:**
+
 - Linting: ✅ Passed
 - TypeScript: ✅ Passed
 - Tests: ✅ Passed
@@ -138,11 +146,13 @@ npm run deploy:prepare
 ## CI/CD Status
 
 **Context Guard:** ✅ **Passed** / ❌ **Failed**
+
 - Contract validation: [Status]
 - Plan gate check: [Status]
 - Impact analysis: [Status]
 
 **Quality Gates:** ✅ **Passed** / ❌ **Failed**
+
 - Unit tests: [Coverage %]
 - Integration tests: [Status]
 - Security scan: [Status]
@@ -165,6 +175,7 @@ npm run deploy:prepare
 ## Stakeholder Sign-off
 
 **Required Approvals:**
+
 - [ ] Product Owner: [Name] - [Requirements validated]
 - [ ] Engineering Lead: [Name] - [Technical approach approved]
 - [ ] QA Lead: [Name] - [Testing coverage approved]
@@ -182,12 +193,14 @@ npm run deploy:prepare
 ## Metrics
 
 **Implementation Metrics:**
+
 - **Time to Complete:** [From plan approval to PR ready]
 - **Test Coverage:** [Percentage added/maintained]
 - **Lines Changed:** [Total diff size]
 - **Files Modified:** [Count]
 
 **Quality Metrics:**
+
 - **Static Analysis:** [ESLint issues: 0]
 - **Type Coverage:** [TypeScript strict mode: ✅]
 - **Performance Impact:** [Budget compliance: ✅]
