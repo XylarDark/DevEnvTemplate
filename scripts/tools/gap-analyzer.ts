@@ -131,7 +131,8 @@ class GapAnalyzer {
 
     if (this.isFastMode()) {
       logger.info(
-        'Fast mode enabled: skipping documentation, accessibility, Docker, and git-hook checks.'
+        'Fast mode enabled: skipping documentation, performance, accessibility, Docker, ' +
+          'environment, git-hook, framework, and Python-tooling checks.'
       );
     }
 
@@ -152,7 +153,8 @@ class GapAnalyzer {
         severity: 'low',
         title: 'Fast doctor run (partial coverage)',
         description:
-          'Fast mode skips documentation, accessibility, Docker, environment, and git-hook checks.',
+          'Fast mode skips documentation, performance, accessibility, Docker, environment, ' +
+          'git-hook, framework, and Python-tooling checks.',
         impact: 'Some gaps only appear in full scans.',
         recommendation:
           'Re-run `npm run doctor` (without --fast) before releases for complete coverage.',

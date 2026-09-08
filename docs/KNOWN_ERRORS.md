@@ -159,6 +159,27 @@
   a skill, keep the practice and the commands in separate sections: the practice is why the skill
   ships, the commands are an example of running it here.
 
+### A script flag passed after `--` never arrived, on PowerShell only
+
+- **Date:** 2026-09-08
+- **Symptom:** `npm run doctor -- --fast` ran a **full** scan, and `npm run doctor -- --json`
+  printed the human report instead of JSON, which made a JSON parse of the output fail. Nothing
+  errored; the flag simply had no effect. The giveaway is npm's own echo of the script, which
+  reads `> node dist/scripts/doctor/cli.js` with no flag after it.
+- **Cause:** PowerShell removes the first bare `--` from a native command's arguments before npm
+  ever sees it. npm then receives `--fast` as an argument to _itself_, does not recognize it, and
+  ignores it. Reproduced on PowerShell 5.1.26100.9168. Quoting the flag instead of the separator
+  (`npm run doctor -- '--fast'`) does not help, because the separator is what gets eaten.
+- **Fix:** Quote the separator: `npm run doctor '--' --fast`. npm's echo then reads
+  `> node dist/scripts/doctor/cli.js --fast`, and `.devenv/gaps-report.json` contains the
+  fast-mode partial-coverage gap that proves the shallow path ran. The quoted form is also
+  correct in bash, which strips the quotes and passes `--` through.
+- **Prevention:** `AGENTS.md` now gives the quoted form for PowerShell in the same paragraph that
+  explains the separator, and the `agent-workflow` skill records it among its PowerShell patterns.
+  Note that this repository already warned that `npm run doctor --fix` silently ignores the flag;
+  this is the same failure arriving from the other direction, so the warning was necessary but not
+  sufficient on Windows. When a flag appears to do nothing, read npm's echoed command line first.
+
 ---
 
 ## Related
