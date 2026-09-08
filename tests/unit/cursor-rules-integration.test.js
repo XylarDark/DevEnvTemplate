@@ -94,7 +94,7 @@ describe('Cursor Rules Integration', () => {
     );
   });
 
-  test('should copy every skill regardless of stack', async () => {
+  test('should copy every core skill regardless of stack', async () => {
     const result = await integrate();
 
     assert.ok(result.copied.includes('plan-first/SKILL.md'));
@@ -105,6 +105,32 @@ describe('Cursor Rules Integration', () => {
       'utf8'
     );
     assert.match(skill, /name: plan-first/);
+  });
+
+  test('should copy optional skills when includeSkillExtras is set', async () => {
+    const extrasDir = path.join(tempDir, 'template', '.agents', 'skills-extras');
+    await fs.mkdir(path.join(extrasDir, 'testing-standards'), { recursive: true });
+    await fs.writeFile(
+      path.join(extrasDir, 'testing-standards', 'SKILL.md'),
+      '---\nname: testing-standards\ndescription: Use when testing.\n---\n'
+    );
+
+    const result = await integrate(vanillaStack, { includeSkillExtras: true });
+
+    assert.ok(result.copied.includes('testing-standards/SKILL.md'));
+  });
+
+  test('should not copy optional skills by default', async () => {
+    const extrasDir = path.join(tempDir, 'template', '.agents', 'skills-extras');
+    await fs.mkdir(path.join(extrasDir, 'testing-standards'), { recursive: true });
+    await fs.writeFile(
+      path.join(extrasDir, 'testing-standards', 'SKILL.md'),
+      '---\nname: testing-standards\ndescription: Use when testing.\n---\n'
+    );
+
+    const result = await integrate();
+
+    assert.ok(!result.copied.includes('testing-standards/SKILL.md'));
   });
 
   test('should name the copied skills the host has to localize', async () => {

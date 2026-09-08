@@ -362,7 +362,7 @@ export const QUICK_WINS: QuickWin[] = [
     id: 'setup-agent-layer',
     title: 'Set up the agent context layer',
     description:
-      'Copy the glob-scoped Cursor rules for your stack, plus the skills that carry procedural knowledge',
+      'Copy the glob-scoped Cursor rules for your stack, plus the core agent skills',
     estimatedTime: '2 min',
     autoFixable: true,
     category: 'env-hygiene',

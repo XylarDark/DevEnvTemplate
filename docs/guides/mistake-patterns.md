@@ -799,7 +799,7 @@ Before committing code, verify:
 
 ## Related Documentation
 
-- [Python Best Practices](../best-practices/python.md)
+- [Python Best Practices Guide](python-best-practices.md)
 - [Next.js Best Practices](../best-practices/nextjs.md)
 - [FastAPI Best Practices](../best-practices/fastapi.md)
 - [DevEnvTemplate Best Practices](../BEST-PRACTICES.md)

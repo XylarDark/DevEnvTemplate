@@ -7,8 +7,9 @@ Always-loaded context belongs in one of two other places:
 
 - **`AGENTS.md`** (repository root) — facts that are true on every turn. Cursor loads it
   automatically, as do Claude Code, Codex, and Gemini CLI, so one file serves every tool.
-- **`.agents/skills/<name>/SKILL.md`** — procedural knowledge. A skill costs only its
-  `description` until that description matches the task, then the agent reads the body.
+- **`.agents/skills/<name>/SKILL.md`** — core procedural knowledge. A skill costs only its
+  `description` until that description matches the task, then the agent reads the body. Optional
+  skills live in `.agents/skills-extras/`; see [`.agents/README.md`](../../.agents/README.md).
 
 ## Why nothing here is always-applied
 
@@ -72,7 +73,9 @@ superseded, and having two sources of truth is how they drift.
 
 `integrateCursorRules` copies the rules whose globs match the host's detected stack — Unreal rules
 when `unrealProjectDetected`, Unity rules when `unityProjectDetected`, and so on — along with
-every skill in `.agents/skills/`. Existing host files are never overwritten.
+every **core** skill in `.agents/skills/`. Optional skills in `.agents/skills-extras/` copy only
+when `includeSkillExtras` is set or you copy them manually (see `.agents/README.md`). Existing
+host files are never overwritten.
 
 Skills are copied **verbatim**, which is right — the practice in them is stack-agnostic — but it
 means any sentence describing _this_ repository arrives in the host as a false statement. Those
