@@ -357,7 +357,9 @@ function decideShellExecution(input) {
 function decide(raw) {
   // Cursor prefixes the payload with a UTF-8 BOM, which JSON.parse rejects outright. Without
   // stripping it every operation is denied for "unparsable payload".
-  const text = String(raw).replace(/^\uFEFF/, '').trim();
+  const text = String(raw)
+    .replace(/^\uFEFF/, '')
+    .trim();
 
   if (!text) {
     return deny('Secret scanner received no hook input; denying by default.');
@@ -406,7 +408,11 @@ function decide(raw) {
  */
 function describeInput(raw) {
   try {
-    const input = JSON.parse(String(raw).replace(/^\uFEFF/, '').trim());
+    const input = JSON.parse(
+      String(raw)
+        .replace(/^\uFEFF/, '')
+        .trim()
+    );
     return {
       event: input.hook_event_name || 'unknown',
       target: input.file_path || input.command || undefined,

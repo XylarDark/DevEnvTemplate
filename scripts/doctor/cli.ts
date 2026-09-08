@@ -170,9 +170,7 @@ async function runDoctor(options: CliOptions = {}) {
   const currentDir = process.cwd();
   const { projectRoot, autoDetected } = await resolveProjectRoot(currentDir, options.projectRoot);
   if (autoDetected && !options.json) {
-    console.log(
-      `ℹ️ Detected embedded .devenv folder. Analyzing parent project: ${projectRoot}\n`
-    );
+    console.log(`ℹ️ Detected embedded .devenv folder. Analyzing parent project: ${projectRoot}\n`);
   }
   if (projectRoot !== currentDir) {
     process.chdir(projectRoot);
@@ -298,9 +296,7 @@ async function runDoctor(options: CliOptions = {}) {
             console.log(`  ✓ Copied ${integrationResult.copied.length} file(s)`);
           }
           if (integrationResult.skipped.length > 0) {
-            console.log(
-              `  ✓ Kept ${integrationResult.skipped.length} existing file(s) unchanged`
-            );
+            console.log(`  ✓ Kept ${integrationResult.skipped.length} existing file(s) unchanged`);
           }
           if (integrationResult.preserved.length > 0) {
             console.log(
@@ -611,9 +607,7 @@ function displayReport(report: DoctorReport) {
   console.log('');
 
   if (report.unscoredCategories.length > 0) {
-    console.log(
-      '⚠️  Gap categories missing from the scoring config (not reflected in the score):'
-    );
+    console.log('⚠️  Gap categories missing from the scoring config (not reflected in the score):');
     console.log(`   ${report.unscoredCategories.join(', ')}`);
     console.log('   Add them to healthScore.categoryMap in config/quality-budgets.json.');
     console.log('');

@@ -27,18 +27,18 @@ so the budget for this file is roughly 200 lines and the always-apply rule count
 
 Run these from the repository root.
 
-| Command | Purpose |
-| --- | --- |
-| `npm run doctor` | Health check: stack detection, gap analysis, scoring |
-| `npm run doctor:fix` | Health check, then apply automatic fixes |
-| `npm run build` | Type-check, then compile to `dist/` |
-| `npm run build:clean` | Purge `dist/` first, then build |
-| `npm test` | Build, then run `tests/**/*.test.js` |
-| `npm run lint` | ESLint over the repo |
-| `npm run format` | Prettier write; `format:check` verifies without writing |
-| `npm run clean` | Remove `dist/` and `tsconfig.tsbuildinfo` |
-| `npm run check:doc-links` | Verify every relative markdown link resolves |
-| `npm run check:encoding` | Detect double-encoded UTF-8 (mojibake) |
+| Command                   | Purpose                                                 |
+| ------------------------- | ------------------------------------------------------- |
+| `npm run doctor`          | Health check: stack detection, gap analysis, scoring    |
+| `npm run doctor:fix`      | Health check, then apply automatic fixes                |
+| `npm run build`           | Type-check, then compile to `dist/`                     |
+| `npm run build:clean`     | Purge `dist/` first, then build                         |
+| `npm test`                | Build, then run `tests/**/*.test.js`                    |
+| `npm run lint`            | ESLint over the repo                                    |
+| `npm run format`          | Prettier write; `format:check` verifies without writing |
+| `npm run clean`           | Remove `dist/` and `tsconfig.tsbuildinfo`               |
+| `npm run check:doc-links` | Verify every relative markdown link resolves            |
+| `npm run check:encoding`  | Detect double-encoded UTF-8 (mojibake)                  |
 
 **Pass script flags after `--`.** `npm run doctor -- --fix` forwards the flag to the doctor;
 `npm run doctor --fix` gives it to npm instead, which silently ignores it. This has been a

@@ -87,7 +87,7 @@
   scanner's test corpus is necessarily full of credential-shaped strings. With `failClosed: true`,
   the tests could not be opened to correct the scanner.
 - **Cause:** Content scanning applied to every file, with no notion of files whose subject matter
-  *is* credential formats.
+  _is_ credential formats.
 - **Fix:** `CONTENT_SCAN_EXEMPT_PATTERNS` skips tests, fixtures, docs, lockfiles, vendored code and
   the scanner itself. Path rules still apply everywhere, so a dotenv file under `tests/fixtures/`
   is still blocked.

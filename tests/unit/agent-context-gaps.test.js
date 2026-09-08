@@ -121,7 +121,8 @@ describe('agent context gaps', () => {
     const rulesDir = path.join(projectDir, '.cursor', 'rules');
     await fs.mkdir(rulesDir, { recursive: true });
 
-    const frontmatter = "---\ndescription: Scoped rule\nglobs: '**/*.ts'\nalwaysApply: false\n---\n";
+    const frontmatter =
+      "---\ndescription: Scoped rule\nglobs: '**/*.ts'\nalwaysApply: false\n---\n";
     await fs.writeFile(
       path.join(rulesDir, '10-typescript.mdc'),
       frontmatter + Array(400).fill('Standard text.').join('\n')

@@ -154,7 +154,8 @@ class GapAnalyzer {
         description:
           'Fast mode skips documentation, accessibility, Docker, environment, and git-hook checks.',
         impact: 'Some gaps only appear in full scans.',
-        recommendation: 'Re-run `npm run doctor` (without --fast) before releases for complete coverage.',
+        recommendation:
+          'Re-run `npm run doctor` (without --fast) before releases for complete coverage.',
         effort: 'low',
         files: [],
       });
@@ -1160,8 +1161,7 @@ echo "npm run lint && npm run format:check" > .husky/pre-commit`,
           severity: 'high',
           title: 'MCP Config Contains an Inline Secret',
           description: `${candidate} appears to hold a credential as a literal value rather than an environment reference.`,
-          impact:
-            'The credential is committed to git and passed to a subprocess the agent starts',
+          impact: 'The credential is committed to git and passed to a subprocess the agent starts',
           recommendation:
             'Replace the literal with an environment reference (${env:NAME} for Cursor, ${NAME} for Claude Code), gitignore the real config, and rotate the exposed credential',
           effort: 'low',

@@ -21,12 +21,12 @@ paths; 100% is not the goal.
 - Location: `tests/unit/**/*.test.js` and `tests/integration/**/*.test.js`.
 - Tests are plain JavaScript and exercise the compiled output, so `npm test` builds first.
 
-| Command | Runs |
-| --- | --- |
-| `npm test` | Build, then all tests |
-| `npm run test:unit` | Build, then `tests/unit/` |
+| Command                    | Runs                             |
+| -------------------------- | -------------------------------- |
+| `npm test`                 | Build, then all tests            |
+| `npm run test:unit`        | Build, then `tests/unit/`        |
 | `npm run test:integration` | Build, then `tests/integration/` |
-| `npm run test:watch` | Build, then watch mode |
+| `npm run test:watch`       | Build, then watch mode           |
 
 Pass extra flags through the `--` separator, or npm swallows them:
 
@@ -74,11 +74,11 @@ boundary conditions, and concurrent access where it applies.
 
 ## Time budgets
 
-| Tier | Budget (total) |
-| --- | --- |
-| Unit | < 5 s |
-| Integration | < 60 s |
-| End-to-end | < 5 min |
+| Tier        | Budget (total) |
+| ----------- | -------------- |
+| Unit        | < 5 s          |
+| Integration | < 60 s         |
+| End-to-end  | < 5 min        |
 
 Give every test a timeout and cancel anything that exceeds it, so a hung test fails loudly
 instead of stalling CI.

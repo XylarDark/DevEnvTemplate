@@ -388,7 +388,10 @@ describe('secret-scan hook', () => {
     test('terminates the decision with a newline', () => {
       const stdout = runHookRaw({ hook_event_name: 'beforeShellExecution', command: 'git status' });
 
-      assert.ok(stdout.endsWith('\n'), `stdout must end with a newline, got ${JSON.stringify(stdout)}`);
+      assert.ok(
+        stdout.endsWith('\n'),
+        `stdout must end with a newline, got ${JSON.stringify(stdout)}`
+      );
     });
 
     test('emits exactly one line', () => {

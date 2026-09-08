@@ -10,7 +10,7 @@ they explain the rules below rather than just asserting them:
 - **CVE-2025-54135 ("CurXecute").** A prompt injection delivered through tool output caused the
   agent to rewrite `mcp.json`, which achieved code execution on the next server start. The
   attacker never touched the machine directly; the agent did the writing.
-- **CVE-2025-54136 ("MCPoison").** Approval was bound to a server's *name* rather than its
+- **CVE-2025-54136 ("MCPoison").** Approval was bound to a server's _name_ rather than its
   contents. Once a server was approved, its `command` and `args` could be swapped for anything
   and it stayed approved.
 
@@ -20,10 +20,10 @@ The common thread: the danger is in the contents, and the contents can change af
 
 Cursor reads two paths, and no others:
 
-| Path                  | Scope                                     |
-| --------------------- | ----------------------------------------- |
-| `.cursor/mcp.json`    | This project                              |
-| `~/.cursor/mcp.json`  | Every project, for this user              |
+| Path                 | Scope                        |
+| -------------------- | ---------------------------- |
+| `.cursor/mcp.json`   | This project                 |
+| `~/.cursor/mcp.json` | Every project, for this user |
 
 A `.mcp.json` at the repository root is **Claude Code's** convention, not Cursor's. If you support
 both tools, maintain both files deliberately rather than assuming one is read by the other.
@@ -53,10 +53,10 @@ The syntax differs by tool, and using the wrong one fails in the worst possible 
 placeholder is passed through as a literal string, so the server receives the text `${API_KEY}` as
 its credential and the error surfaces somewhere far from the cause:
 
-| Tool        | Syntax                            |
-| ----------- | --------------------------------- |
-| Cursor      | `${env:NAME}`                     |
-| Claude Code | `${NAME}`, or `${NAME:-default}`  |
+| Tool        | Syntax                           |
+| ----------- | -------------------------------- |
+| Cursor      | `${env:NAME}`                    |
+| Claude Code | `${NAME}`, or `${NAME:-default}` |
 
 Cursor also resolves `${workspaceFolder}`, `${workspaceFolderBasename}`, `${userHome}`,
 `${pathSeparator}`, and `${/}`.

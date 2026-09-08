@@ -40,7 +40,7 @@ so required-but-inaccessible settings stay visible and upgrade-safe.
    not rely on model training data alone for versioned products.
 
 2. **Check access from automation.** For each setting, verify whether it can be set
-   or read *reliably* from an API, CLI, config file, or stable automation hook.
+   or read _reliably_ from an API, CLI, config file, or stable automation hook.
    "Reliably" means documented, repeatable, and unlikely to break on a minor UI
    reskin.
 

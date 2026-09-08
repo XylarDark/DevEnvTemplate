@@ -109,10 +109,10 @@ index queried columns, minimize network round trips, and compress responses.
 
 Budgets:
 
-| Metric | Budget |
-| --- | --- |
-| Page load (LCP) | < 2.5 s |
+| Metric             | Budget   |
+| ------------------ | -------- |
+| Page load (LCP)    | < 2.5 s  |
 | API response (p95) | < 200 ms |
-| Incremental build | < 60 s |
+| Incremental build  | < 60 s   |
 
 Test-suite budgets live in the testing-standards skill.

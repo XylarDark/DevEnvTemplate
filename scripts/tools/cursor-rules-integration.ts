@@ -184,8 +184,7 @@ export async function integrateCursorRules(
 
   // The skills live next to `.cursor/` in the template, two levels up from the rules directory.
   const templateSkillsPath =
-    options.templateSkillsPath ??
-    path.join(templateRulesPath, '..', '..', '.agents', 'skills');
+    options.templateSkillsPath ?? path.join(templateRulesPath, '..', '..', '.agents', 'skills');
 
   const result: IntegrationResult = {
     copied: [],

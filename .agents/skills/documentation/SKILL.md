@@ -35,27 +35,27 @@ semantic source of truth for what belongs where.
 **The docs root is an exhaustive list of entry points.** Only these files belong at
 `docs/`:
 
-| File | Purpose |
-| --- | --- |
-| `README.md` | Docs index |
-| `DOCS_LAYOUT.md` | The canonical structure itself |
-| `BEST-PRACTICES.md` | Cross-cutting practices |
-| `TROUBLESHOOTING.md` | Common failures and fixes |
-| `KNOWN_ERRORS.md` | Recurring errors and fixes (append-only) |
-| `SETUP-GUIDE.md` | Getting started with this template |
-| `SYNC.md` | Syncing from the template |
+| File                           | Purpose                                  |
+| ------------------------------ | ---------------------------------------- |
+| `README.md`                    | Docs index                               |
+| `DOCS_LAYOUT.md`               | The canonical structure itself           |
+| `BEST-PRACTICES.md`            | Cross-cutting practices                  |
+| `TROUBLESHOOTING.md`           | Common failures and fixes                |
+| `KNOWN_ERRORS.md`              | Recurring errors and fixes (append-only) |
+| `SETUP-GUIDE.md`               | Getting started with this template       |
+| `SYNC.md`                      | Syncing from the template                |
 | `DevEnvTemplate_RULES_SYNC.md` | Append-only log of template rule changes |
 
 Everything else goes in a topic subdirectory:
 
-| Directory | Contents |
-| --- | --- |
-| `guides/` | How-to and long-form guides |
-| `architecture/` | System design, diagrams, ADR supplements |
-| `best-practices/` | Per-stack practice guides (`python.md`, `fastapi.md`) |
-| `operational/` | Automation gaps, recurring maintenance |
-| `templates/` | Fork-specific stubs (`templates/unity/`, `templates/unreal/`) |
-| `archive/` | Superseded plans, RFCs, and release notes |
+| Directory         | Contents                                                      |
+| ----------------- | ------------------------------------------------------------- |
+| `guides/`         | How-to and long-form guides                                   |
+| `architecture/`   | System design, diagrams, ADR supplements                      |
+| `best-practices/` | Per-stack practice guides (`python.md`, `fastapi.md`)         |
+| `operational/`    | Automation gaps, recurring maintenance                        |
+| `templates/`      | Fork-specific stubs (`templates/unity/`, `templates/unreal/`) |
+| `archive/`        | Superseded plans, RFCs, and release notes                     |
 
 `DOCS_LAYOUT.md` lists further optional folders (`adr/`, `runbooks/`, `setup/`,
 `security/`, `deployment/`, `api/`). Create a subdirectory only once you have a document to

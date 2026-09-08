@@ -14,7 +14,7 @@ Always-loaded context belongs in one of two other places:
 
 This directory used to ship 14 always-applied rules totalling roughly 1,200 lines. That is
 12,000–15,000 tokens billed on every single turn, including turns that had nothing to do with the
-content. Long-context evaluations consistently find that irrelevant always-loaded context *lowers*
+content. Long-context evaluations consistently find that irrelevant always-loaded context _lowers_
 accuracy, so the cost was not merely wasted — it was harmful.
 
 That content now lives in `AGENTS.md` and `.agents/skills/`. If you are looking for a rule that
@@ -26,27 +26,27 @@ reports any that reappear, so re-adding one is a visible decision rather than a 
 
 Cursor supports four modes. Only the third is used here.
 
-| Mode                    | Frontmatter                                   | Used here                        |
-| ----------------------- | --------------------------------------------- | -------------------------------- |
-| Always Apply            | `alwaysApply: true`                           | No — use `AGENTS.md`             |
-| Apply Intelligently     | `alwaysApply: false` plus a `description`      | No — use a skill                 |
-| Apply to Specific Files | `globs:` plus `alwaysApply: false`            | **Yes, all rules below**         |
-| Manual                  | `alwaysApply: false`, narrow `description`     | No — the user would @-mention it |
+| Mode                    | Frontmatter                                | Used here                        |
+| ----------------------- | ------------------------------------------ | -------------------------------- |
+| Always Apply            | `alwaysApply: true`                        | No — use `AGENTS.md`             |
+| Apply Intelligently     | `alwaysApply: false` plus a `description`  | No — use a skill                 |
+| Apply to Specific Files | `globs:` plus `alwaysApply: false`         | **Yes, all rules below**         |
+| Manual                  | `alwaysApply: false`, narrow `description` | No — the user would @-mention it |
 
 ## The rules
 
-| Rule                        | Applies to                                                          |
-| --------------------------- | ------------------------------------------------------------------- |
-| `10-typescript.mdc`         | `**/*.ts`, `**/*.tsx`                                               |
-| `11-javascript.mdc`         | `**/*.js`, `**/*.jsx`                                               |
-| `12-python.mdc`             | `**/*.py`                                                           |
-| `13-markdown.mdc`           | `**/*.md`                                                           |
-| `14-json-yaml.mdc`          | `**/*.json`, `**/*.yaml`, `**/*.yml`                                |
-| `15-shell-scripts.mdc`      | `**/*.sh`, `**/*.ps1`, `**/*.bat`                                   |
-| `20-frontend-frameworks.mdc`| `**/components/**`, `**/pages/**`, `**/app/**`                      |
-| `21-unreal-engine.mdc`      | `*.uproject`, `*.uplugin`, `*Build.cs`, `Source/**`                 |
-| `22-unreal-editor-ui.mdc`   | the same Unreal paths; Editor UI must match Epic's pinned-version docs |
-| `23-unity-csharp.mdc`       | `*.cs`, `*.unity`, `*.asmdef`, `ProjectSettings/**`, `Packages/manifest.json` |
+| Rule                         | Applies to                                                                    |
+| ---------------------------- | ----------------------------------------------------------------------------- |
+| `10-typescript.mdc`          | `**/*.ts`, `**/*.tsx`                                                         |
+| `11-javascript.mdc`          | `**/*.js`, `**/*.jsx`                                                         |
+| `12-python.mdc`              | `**/*.py`                                                                     |
+| `13-markdown.mdc`            | `**/*.md`                                                                     |
+| `14-json-yaml.mdc`           | `**/*.json`, `**/*.yaml`, `**/*.yml`                                          |
+| `15-shell-scripts.mdc`       | `**/*.sh`, `**/*.ps1`, `**/*.bat`                                             |
+| `20-frontend-frameworks.mdc` | `**/components/**`, `**/pages/**`, `**/app/**`                                |
+| `21-unreal-engine.mdc`       | `*.uproject`, `*.uplugin`, `*Build.cs`, `Source/**`                           |
+| `22-unreal-editor-ui.mdc`    | the same Unreal paths; Editor UI must match Epic's pinned-version docs        |
+| `23-unity-csharp.mdc`        | `*.cs`, `*.unity`, `*.asmdef`, `ProjectSettings/**`, `Packages/manifest.json` |
 
 The leading numbers group related rules for humans. Cursor ignores them, and it ignores any
 frontmatter key outside `description`, `globs`, and `alwaysApply` — including `name` and
