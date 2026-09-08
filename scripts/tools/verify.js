@@ -18,9 +18,10 @@
  *   node scripts/tools/verify.js --json       machine-readable evidence
  */
 
-const { spawnSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+
+const { describe: describeStage, runStage, summarize } = require('./pipeline');
 
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const EVIDENCE_PATH = path.join(REPO_ROOT, '.devenv', 'verify-report.json');
@@ -109,76 +110,6 @@ const STAGES = [
   },
 ];
 
-function runStage(stage) {
-  const started = Date.now();
-
-  const result = spawnSync(stage.command, stage.args, {
-    cwd: REPO_ROOT,
-    encoding: 'utf8',
-    shell: process.platform === 'win32',
-  });
-
-  const stdout = result.stdout || '';
-  const stderr = result.stderr || '';
-  const code = result.status;
-  const durationMs = Date.now() - started;
-
-  if (result.error) {
-    return {
-      ...describe(stage),
-      status: 'failed',
-      durationMs,
-      evidence: null,
-      detail: `Could not run ${stage.command}: ${result.error.message}`,
-    };
-  }
-
-  const evidence = stage.evidence({ stdout, stderr, code });
-
-  // Passing requires both a zero exit code and recognizable evidence. A stage that exits zero
-  // without producing its expected output has not demonstrated anything.
-  if (code === 0 && evidence) {
-    return { ...describe(stage), status: 'passed', durationMs, evidence, detail: null };
-  }
-
-  if (code === 0 && !evidence) {
-    return {
-      ...describe(stage),
-      status: 'inconclusive',
-      durationMs,
-      evidence: null,
-      detail: 'Exited zero but produced no recognizable evidence, so nothing was demonstrated.',
-    };
-  }
-
-  return {
-    ...describe(stage),
-    status: 'failed',
-    durationMs,
-    evidence,
-    detail: failureDetail(stdout, stderr),
-  };
-}
-
-function describe(stage) {
-  return {
-    id: stage.id,
-    title: stage.title,
-    proves: stage.proves,
-    command: [stage.command, ...stage.args].join(' '),
-  };
-}
-
-/** The last lines of output, where the actual error almost always is. */
-function failureDetail(stdout, stderr) {
-  const combined = `${stdout}\n${stderr}`
-    .split('\n')
-    .map(line => line.trimEnd())
-    .filter(Boolean);
-
-  return combined.slice(-15).join('\n') || 'No output.';
-}
-
 function main() {
   const args = process.argv.slice(2);
   const runAll = args.includes('--all');
@@ -190,7 +121,7 @@ function main() {
   for (const stage of STAGES) {
     if (stopped && !runAll) {
       results.push({
-        ...describe(stage),
+        ...describeStage(stage),
         status: 'not run',
         durationMs: 0,
         evidence: null,
@@ -203,7 +134,7 @@ function main() {
       process.stdout.write(`  ${stage.title}... `);
     }
 
-    const result = runStage(stage);
+    const result = runStage(stage, REPO_ROOT);
     results.push(result);
 
     if (!asJson) {
@@ -220,21 +151,14 @@ function main() {
     }
   }
 
-  const failed = results.filter(r => r.status === 'failed' || r.status === 'inconclusive');
-  const notRun = results.filter(r => r.status === 'not run');
-  const passed = results.filter(r => r.status === 'passed');
+  const { failed, notRun, passed, verified, counts } = summarize(results);
 
   const report = {
     generatedAt: new Date().toISOString(),
     node: process.version,
     platform: process.platform,
-    verified: failed.length === 0 && notRun.length === 0,
-    summary: {
-      passed: passed.length,
-      failed: failed.length,
-      notRun: notRun.length,
-      total: results.length,
-    },
+    verified,
+    summary: counts,
     stages: results,
     notVerifiedFromRepositoryContents: NOT_VERIFIABLE,
   };

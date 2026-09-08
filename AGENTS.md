@@ -109,8 +109,8 @@ public APIs, propose a short plan before editing. See the `plan-first` skill.
 
 ## Development phase
 
-Every area is **shaping** or **settled**. Shaping means the design is still being decided and the
-developer's judgment is the success criterion. Settled means the shape is agreed and the job is to
+Every area is **shaping** or **settled**: shaping means the design is still being decided and the
+developer's judgment is the success criterion, settled means the shape is agreed and the job is to
 keep it that way.
 
 - `scripts/doctor/**`, `scripts/tools/**`, `scripts/utils/**` — settled
@@ -118,15 +118,19 @@ keep it that way.
 
 **In a shaping area**, spend the budget on something the developer can react to. Skip tests,
 guard-test proofs, the pre-work baseline, and doc updates; say in one line what you did not verify.
-Use `npm run doctor '--' --fast` and leave the full run for promotion. The security baseline below
-is the only floor: no committed secrets, no destructive operation without an explicit flag.
+Use `npm run doctor '--' --fast`. The security baseline below is the only floor. **In a settled
+area**, every obligation in the skills applies as written.
 
-**In a settled area**, every obligation in the skills applies as written.
+**Promotion is deliberate.** Moving an area to settled means that same change adds the tests, the
+guard test per bug fixed while shaping, the doc updates, and the `docs/KNOWN_ERRORS.md` entries
+that shaping deferred, and deletes the scratch files. Shaping defers those obligations; it does
+not abolish them.
 
-**Promotion is a deliberate step.** When an area moves to settled, that same change adds tests for
-the behavior that survived, a guard test per bug fixed while shaping, updated docs, deleted scratch
-files, and `docs/KNOWN_ERRORS.md` entries for the failures that cost real time. Shaping defers
-these obligations; it does not abolish them.
+**Then hardening, once.** When taste and features are locked and the product is about to be
+deployed, run `npm run preflight` and work the hardening pass in the `secure-coding` skill. It
+composes verify, the dependency audit, registry signatures, a secret scan, and a strict doctor
+run, then names the controls no repository check can see. Entering it is a decision: nothing is
+hardened while its shape is still moving.
 
 ## Conventions
 
@@ -160,8 +164,8 @@ These apply to settled areas. While shaping, see **Development phase** above.
 - Treat changes to MCP configuration as production changes: review the server command and args,
   not just the server name. Reference credentials as `${env:NAME}`; never inline them. Start from
   `.cursor/mcp.json.example` and read `docs/guides/mcp-hygiene.md`.
-- Dependency updates arrive weekly via Dependabot. CI gates on `npm audit --audit-level=high`
-  and `npm audit signatures`.
+- Dependency updates arrive monthly via Dependabot, grouped. `npm run preflight` runs
+  `npm audit --audit-level=high` and `npm audit signatures`; the CI job that did is disabled.
 
 ## Windows and PowerShell
 

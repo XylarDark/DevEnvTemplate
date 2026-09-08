@@ -32,6 +32,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "verify": "node scripts/tools/verify.js",
+    "preflight": "node scripts/tools/preflight.js",
     "check:doc-links": "node scripts/tools/check-doc-links.js",
     "check:encoding": "node scripts/tools/fix-mojibake.js --check",
     "check:dist-sync": "node scripts/tools/check-dist-sync.js",
