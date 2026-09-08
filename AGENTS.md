@@ -4,6 +4,11 @@ DevEnvTemplate is the **doctor** for development environments: it diagnoses repo
 prescribes fixes, and keeps codebases sound while you code with LLMs. It targets indie developers
 and solo founders, so it optimizes for the GitHub Actions free tier and has no team approval gates.
 
+What it ships is a **menu**, not a monolith: an agent-context layer, two operational logs, a
+verification pattern, and the doctor itself, each adoptable alone. Consumers routinely take the
+first two and none of the toolchain, so nothing here may assume it was adopted wholesale. See
+[Adopt it in layers](README.md#adopt-it-in-layers).
+
 This file is the canonical, always-loaded context. Everything else loads on demand:
 
 - **`.cursor/rules/*.mdc`** — glob-scoped only. They load when you touch a matching file
@@ -66,7 +71,13 @@ and `.devenv/gaps-report.md` (for humans). Read the JSON; never parse the markdo
 ## Working agreements
 
 **Verify, don't assume.** Read a file before editing it. Run the build, tests, and linter before
-claiming work is done. When you assert something about the repo, base it on file contents.
+claiming work is done. When you assert something about the repo, base it on file contents. A green
+check is not evidence unless you know what it measured — `npm run verify` reports what each stage
+proved, and the `verification-evidence` skill covers the ways a check passes while measuring
+nothing.
+
+**Assume you are not alone.** Another agent may be working in this tree. Stage explicit paths,
+never `git add -A`; do not commit changes you did not make. See `multi-agent-collaboration`.
 
 **Finish what you start.** No `TODO` without an issue reference, no placeholder implementations,
 no committing a known-broken state. If you must defer, say so explicitly and explain why.
@@ -136,6 +147,12 @@ glob-scoped `.cursor/rules/`, `docs/DOCS_LAYOUT.md`, `docs/KNOWN_ERRORS.md`, and
 `docs/operational/automation-gaps.md`.
 
 Host projects write their **own** `AGENTS.md`. The copy in this repo describes this repo.
+
+Skills travel verbatim, so any section of a skill that describes *this* repository is marked with
+a **Localize on copy** callout and must be rewritten by the host. `tests/unit/skill-portability.test.js`
+fails if a skill names a repo-local script before that callout, and the integration step reports
+which copied skills carry one. Do not add a repo-local command to a skill's `description`: it is
+read without opening the file, so it cannot carry a warning.
 
 - **Unity:** keep `.cursor/rules/23-unity-csharp.mdc` and pin the editor version from
   `ProjectSettings/ProjectVersion.txt`. See `docs/templates/unity/README.md`.

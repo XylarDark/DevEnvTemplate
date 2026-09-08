@@ -5,6 +5,50 @@ All notable changes to DevEnvTemplate will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Purpose statement in the README**: what the template is for, what it deliberately is not, and
+  a four-layer adoption menu (agent context, operational memory, verification, doctor) that can be
+  taken independently. Grounded in a real consumer that adopted the first two layers and none of
+  the lint or format toolchain.
+- **`verification-evidence` skill**: the ways a check passes while measuring nothing — reading a
+  value from the wrong place, being satisfied by the wrong subject, exiting zero when it could not
+  measure, and obeying a malformed input. Covers fail-open helpers, boundary versus midpoint
+  testing, requested versus effective values, and mutation-testing a guard test.
+- **`exclusive-resource-access` skill**: driving a resource only one caller can hold — lane
+  isolation, lock files that refuse fast and name the holder, wall-clock watchdogs, synchronous
+  teardown on every observable exit path, reaping orphans by owned state path, and why a hang must
+  never be retried.
+- **`multi-agent-collaboration` skill**: single ownership of a file, staging by explicit path,
+  never rebasing or pushing from a worker in a shared tree, establishing a baseline before
+  starting, and not modifying a shared tool while others are using it.
+- **[ADR 001](docs/adr/001-agent-hook-failure-posture.md)**: settles whether the secret-scan hook
+  runs fail-open or fail-closed, records what fail-open gives up, and states the conditions under
+  which a consumer should choose differently.
+- **`tests/unit/skill-portability.test.js`**: fails when a shipped skill names a repo-local command
+  before a "Localize on copy" callout, or anywhere in its `description`.
+
+### Changed
+
+- **Skills are now portable by construction.** Sections describing this repository's own commands
+  and docs layout are marked "Localize on copy", and `integrateCursorRules` reports which copied
+  skills carry one so a host is told what to adapt as it lands.
+- The `documentation` skill points at `DOCS_LAYOUT.md` for the docs-root inventory instead of
+  duplicating it, and documents the entry shapes for the known-errors and automation-gaps logs.
+- The secret scanner's header no longer recommends `failClosed: true` while the config sets
+  `false`; it points at ADR 001 instead.
+- README: replaced two documented commands that referenced paths which do not exist, and dropped
+  setup-time claims and a tool list naming a test runner this repository does not use.
+
+### Fixed
+
+- Copied skills instructed host projects to run commands that exist only here. Recorded in
+  [KNOWN_ERRORS.md](docs/KNOWN_ERRORS.md) with the guard test that now prevents it.
+
+---
+
 ## [2.0.0] - 2025-11-07
 
 ### 🎯 Major Release: Indie Developer Focus

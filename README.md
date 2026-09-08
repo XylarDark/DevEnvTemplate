@@ -4,7 +4,37 @@
 [![Version](https://img.shields.io/github/package-json/v/XylarDark/DevEnvTemplate)](https://github.com/XylarDark/DevEnvTemplate)
 [![License](https://img.shields.io/github/license/XylarDark/DevEnvTemplate)](LICENSE)
 
-**Your AI coding companion's health checker.** DevEnvTemplate acts as a doctor for your development environment - diagnosing issues, prescribing solutions, and keeping your codebase healthy while you code with LLMs.
+**A menu of development-environment layers, plus a doctor that tells you which ones you are missing.** DevEnvTemplate diagnoses repository health and ships the agent context, operational-memory and tooling layers that fix what it finds — so an AI assistant working in your repo spends its turns on your features instead of on broken tooling and stale instructions.
+
+## What this is for
+
+Three problems, in the order they usually bite:
+
+1. **Agents work from bad context.** They read instructions that are too long to help, or that describe a repository other than yours. The agent layer here is a shape for fixing that: a short always-loaded file, skills that stay dormant until they are relevant, and rules scoped to the files they apply to.
+2. **Nobody knows what a repository is missing.** The doctor scans the stack, names the gaps, and scores them, so "we should probably add tests" becomes a specific list.
+3. **The same expensive failure gets rediscovered.** Two append-only logs — [known errors](docs/KNOWN_ERRORS.md) and [automation gaps](docs/operational/automation-gaps.md) — give a failure and a dead end somewhere to live.
+
+## What this is not
+
+- **Not a project scaffold.** It does not generate an application. Point it at a repository you already have.
+- **Not a mandate to adopt its toolchain.** This repository uses ESLint, Prettier, Husky, commitlint and `node --test`. Those are one working answer, not a requirement. A consuming project can have none of them and still take everything valuable here.
+- **Not a CI system, a monorepo tool, or a governance framework.** It reports; it does not gate. Approval workflows and multi-team coordination were deliberately removed in 2.0.
+- **Not your `AGENTS.md`.** That file states facts about one specific repository, so a copied one is wrong on arrival. The template deliberately does not copy it; write your own and the doctor will stop asking.
+
+## Adopt it in layers
+
+The layers are independent, and they are listed in the order most consumers actually want them. Take one and skip the rest if that is what fits.
+
+| Layer                          | What it is                                                                                                   | Depends on                                                    |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------- |
+| **Agent context**              | `AGENTS.md` as a shape, `.agents/skills/`, glob-scoped `.cursor/rules/`, the secret-scan hook                | Nothing. Any language, any stack.                             |
+| **Operational memory**         | `docs/KNOWN_ERRORS.md`, `docs/operational/automation-gaps.md`, `docs/DOCS_LAYOUT.md`                         | Nothing. These are entry shapes, not content.                 |
+| **Verification with evidence** | The `verify` pipeline pattern: each stage names what passing it proves and extracts a number from its output | A test runner of some kind. Not this one.                     |
+| **The doctor**                 | `npm run doctor`, gap analysis, quick-win auto-fixes, the CI workflow                                        | Node.js in the host, or the host vendors it under `.devenv/`. |
+
+The evidence for splitting it this way comes from a real consumer: a browser game that took the agent and operational layers, vendored the doctor under `.devenv/`, and adopted **none** of the lint or format toolchain. Its own always-applied rule count is zero and it has no lint script at all — and its doctor report lists that absence as an **accepted state, not a task**. A template that assumes it was adopted wholesale would have been wrong about that project in a dozen places, and was: see [the entry on copied skills naming commands that only exist here](docs/KNOWN_ERRORS.md).
+
+**A gap you declined is not a bug.** The doctor's job is to make an absence visible once, not to nag. When you decide against something it reports — no linter, no container, no coverage tool — record that decision where agents will read it, in your own `AGENTS.md`. Otherwise every fresh session re-litigates it, which costs more than the gap did.
 
 ## For Indie Developers & Solo Founders
 
@@ -16,8 +46,6 @@ Building with AI assistants like Cursor, GitHub Copilot, or ChatGPT? Your dev en
 - **Prescribe** → Identifies gaps (missing tests, CI, security)
 - **Cure** → Auto-fixes common issues in seconds
 - **Monitor** → Continuous health checks on every push
-
-**From diagnosis to deployment in < 10 minutes.** Quality by default, not by overtime.
 
 ## Quick Start (2 Minutes)
 
@@ -117,7 +145,7 @@ DevEnvTemplate follows a medical diagnostic approach:
 Scans your project to understand your tech stack:
 
 ```bash
-node .github/tools/stack-detector.js
+npm run doctor          # detection runs as the first stage
 ```
 
 - Detects frameworks (React, Next.js, Express, etc.)
@@ -129,7 +157,7 @@ node .github/tools/stack-detector.js
 Identifies what's missing or misconfigured:
 
 ```bash
-node .github/tools/gap-analyzer.js
+npm run doctor -- --json    # the gap list, machine-readable
 ```
 
 - Security gaps (exposed secrets, vulnerable dependencies)
@@ -198,11 +226,10 @@ After running doctor or pushing to GitHub:
 
 ## Why Indie Devs Love It
 
-**Fast Setup** → 5 minutes vs 4 hours of configuration  
-**Quality by Default** → Testing, CI, security included  
-**Free Tier** → Everything runs on GitHub's free 2000 min/month  
-**No Lock-In** → Standard tools (Jest, GitHub Actions, ESLint)  
-**Solo-Friendly** → No team jargon, no complex workflows
+**Quality by Default** → Testing, CI, and security gaps named rather than assumed  
+**Free Tier** → CI sized for GitHub's free 2000 min/month  
+**No Lock-In** → Standard tools, and every layer is optional — see [Adopt it in layers](#adopt-it-in-layers)  
+**Solo-Friendly** → No team jargon, no approval workflows
 
 ## Use Cases
 
