@@ -1,4 +1,37 @@
 {
+  "healthScore": {
+    "comment": "Read by scripts/doctor/cli.ts. 'penalties' are points deducted per gap of each severity. 'weights' must sum to 1.0 and decide the overall score. 'categoryMap' routes every gap category from scripts/types/gaps.ts to a scored dimension; the doctor reports any category missing from this map instead of silently ignoring it.",
+    "penalties": {
+      "high": 20,
+      "medium": 10,
+      "low": 0
+    },
+    "weights": {
+      "testing": 0.25,
+      "ci": 0.2,
+      "typeSafety": 0.2,
+      "quality": 0.2,
+      "security": 0.15
+    },
+    "categoryMap": {
+      "testing": "testing",
+      "ci": "ci",
+      "git-hooks": "ci",
+      "git": "ci",
+      "typescript": "typeSafety",
+      "linting": "quality",
+      "quality": "quality",
+      "architecture": "quality",
+      "performance": "quality",
+      "accessibility": "quality",
+      "security": "security",
+      "environment": "security",
+      "dependencies": "security",
+      "docker": "security",
+      "documentation": "documentation",
+      "observability": "documentation"
+    }
+  },
   "budgets": {
     "performance": {
       "buildTimeMs": 300000,

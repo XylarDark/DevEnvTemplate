@@ -14,21 +14,29 @@ import { promises as fs, existsSync } from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
 import { resolveProjectRoot as enhancedResolveProjectRoot } from '../utils/path-resolver';
+import type { Gap, GapReport, GapSeverity } from '../types/gaps';
+import type { QuickWinContext } from './quick-wins';
 
+/** Scored dimensions. `overall` is the weighted roll-up of the rest. */
 interface HealthScore {
   overall: number;
   security: number;
   quality: number;
   testing: number;
   ci: number;
+  typeSafety: number;
   documentation: number;
 }
+
+type ScoredDimension = Exclude<keyof HealthScore, 'overall'>;
 
 interface Issue {
   severity: 'critical' | 'warning' | 'info';
   category: string;
   message: string;
   estimatedFix: string;
+  /** Dimension this issue was scored against, so a report can be audited. */
+  dimension?: ScoredDimension;
 }
 
 interface DoctorReport {
@@ -38,7 +46,55 @@ interface DoctorReport {
   warnings: Issue[];
   info: Issue[];
   quickWins: Issue[];
+  /**
+   * Gap categories with no entry in the scoring config. Surfaced rather than dropped so a new
+   * analyzer category cannot silently stop affecting the score.
+   */
+  unscoredCategories: string[];
 }
+
+/** Scoring configuration, loaded from config/quality-budgets.json. */
+interface HealthScoreConfig {
+  penalties: Record<GapSeverity, number>;
+  weights: Partial<Record<ScoredDimension, number>>;
+  categoryMap: Record<string, ScoredDimension>;
+}
+
+/**
+ * Fallback scoring configuration.
+ *
+ * Kept in sync with the `healthScore` block of config/quality-budgets.json and used when the
+ * doctor runs against a project that has no config of its own.
+ */
+const DEFAULT_HEALTH_SCORE_CONFIG: HealthScoreConfig = {
+  penalties: { high: 20, medium: 10, low: 0 },
+  weights: { testing: 0.25, ci: 0.2, typeSafety: 0.2, quality: 0.2, security: 0.15 },
+  categoryMap: {
+    testing: 'testing',
+    ci: 'ci',
+    'git-hooks': 'ci',
+    git: 'ci',
+    typescript: 'typeSafety',
+    linting: 'quality',
+    quality: 'quality',
+    architecture: 'quality',
+    performance: 'quality',
+    accessibility: 'quality',
+    security: 'security',
+    environment: 'security',
+    dependencies: 'security',
+    docker: 'security',
+    documentation: 'documentation',
+    observability: 'documentation'
+  }
+};
+
+/** Maps analyzer gap severity onto the doctor's issue severity. */
+const SEVERITY_TO_ISSUE: Record<GapSeverity, Issue['severity']> = {
+  high: 'critical',
+  medium: 'warning',
+  low: 'info'
+};
 
 interface CliOptions {
   fix?: boolean;
@@ -234,7 +290,7 @@ async function runDoctor(options: CliOptions = {}) {
     console.log('🔬 Identifying gaps and issues...');
   }
   const gapAnalyzerPath = path.join(__dirname, '../tools/gap-analyzer.js');
-  let gapsReport: string;
+  let gapReport: GapReport;
   
   try {
     const gapArgs: string[] = [];
@@ -251,26 +307,41 @@ async function runDoctor(options: CliOptions = {}) {
       gapArgs.length > 0
         ? `node "${gapAnalyzerPath}" ${gapArgs.join(' ')}`
         : `node "${gapAnalyzerPath}"`;
+    // Capture rather than inherit: the analyzer prints its full markdown report to stdout, which
+    // would bury the health summary. The report is still written to .devenv/gaps-report.md.
     execSync(gapCommand, {
       cwd: workingDir,
       encoding: 'utf8',
-      stdio: 'inherit',
+      stdio: ['pipe', 'pipe', options.debug ? 'inherit' : 'pipe'],
       env: { ...process.env }
     });
     
-    // Read the generated report
-    const gapsReportPath = path.join(reportDir, 'gaps-report.md');
-    gapsReport = await fs.readFile(gapsReportPath, 'utf8');
+    // Read the structured report. The markdown sibling is for humans only.
+    const gapsJsonPath = path.join(reportDir, 'gaps-report.json');
+
+    if (!existsSync(gapsJsonPath)) {
+      throw new Error(
+        `${path.relative(workingDir, gapsJsonPath)} was not produced. ` +
+          'Rebuild the tools (npm run build) so the gap analyzer emits structured output.'
+      );
+    }
+
+    gapReport = JSON.parse(await fs.readFile(gapsJsonPath, 'utf8')) as GapReport;
+
+    if (!Array.isArray(gapReport.gaps)) {
+      throw new Error(`${path.relative(workingDir, gapsJsonPath)} has no 'gaps' array.`);
+    }
   } catch (error: any) {
     console.error('❌ Failed to analyze gaps:', error.message);
     process.exit(1);
   }
 
-  // Step 3: Parse gaps and calculate health score
+  // Step 3: Score the gaps
   if (!options.json) {
     console.log('📊 Calculating health score...\n');
   }
-  const report = parseGapsReport(gapsReport);
+  const healthScoreConfig = await loadHealthScoreConfig(workingDir);
+  const report = buildDoctorReport(gapReport, healthScoreConfig);
 
   // Step 4: Display report
   if (options.json) {
@@ -293,7 +364,7 @@ async function runDoctor(options: CliOptions = {}) {
       console.log('\n🔍 DRY RUN - No changes will be applied\n');
     }
     console.log('\n🔧 Applying automatic fixes...');
-    await applyQuickFixes(report.quickWins, options);
+    await applyQuickFixes(workingDir, stackData, options);
   }
 
   // Exit with error code if issues found (in strict mode)
@@ -306,148 +377,166 @@ async function runDoctor(options: CliOptions = {}) {
 }
 
 /**
- * Parse gaps report markdown and extract issues
+ * Load scoring configuration, falling back to the built-in defaults.
+ *
+ * A project may override weights and penalties in config/quality-budgets.json. A malformed or
+ * absent config must not fail the run, but a malformed one is reported so it is not silently
+ * ignored.
  */
-function parseGapsReport(markdown: string): DoctorReport {
+async function loadHealthScoreConfig(workingDir: string): Promise<HealthScoreConfig> {
+  const candidatePaths = [
+    path.join(workingDir, 'config', 'quality-budgets.json'),
+    path.join(__dirname, '../../../config/quality-budgets.json')
+  ];
+
+  for (const candidate of candidatePaths) {
+    if (!existsSync(candidate)) {
+      continue;
+    }
+
+    try {
+      const parsed = JSON.parse(await fs.readFile(candidate, 'utf8'));
+      const configured = parsed?.healthScore;
+
+      if (!configured) {
+        continue;
+      }
+
+      return {
+        penalties: { ...DEFAULT_HEALTH_SCORE_CONFIG.penalties, ...(configured.penalties || {}) },
+        weights: { ...DEFAULT_HEALTH_SCORE_CONFIG.weights, ...(configured.weights || {}) },
+        categoryMap: {
+          ...DEFAULT_HEALTH_SCORE_CONFIG.categoryMap,
+          ...(configured.categoryMap || {})
+        }
+      };
+    } catch (error: any) {
+      console.error(
+        `⚠️  Ignoring malformed healthScore config in ${candidate}: ${error.message}`
+      );
+    }
+  }
+
+  return DEFAULT_HEALTH_SCORE_CONFIG;
+}
+
+/**
+ * Convert the analyzer's structured report into a doctor report.
+ *
+ * Consumes `.devenv/gaps-report.json` rather than re-parsing the human markdown. The markdown
+ * groups gaps by category and encodes severity only as an emoji inside a heading, so parsing it
+ * cannot recover severity reliably.
+ */
+function buildDoctorReport(gapReport: GapReport, config: HealthScoreConfig): DoctorReport {
   const critical: Issue[] = [];
   const warnings: Issue[] = [];
   const info: Issue[] = [];
   const quickWins: Issue[] = [];
+  const unscoredCategories = new Set<string>();
 
-  // Parse markdown sections
-  const lines = markdown.split('\n');
-  let currentSeverity: 'critical' | 'warning' | 'info' | null = null;
-  let currentCategory = '';
+  for (const gap of gapReport.gaps || []) {
+    const dimension = config.categoryMap[gap.category];
 
-  for (const line of lines) {
-    // Detect severity sections
-    if (line.includes('🔴 Critical') || line.includes('Critical Gaps')) {
-      currentSeverity = 'critical';
-    } else if (line.includes('🟡 Warning') || line.includes('Recommended Improvements')) {
-      currentSeverity = 'warning';
-    } else if (line.includes('🟢 Info') || line.includes('Optional Enhancements')) {
-      currentSeverity = 'info';
+    if (!dimension) {
+      unscoredCategories.add(gap.category);
     }
 
-    // Detect category
-    if (line.startsWith('### ')) {
-      currentCategory = line.replace('###', '').trim();
+    const issue: Issue = {
+      severity: SEVERITY_TO_ISSUE[gap.severity] || 'info',
+      category: gap.category,
+      message: gap.title,
+      estimatedFix: estimateFixTime(gap),
+      ...(dimension ? { dimension } : {})
+    };
+
+    if (issue.severity === 'critical') {
+      critical.push(issue);
+    } else if (issue.severity === 'warning') {
+      warnings.push(issue);
+    } else {
+      info.push(issue);
     }
 
-    // Detect issues (lines starting with - or *)
-    if ((line.trim().startsWith('-') || line.trim().startsWith('*')) && currentSeverity) {
-      const message = line.trim().replace(/^[-*]\s*/, '');
-      if (message && !message.startsWith('[')) { // Skip links
-        const issue: Issue = {
-          severity: currentSeverity,
-          category: currentCategory,
-          message,
-          estimatedFix: estimateFixTime(message)
-        };
-
-        if (currentSeverity === 'critical') {
-          critical.push(issue);
-        } else if (currentSeverity === 'warning') {
-          warnings.push(issue);
-        } else {
-          info.push(issue);
-        }
-
-        // Identify quick wins (< 10 min)
-        if (isQuickWin(message)) {
-          quickWins.push(issue);
-        }
-      }
+    if (isQuickWin(gap)) {
+      quickWins.push(issue);
     }
   }
 
-  // Calculate health scores
-  const healthScore = calculateHealthScore(critical, warnings, info);
-
   return {
     timestamp: new Date().toISOString(),
-    healthScore,
+    healthScore: calculateHealthScore(gapReport.gaps || [], config),
     critical,
     warnings,
     info,
-    quickWins
+    quickWins,
+    unscoredCategories: [...unscoredCategories].sort()
   };
 }
 
 /**
- * Calculate health scores with indie-focused priorities
- * Testing: 25%, CI/CD: 20%, Type Safety: 20%, Env Hygiene: 15%, Lint/Format: 20%
+ * Calculate per-dimension and overall health scores.
+ *
+ * Each dimension starts at 100 and loses the configured penalty for every gap routed to it by
+ * `categoryMap`. `overall` is the weighted mean of the weighted dimensions; dimensions without a
+ * weight (documentation, by default) are reported but do not move `overall`.
+ *
+ * Routing is driven by the analyzer's own `category` field. The previous implementation matched
+ * keywords against the category *and* the message, so a single gap could be penalized in several
+ * dimensions at once.
  */
-function calculateHealthScore(
-  critical: Issue[],
-  warnings: Issue[],
-  info: Issue[]
-): HealthScore {
-  // Categorize issues by type
-  const categorize = (issues: Issue[], keywords: string[]) =>
-    issues.filter(i => 
-      keywords.some(kw => 
-        i.category.toLowerCase().includes(kw) ||
-        i.message.toLowerCase().includes(kw)
-      )
-    ).length;
+function calculateHealthScore(gaps: Gap[], config: HealthScoreConfig): HealthScore {
+  const dimensions: ScoredDimension[] = [
+    'security',
+    'quality',
+    'testing',
+    'ci',
+    'typeSafety',
+    'documentation'
+  ];
 
-  // Count issues by category
-  const testingIssues = categorize([...critical, ...warnings], ['test', 'testing', 'jest', 'vitest', 'playwright']);
-  const ciIssues = categorize([...critical, ...warnings], ['ci', 'pipeline', 'workflow', 'github actions']);
-  const typeSafetyIssues = categorize([...critical, ...warnings], ['typescript', 'strict', 'type', '@types']);
-  const envIssues = categorize([...critical, ...warnings], ['env', 'environment', 'secret', 'gitignore']);
-  const lintFormatIssues = categorize([...critical, ...warnings], ['eslint', 'prettier', 'lint', 'format']);
+  const penaltyByDimension = new Map<ScoredDimension, number>(
+    dimensions.map(dimension => [dimension, 0])
+  );
 
-  // Calculate category scores (start at 100, deduct for issues)
-  // Critical issues: -20 points, Warning issues: -10 points
-  const calcCategoryScore = (criticalCount: number, warningCount: number) => {
-    return Math.max(0, 100 - (criticalCount * 20) - (warningCount * 10));
+  for (const gap of gaps) {
+    const dimension = config.categoryMap[gap.category];
+
+    if (!dimension || !penaltyByDimension.has(dimension)) {
+      continue;
+    }
+
+    const penalty = config.penalties[gap.severity] ?? 0;
+    penaltyByDimension.set(dimension, penaltyByDimension.get(dimension)! + penalty);
+  }
+
+  const scoreFor = (dimension: ScoredDimension) =>
+    Math.max(0, Math.min(100, 100 - penaltyByDimension.get(dimension)!));
+
+  const scores = {
+    security: scoreFor('security'),
+    quality: scoreFor('quality'),
+    testing: scoreFor('testing'),
+    ci: scoreFor('ci'),
+    typeSafety: scoreFor('typeSafety'),
+    documentation: scoreFor('documentation')
   };
 
-  const testing = calcCategoryScore(
-    categorize(critical, ['test', 'testing', 'jest', 'vitest', 'playwright']),
-    categorize(warnings, ['test', 'testing', 'jest', 'vitest', 'playwright'])
-  );
+  // Normalize by the weights actually present so a partial config cannot deflate the overall.
+  let weightedTotal = 0;
+  let weightSum = 0;
 
-  const ci = calcCategoryScore(
-    categorize(critical, ['ci', 'pipeline', 'workflow', 'github actions']),
-    categorize(warnings, ['ci', 'pipeline', 'workflow', 'github actions'])
-  );
+  for (const dimension of dimensions) {
+    const weight = config.weights[dimension];
 
-  const typeSafety = calcCategoryScore(
-    categorize(critical, ['typescript', 'strict', 'type', '@types']),
-    categorize(warnings, ['typescript', 'strict', 'type', '@types'])
-  );
+    if (typeof weight === 'number' && weight > 0) {
+      weightedTotal += scores[dimension] * weight;
+      weightSum += weight;
+    }
+  }
 
-  const envHygiene = calcCategoryScore(
-    categorize(critical, ['env', 'environment', 'secret', 'gitignore']),
-    categorize(warnings, ['env', 'environment', 'secret', 'gitignore'])
-  );
+  const overall = weightSum > 0 ? Math.round(weightedTotal / weightSum) : 100;
 
-  const lintFormat = calcCategoryScore(
-    categorize(critical, ['eslint', 'prettier', 'lint', 'format']),
-    categorize(warnings, ['eslint', 'prettier', 'lint', 'format'])
-  );
-
-  // Calculate weighted overall score
-  // Testing: 25%, CI: 20%, Type Safety: 20%, Env: 15%, Lint/Format: 20%
-  const overall = Math.round(
-    testing * 0.25 +
-    ci * 0.20 +
-    typeSafety * 0.20 +
-    envHygiene * 0.15 +
-    lintFormat * 0.20
-  );
-
-  return {
-    overall,
-    security: envHygiene, // Map to legacy 'security' field
-    quality: lintFormat,
-    testing,
-    ci,
-    documentation: Math.max(0, 100 - categorize([...critical, ...warnings], ['readme', 'documentation', 'docs']) * 15)
-  };
+  return { overall, ...scores };
 }
 
 /**
@@ -467,8 +556,16 @@ function displayReport(report: DoctorReport) {
   console.log(`   Code Quality:  ${formatScore(report.healthScore.quality)}`);
   console.log(`   Testing:       ${formatScore(report.healthScore.testing)}`);
   console.log(`   CI/CD:         ${formatScore(report.healthScore.ci)}`);
+  console.log(`   Type Safety:   ${formatScore(report.healthScore.typeSafety)}`);
   console.log(`   Documentation: ${formatScore(report.healthScore.documentation)}`);
   console.log('');
+
+  if (report.unscoredCategories.length > 0) {
+    console.log('⚠️  Gap categories missing from the scoring config (not reflected in the score):');
+    console.log(`   ${report.unscoredCategories.join(', ')}`);
+    console.log('   Add them to healthScore.categoryMap in config/quality-budgets.json.');
+    console.log('');
+  }
 
   // Critical issues
   if (report.critical.length > 0) {
@@ -535,132 +632,145 @@ function formatScore(score: number): string {
   return `${color} ${bar} ${score}/100`;
 }
 
-/**
- * Estimate fix time based on issue message
- */
-function estimateFixTime(message: string): string {
-  const lower = message.toLowerCase();
-  
-  if (lower.includes('.env.example') || lower.includes('add file')) {
-    return '2 min';
-  }
-  if (lower.includes('strict mode') || lower.includes('enable')) {
-    return '1 min';
-  }
-  if (lower.includes('eslint') || lower.includes('prettier')) {
-    return '5 min';
-  }
-  if (lower.includes('testing') || lower.includes('framework')) {
-    return '15 min';
-  }
-  if (lower.includes('ci') || lower.includes('pipeline')) {
-    return '20 min';
-  }
-  
-  return '10 min';
+/** Human-readable fix estimate, derived from the analyzer's own effort rating. */
+const EFFORT_TO_ESTIMATE: Record<Gap['effort'], string> = {
+  low: '< 10 min',
+  medium: '~1 hour',
+  high: '> 1 day'
+};
+
+function estimateFixTime(gap: Gap): string {
+  return EFFORT_TO_ESTIMATE[gap.effort] || '~1 hour';
 }
 
 /**
- * Check if issue is a quick win (< 10 min to fix)
+ * A gap counts as a quick win when the analyzer rated it low effort.
+ *
+ * This replaces a keyword list that matched issue text, which both missed low-effort gaps whose
+ * wording did not contain a keyword and promoted high-effort gaps that happened to mention one.
  */
-function isQuickWin(message: string): boolean {
-  const quickWinKeywords = [
-    '.env.example',
-    'strict mode',
-    'eslint',
-    'prettier',
-    '.gitignore',
-    'readme',
-    'license'
-  ];
-  
-  const lower = message.toLowerCase();
-  return quickWinKeywords.some(keyword => lower.includes(keyword));
+function isQuickWin(gap: Gap): boolean {
+  return gap.effort === 'low';
 }
 
 /**
- * Apply automatic fixes for quick wins
+ * Build the filesystem context the quick-win registry operates through.
+ *
+ * All paths are resolved against `rootDir` so a fix cannot write outside the analyzed project.
  */
-async function applyQuickFixes(quickWins: Issue[], options: CliOptions): Promise<void> {
+function createQuickWinContext(rootDir: string, stack: any, packageJson: any): QuickWinContext {
+  const resolve = (relativePath: string) => {
+    const absolutePath = path.resolve(rootDir, relativePath);
+
+    if (absolutePath !== rootDir && !absolutePath.startsWith(rootDir + path.sep)) {
+      throw new Error(`Refusing to touch a path outside the project: ${relativePath}`);
+    }
+
+    return absolutePath;
+  };
+
+  return {
+    rootDir,
+    stack,
+    packageJson,
+    hasFile: async (relativePath: string) => existsSync(resolve(relativePath)),
+    readFile: (relativePath: string) => fs.readFile(resolve(relativePath), 'utf8'),
+    writeFile: async (relativePath: string, content: string) => {
+      const absolutePath = resolve(relativePath);
+      await fs.mkdir(path.dirname(absolutePath), { recursive: true });
+      await fs.writeFile(absolutePath, content);
+    },
+    updateJson: async (relativePath: string, updater: (obj: any) => any) => {
+      const absolutePath = resolve(relativePath);
+      const existing = existsSync(absolutePath)
+        ? JSON.parse(await fs.readFile(absolutePath, 'utf8'))
+        : {};
+      await fs.writeFile(absolutePath, `${JSON.stringify(updater(existing), null, 2)}\n`);
+    }
+  };
+}
+
+/**
+ * Apply automatic fixes using the quick-win registry.
+ *
+ * Each registry entry pairs a detection check with a fix, so detection runs against the actual
+ * filesystem rather than against the wording of a gap title.
+ */
+async function applyQuickFixes(
+  workingDir: string,
+  stackData: any,
+  options: CliOptions
+): Promise<void> {
+  const { getApplicableQuickWins } = await import('./quick-wins');
+
+  const packageJsonPath = path.join(workingDir, 'package.json');
+  let packageJson: any;
+
+  if (existsSync(packageJsonPath)) {
+    try {
+      packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf8'));
+    } catch (error: any) {
+      console.error(`   ⚠️  Could not read package.json: ${error.message}`);
+    }
+  }
+
+  // The --preset flag overrides detected framework so a fix can be forced for a known target.
+  const stack = options.preset
+    ? { ...stackData, frameworks: { ...(stackData?.frameworks || {}), type: options.preset } }
+    : stackData;
+
+  const context = createQuickWinContext(workingDir, stack, packageJson);
+  const applicable = await getApplicableQuickWins(context);
+
+  if (applicable.length === 0) {
+    console.log('   Nothing to fix - no applicable quick wins detected.');
+    return;
+  }
+
   let fixedCount = 0;
+  let skippedCount = 0;
 
-  for (const issue of quickWins) {
-    const lower = issue.message.toLowerCase();
+  for (const quickWin of applicable) {
+    if (!quickWin.autoFixable || !quickWin.fixAction) {
+      console.log(`   → ${quickWin.title} (manual, ${quickWin.estimatedTime})`);
+      skippedCount++;
+      continue;
+    }
+
+    if (options.noInstall && /install|dependenc/i.test(quickWin.description)) {
+      console.log(`   → ${quickWin.title} (skipped, --no-install)`);
+      skippedCount++;
+      continue;
+    }
 
     if (options.dryRun) {
-      console.log(`   [DRY RUN] Would fix: ${issue.message}`);
+      console.log(`   [DRY RUN] Would fix: ${quickWin.title}`);
       continue;
     }
 
     try {
-      // Add .env.example
-      if (lower.includes('.env.example')) {
-        await fs.writeFile('.env.example', `# Environment Variables
-# Copy this file to .env and fill in your values
+      const result = await quickWin.fixAction(context);
 
-# Application
-NODE_ENV=development
-PORT=3000
-
-# Database
-# DATABASE_URL=
-
-# API Keys
-# API_KEY=
-`);
-        console.log('   ✓ Created .env.example');
+      if (result.success) {
+        console.log(`   ✓ ${result.message}`);
         fixedCount++;
-      }
-
-      // Add .gitignore entry for .env
-      if (lower.includes('.env') && lower.includes('gitignore')) {
-        const gitignorePath = '.gitignore';
-        let gitignoreContent = '';
-        
-        try {
-          gitignoreContent = await fs.readFile(gitignorePath, 'utf8');
-        } catch {
-          // File doesn't exist, will create
-        }
-
-        if (!gitignoreContent.includes('.env')) {
-          gitignoreContent += '\n# Environment variables\n.env\n.env.local\n';
-          await fs.writeFile(gitignorePath, gitignoreContent);
-          console.log('   ✓ Added .env to .gitignore');
-          fixedCount++;
-        }
-      }
-
-      // Enable TypeScript strict mode
-      if (lower.includes('strict mode') && lower.includes('typescript')) {
-        const tsconfigPath = 'tsconfig.json';
-        
-        try {
-          const tsconfigContent = await fs.readFile(tsconfigPath, 'utf8');
-          const tsconfig = JSON.parse(tsconfigContent);
-          
-          if (!tsconfig.compilerOptions) {
-            tsconfig.compilerOptions = {};
-          }
-          
-          tsconfig.compilerOptions.strict = true;
-          
-          await fs.writeFile(tsconfigPath, JSON.stringify(tsconfig, null, 2));
-          console.log('   ✓ Enabled TypeScript strict mode');
-          fixedCount++;
-        } catch {
-          // tsconfig doesn't exist or is invalid
-        }
+      } else {
+        console.error(`   ✗ ${quickWin.title}: ${result.error || result.message}`);
       }
     } catch (error: any) {
-      console.error(`   ✗ Failed to fix: ${issue.message} - ${error.message}`);
+      console.error(`   ✗ ${quickWin.title}: ${error.message}`);
     }
   }
 
   if (options.dryRun) {
-    console.log(`\n📋 Would apply ${quickWins.length} fixes (dry run mode)`);
-  } else {
-    console.log(`\n✅ Applied ${fixedCount} automatic fixes`);
+    console.log(`\n📋 Would apply ${applicable.length} fixes (dry run mode)`);
+    return;
+  }
+
+  console.log(`\n✅ Applied ${fixedCount} automatic fixes`);
+
+  if (skippedCount > 0) {
+    console.log(`ℹ️  ${skippedCount} quick win(s) need manual attention.`);
   }
 }
 
@@ -849,11 +959,22 @@ async function ensurePathExists(targetPath: string) {
   }
 }
 
-const options = parseArgs();
+// Only run when invoked directly, so the scoring functions below can be unit-tested.
+if (require.main === module) {
+  const options = parseArgs();
 
-// Run doctor
-runDoctor(options).catch(error => {
-  console.error('❌ Doctor check failed:', error.message);
-  process.exit(1);
-});
+  runDoctor(options).catch(error => {
+    console.error('❌ Doctor check failed:', error.message);
+    process.exit(1);
+  });
+}
+
+export {
+  buildDoctorReport,
+  calculateHealthScore,
+  loadHealthScoreConfig,
+  runDoctor,
+  DEFAULT_HEALTH_SCORE_CONFIG
+};
+export type { DoctorReport, HealthScore, HealthScoreConfig, Issue, ScoredDimension };
 

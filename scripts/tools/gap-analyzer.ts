@@ -1072,12 +1072,48 @@ echo "npm run lint && npm run format:check" > .husky/pre-commit`
     return report;
   }
 
+  /**
+   * Build the machine-readable gap report.
+   *
+   * This is the contract downstream consumers (the doctor, CI) should use. The markdown from
+   * `generateReport()` is for humans only: re-parsing it costs the severity of every gap,
+   * because markdown groups by category and encodes severity as an emoji in a heading.
+   */
+  buildGapReport(): GapReport {
+    const categories = {} as Record<Gap['category'], Gap[]>;
+    for (const gap of this.gaps) {
+      if (!categories[gap.category]) {
+        categories[gap.category] = [];
+      }
+      categories[gap.category].push(gap);
+    }
+
+    return {
+      timestamp: new Date().toISOString(),
+      totalGaps: this.gaps.length,
+      highPriority: this.gaps.filter(gap => gap.severity === 'high').length,
+      mediumPriority: this.gaps.filter(gap => gap.severity === 'medium').length,
+      lowPriority: this.gaps.filter(gap => gap.severity === 'low').length,
+      gaps: [...this.gaps],
+      categories
+    };
+  }
+
   // Method to save report to file
   async saveReport(report: string): Promise<void> {
     const outputPath = path.join(this.rootDir, '.devenv', 'gaps-report.md');
     await fs.mkdir(path.dirname(outputPath), { recursive: true });
     await fs.writeFile(outputPath, report);
     logger.info(`Gap report saved to ${outputPath}`);
+  }
+
+  /** Write the structured report that the doctor consumes. */
+  async saveJsonReport(): Promise<string> {
+    const outputPath = path.join(this.rootDir, '.devenv', 'gaps-report.json');
+    await fs.mkdir(path.dirname(outputPath), { recursive: true });
+    await fs.writeFile(outputPath, `${JSON.stringify(this.buildGapReport(), null, 2)}\n`);
+    logger.info(`Structured gap report saved to ${outputPath}`);
+    return outputPath;
   }
 }
 
@@ -1088,6 +1124,7 @@ if (require.main === module) {
     .then(async report => {
       console.log(report);
       await analyzer.saveReport(report);
+      await analyzer.saveJsonReport();
     })
     .catch(error => {
       logger.error('Gap analysis failed', { error: error.message });
