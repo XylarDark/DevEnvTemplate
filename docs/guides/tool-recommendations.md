@@ -619,4 +619,4 @@ if (detectsNode) {
 
 - [Best Practices](../BEST-PRACTICES.md) - Development best practices
 - [Troubleshooting](../TROUBLESHOOTING.md) - Common issues and solutions
-- [Usage Guide](USAGE.md) - How to use DevEnvTemplate
+- [Usage Guide](usage.md) - How to use DevEnvTemplate

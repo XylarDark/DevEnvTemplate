@@ -252,7 +252,7 @@ cd .devenv && npm run doctor
 
 ### Running DevEnvTemplate from `.devenv/` (Embedded Usage)
 
-Once `.devenv/` exists, you can run the doctor directly from that folder and it will analyze the parent project automatically. See [Embedded Usage Guide](EMBEDDED-USAGE.md) for complete details.
+Once `.devenv/` exists, you can run the doctor directly from that folder and it will analyze the parent project automatically. See [Embedded Usage Guide](embedded-usage.md) for complete details.
 
 ```powershell
 # Windows PowerShell

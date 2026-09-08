@@ -12,7 +12,7 @@ assignees: []
 
 ## Security Issue Report
 
-**⚠️ IMPORTANT**: This template is for tracking security issues after they've been properly reported and triaged. For initial security vulnerability reports, please follow the process in [SECURITY.md](SECURITY.md).
+**⚠️ IMPORTANT**: This template is for tracking security issues after they've been properly reported and triaged. For initial security vulnerability reports, please follow the process in [SECURITY.md](../SECURITY.md).
 
 ## Issue Classification
 

@@ -236,6 +236,6 @@ These customizations are preserved during sync operations.
 
 - **[SETUP-GUIDE.md](../SETUP-GUIDE.md)** - Initial one-time setup (embedding DevEnvTemplate)
 - **[SYNC.md](../SYNC.md)** - Syncing with template updates
-- **[USAGE.md](USAGE.md)** - General DevEnvTemplate usage and day-to-day workflows
+- **[usage.md](usage.md)** - General DevEnvTemplate usage and day-to-day workflows
 - **[TROUBLESHOOTING.md](../TROUBLESHOOTING.md)** - Common issues and solutions (includes embedded usage issues)
 - **[BEST-PRACTICES.md](../BEST-PRACTICES.md)** - Development best practices

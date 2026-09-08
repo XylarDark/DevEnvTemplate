@@ -32,6 +32,39 @@ function isExternal(target) {
   return /^[a-z][a-z0-9+.-]*:/i.test(target) || target.startsWith('//') || target.startsWith('#');
 }
 
+const dirEntries = new Map();
+
+function entriesOf(dir) {
+  let entries = dirEntries.get(dir);
+  if (!entries) {
+    try {
+      entries = new Set(fs.readdirSync(dir));
+    } catch {
+      entries = new Set();
+    }
+    dirEntries.set(dir, entries);
+  }
+  return entries;
+}
+
+/**
+ * existsSync is case-insensitive on Windows and macOS, so a link whose casing disagrees with
+ * the file on disk resolves for the author and fails on Linux CI. Compare every segment inside
+ * the repo against its parent's listing so the casing is checked too. Segments above the repo
+ * root are the checkout's own path and are not ours to police.
+ */
+function existsCaseSensitive(resolved) {
+  if (!fs.existsSync(resolved)) return false;
+
+  let current = path.resolve(resolved);
+  while (current !== REPO_ROOT && current.startsWith(REPO_ROOT)) {
+    const parent = path.dirname(current);
+    if (!entriesOf(parent).has(path.basename(current))) return false;
+    current = parent;
+  }
+  return true;
+}
+
 function checkFile(file) {
   const relFile = path.relative(REPO_ROOT, file);
   if (SKIP_PATHS.some(skip => relFile.startsWith(skip))) return [];
@@ -48,9 +81,12 @@ function checkFile(file) {
     if (!target) continue;
 
     const resolved = path.resolve(path.dirname(file), target);
-    if (!fs.existsSync(resolved)) {
+    if (!existsCaseSensitive(resolved)) {
       const line = contents.slice(0, match.index).split('\n').length;
-      broken.push({ file: relFile, line, target: rawTarget });
+      // Distinguish "no such file" from "right file, wrong casing", which look identical
+      // to an author on a case-insensitive filesystem.
+      const note = fs.existsSync(resolved) ? ' (case mismatch)' : '';
+      broken.push({ file: relFile, line, target: rawTarget, note });
     }
   }
 
@@ -67,8 +103,8 @@ function main() {
   }
 
   console.error(`Found ${broken.length} broken relative link(s):\n`);
-  for (const { file, line, target } of broken) {
-    console.error(`  ${file}:${line} -> ${target}`);
+  for (const { file, line, target, note } of broken) {
+    console.error(`  ${file}:${line} -> ${target}${note}`);
   }
   process.exitCode = 1;
 }
