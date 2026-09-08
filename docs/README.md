@@ -7,7 +7,7 @@ subdirectory that fits, not to this root.
 
 | Document                                 | Read it when                                     |
 | ---------------------------------------- | ------------------------------------------------ |
-| [SETUP-GUIDE.md](SETUP-GUIDE.md)         | Setting the template up for the first time.      |
+| [SETUP-GUIDE.md](SETUP-GUIDE.md)         | First-time adoption: files-only (no Node) or doctor embed under `.devenv/`. |
 | [guides/usage.md](guides/usage.md)       | Running the doctor day to day.                   |
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Something failed and you want the known fix.     |
 | [KNOWN_ERRORS.md](KNOWN_ERRORS.md)       | Checking whether a failure has been seen before. |

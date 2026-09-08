@@ -28,7 +28,7 @@ The layers are independent, and they are listed in the order most consumers actu
 | Layer                          | What it is                                                                                                   | Depends on                                                    |
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------- |
 | **Agent context**              | `AGENTS.md` as a shape, `.agents/skills/`, glob-scoped `.cursor/rules/`                                      | Nothing. Any language, any stack.                             |
-| **Operational memory**         | `docs/KNOWN_ERRORS.md`, `docs/operational/automation-gaps.md`, `docs/DOCS_LAYOUT.md`                         | Nothing. These are entry shapes, not content.                 |
+| **Operational memory**         | `docs/KNOWN_ERRORS.md`, `docs/operational/automation-gaps.md`, `docs/DOCS_LAYOUT.md`                       | Nothing. These are entry shapes, not content.                 |
 | **Verification with evidence** | The `verify` pipeline pattern: each stage names what passing it proves and extracts a number from its output | A test runner of some kind. Not this one.                     |
 | **The doctor**                 | `npm run doctor`, gap analysis, quick-win auto-fixes, the CI workflow                                        | Node.js in the host, or the host vendors it under `.devenv/`. |
 
@@ -36,31 +36,41 @@ The evidence for splitting it this way comes from a real consumer: a browser gam
 
 **A gap you declined is not a bug.** The doctor's job is to make an absence visible once, not to nag. When you decide against something it reports — no linter, no container, no coverage tool — record that decision where agents will read it, in your own `AGENTS.md`. Otherwise every fresh session re-litigates it, which costs more than the gap did.
 
-## For Indie Developers & Solo Founders
+## Get started
 
-Building with AI assistants like Cursor, GitHub Copilot, or ChatGPT? Your dev environment needs to be **rock solid** so the AI can focus on features, not fighting broken tooling.
+Pick the path that matches what you want. You do not need Node.js unless you are embedding the doctor.
 
-**DevEnvTemplate is your dev environment doctor:**
+### Files-only: agent and docs layers (default for non-Node hosts)
 
-- **Diagnose** → Scans your project stack and quality setup
-- **Prescribe** → Identifies gaps (missing tests, CI, security)
-- **Cure** → Auto-fixes common issues in seconds
-- **Monitor** → Continuous health checks on every push
+For Unity, Unreal, or any repository where you want better agent context but **not** the Node doctor, copy the Cursor/docs layer into your project. No install, no `.devenv/` clone, no Node version requirement on the host.
 
-## Quick Start (2 Minutes)
+Copy these from this repository (write your own root `AGENTS.md`; do not copy ours):
 
-### Install & Diagnose
+- `.agents/skills/` and the stack rules you need from `.cursor/rules/` (for example `23-unity-csharp.mdc`, or Unreal `21`/`22`)
+- `docs/DOCS_LAYOUT.md`, `docs/KNOWN_ERRORS.md`, `docs/operational/automation-gaps.md`
+- `.cursorignore` and workspace `.vscode/settings.json` if useful
+
+Full checklist and engine notes: **[docs/SETUP-GUIDE.md — Files-only adoption](docs/SETUP-GUIDE.md#files-only-adoption-agent-and-docs-layers)**. Optional stubs: [Unity](docs/templates/unity/README.md), [Unreal](docs/templates/unreal/README.md).
+
+Node.js 24+ (or Volta) is the **doctor runtime**, not an adoption tax. You only need it when you vendor the doctor under `.devenv/`.
+
+### Embed the doctor (Node / TypeScript / Python hosts)
+
+When you want gap analysis and auto-fixes, clone this repo into your project as `.devenv/`, build once, and run the doctor from the project root:
 
 ```bash
-# Install
-npm init -y  # if needed
-npx devenv-init
-
-# Run health check
+# From your project root
+git clone https://github.com/XylarDark/DevEnvTemplate .devenv
+cd .devenv && npm install && npm run build
+cd ..
 npm run doctor
 ```
 
-**Output:**
+That is the canonical day-zero path. Step-by-step setup, stack-specific notes, and commit guidance: **[docs/SETUP-GUIDE.md](docs/SETUP-GUIDE.md)**. After embedding, day-to-day use: **[docs/guides/embedded-usage.md](docs/guides/embedded-usage.md)**.
+
+**Advanced / alternative:** Optional `project.manifest.json` when stack detection is ambiguous — run `npm run agent:init` from `.devenv/` after the build (see SETUP-GUIDE step 3). Do not use `npx devenv-init` as a substitute for cloning `.devenv/`; it only writes a manifest and does not embed the doctor.
+
+### Example doctor output
 
 ```
 🏥 DevEnvTemplate Health Check
@@ -71,8 +81,6 @@ npm run doctor
    Security:      🟢 ██████████ 85/100
    Code Quality:  🟡 ███████░░░ 70/100
    Testing:       🔴 ████░░░░░░ 40/100
-   CI/CD:         🟢 ████████░░ 80/100
-   Documentation: 🟡 ███████░░░ 70/100
 
 🔴 Critical Issues (2):
    - No testing framework detected
@@ -81,198 +89,59 @@ npm run doctor
 💡 Quick Wins (can fix in < 10 min):
    1. Add .env.example → 2 min
    2. Enable TypeScript strict → 1 min
-   3. Add ESLint config → 5 min
 
 📋 Full Report: .devenv/health-report.json
 ```
 
-### Auto-Fix Issues
+Apply automatic fixes: `npm run doctor:fix` (from project root, with `.devenv/` embedded).
+
+## How the doctor works
+
+1. **Detect** — Scans the stack (frameworks, configs, quality setup). `npm run doctor` runs detection as its first stage.
+2. **Analyze** — Names gaps (security, tests, CI, docs). `npm run doctor -- --json` for machine-readable output.
+3. **Fix** — `npm run doctor:fix` applies quick wins; `npm run cleanup:apply` removes template-only boilerplate when relevant.
+4. **Track** — CI can run the same checks on push; reports land under `.devenv/`.
+
+See [docs/guides/usage.md](docs/guides/usage.md) for commands and workflows.
+
+## Common tasks
 
 ```bash
-# Apply automatic fixes
-npm run doctor:fix
-```
-
-Auto-fixes:
-
-- ✅ Creates `.env.example`
-- ✅ Adds `.env` to `.gitignore`
-- ✅ Enables TypeScript strict mode
-- ✅ And more...
-
-## What You Get
-
-### Instant Quality Stack
-
-- **Testing**: Node.js test runner (no heavy frameworks)
-- **CI/CD**: GitHub Actions (optimized for 2000 free min/month)
-- **Type Safety**: TypeScript support with smart defaults
-- **Linting**: ESLint configured for modern JavaScript/TypeScript
-- **Security**: Automated dependency scanning
-
-### Works With Your Stack
-
-- **Node.js**: Express, Fastify, NestJS
-- **Frontend**: React, Vue, Svelte, vanilla JS
-- **Full-Stack**: Next.js, Remix, Astro
-- **Python**: Flask, Django, FastAPI (coming soon)
-
-### Free-Tier Friendly
-
-All recommendations use free tiers:
-
-- GitHub Actions (2000 min/month)
-- Vercel / Railway / Fly.io deployments
-- GitHub security scanning
-- No paid services required
-
-### Documentation layout and Cursor rules
-
-- **Canonical structure:** [docs/DOCS_LAYOUT.md](docs/DOCS_LAYOUT.md) defines where new docs belong. The [docs-organization](docs/guides/docs-organization.md) tool uses pattern rules in `config/docs-organization.yaml`; keep patterns aligned with DOCS_LAYOUT when you add folders.
-- **Known errors log:** [docs/KNOWN_ERRORS.md](docs/KNOWN_ERRORS.md) and [docs/operational/automation-gaps.md](docs/operational/automation-gaps.md) — operational learning and automation limits.
-- **Cursor rules:** [.cursor/rules/README.md](.cursor/rules/README.md) — always-applied engineering rules plus conditional rules (e.g. TypeScript, shell scripts).
-
-### Optional stack profile: Unreal Engine
-
-For game repositories with a **`.uproject`** file, this template ships **conditional** rules `21-unreal-engine.mdc` and `22-unreal-editor-ui.mdc` (Epic doc–aligned Editor UI guidance). They load when you work on Unreal project files. Suggested doc stubs: [docs/templates/unreal/README.md](docs/templates/unreal/README.md). Stack detection adds a hint when a `.uproject` is present.
-
-## How It Works: The Doctor Workflow
-
-DevEnvTemplate follows a medical diagnostic approach:
-
-### 1. Diagnose (Stack Detection)
-
-Scans your project to understand your tech stack:
-
-```bash
-npm run doctor          # detection runs as the first stage
-```
-
-- Detects frameworks (React, Next.js, Express, etc.)
-- Identifies tooling (TypeScript, ESLint, testing frameworks)
-- Finds configurations and quality setup
-
-### 2. Prescribe (Gap Analysis)
-
-Identifies what's missing or misconfigured:
-
-```bash
-npm run doctor -- --json    # the gap list, machine-readable
-```
-
-- Security gaps (exposed secrets, vulnerable dependencies)
-- Quality gaps (missing tests, no linting, weak TypeScript)
-- CI/CD gaps (no pipeline, missing quality gates)
-- Documentation gaps (incomplete README, no contribution guide)
-
-### 3. Cure (Auto-Fix + Cleanup)
-
-Applies fixes automatically:
-
-```bash
-npm run doctor:fix      # Auto-fix simple issues
-npm run cleanup:apply   # Remove template boilerplate
-```
-
-- Creates missing config files
-- Enables strict mode
-- Removes template-only code
-- Sets up CI/CD
-
-### 4. Monitor (Continuous Health)
-
-On every push, CI runs health checks:
-
-- ✅ Tests run automatically
-- ✅ Code is linted for consistency
-- ✅ Security scan checks dependencies
-- ✅ Health score tracked over time
-
-**See [docs/guides/usage.md](docs/guides/usage.md) for detailed commands and workflows.**
-
-## Common Tasks
-
-### Check Project Health
-
-```bash
-npm run doctor           # Full health check
+npm run doctor           # Full health check (requires embedded .devenv/)
 npm run doctor:fix       # Apply auto-fixes
 npm run doctor -- --json # JSON output
+npm test                 # Build and run tests (this repository)
+npm run cleanup          # Dry-run cleanup preview
+npm run cleanup:apply    # Apply cleanup rules
 ```
 
-### Run Tests Locally
+Reports: `.devenv/health-report.json`, `.devenv/stack-report.json`, `.devenv/gaps-report.md`, and generated plans under `plans/`.
 
-```bash
-npm test              # Run all tests
-npm run test:fast     # Run unit tests only (< 5sec)
-npm run test:slow     # Run integration tests
-```
+## What this repository itself uses
 
-### Check Code Quality
+DevEnvTemplate's **own** tree is one opinionated Node/TypeScript setup. Consuming projects are not required to match it.
 
-```bash
-npm run cleanup       # See what would be cleaned (dry run)
-npm run cleanup:apply # Apply cleanup rules
-```
+| Area        | This repo                                                                 |
+| ----------- | ------------------------------------------------------------------------- |
+| Runtime     | Node.js 24+ (pinned in `package.json` / Volta / `.nvmrc`)                 |
+| Tests       | Node built-in test runner (`node --test`)                                 |
+| Lint/format | ESLint flat config, Prettier, Husky, commitlint                             |
+| CI          | GitHub Actions ([`indie-ci.yml`](.github/workflows/indie-ci.yml)), sized for the free tier |
+| Docs layout | [docs/DOCS_LAYOUT.md](docs/DOCS_LAYOUT.md); organizer rules in `config/docs-organization.yaml` |
+| Cursor rules | [.cursor/rules/README.md](.cursor/rules/README.md) — glob-scoped; always-applied count is intentionally low |
 
-### View Reports
-
-After running doctor or pushing to GitHub:
-
-- `.devenv/health-report.json` - Overall health scores
-- `.devenv/stack-report.json` - Detected technologies
-- `.devenv/gaps-report.md` - Detailed gap analysis
-- `plans/hardening-plan.md` - Generated action plan
-
-## Why Indie Devs Love It
-
-**Quality by Default** → Testing, CI, and security gaps named rather than assumed  
-**Free Tier** → CI sized for GitHub's free 2000 min/month  
-**No Lock-In** → Standard tools, and every layer is optional — see [Adopt it in layers](#adopt-it-in-layers)  
-**Solo-Friendly** → No team jargon, no approval workflows
-
-## Use Cases
-
-**Building a SaaS?**  
-→ Get testing + CI + deployment in one command
-
-**Side Project?**  
-→ Ship with confidence, no technical debt
-
-**Client Work?**  
-→ Professional setup without the setup time
-
-**Learning?**  
-→ See how pros structure projects
-
-## Advanced Features
-
-For power users, DevEnvTemplate includes:
-
-- **Parallel file processing** (2-5x speedup on large codebases)
-- **Performance tracking** (identify slow build steps)
-- **Cursor Plan Mode integration** (AI-guided development workflow)
-
-See [docs/architecture/overview.md](docs/architecture/overview.md) and [docs/BEST-PRACTICES.md](docs/BEST-PRACTICES.md) for advanced usage.
-
-## Benefits
-
-- **⚡ Fast**: Setup in minutes, not hours
-- **🆓 Free**: Optimized for GitHub free tier
-- **🎯 Focused**: Solo dev-friendly, no enterprise bloat
-- **🔒 Secure**: Automated security scanning
-- **📈 Quality**: Testing and linting by default
-- **🚀 Deploy**: CI/CD ready for Vercel, Railway, Fly.io
+Stack profiles (Unreal `.uproject`, Unity `ProjectSettings/`, Python `pyproject.toml`, etc.) add **conditional** rules and doctor hints; they do not change the files-only default for game/engine repos.
 
 ## Documentation
 
-- **[AGENTS.md](AGENTS.md)** - Always-true project facts. The agent entry point.
-- **[docs/README.md](docs/README.md)** - Documentation index
-- **[docs/guides/usage.md](docs/guides/usage.md)** - Common commands and workflows
-- **[docs/architecture/overview.md](docs/architecture/overview.md)** - Project structure and design principles
-- **[docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)** - Troubleshooting guide
-- **[docs/BEST-PRACTICES.md](docs/BEST-PRACTICES.md)** - Technology-agnostic best practices
-- **[docs/DOCS_LAYOUT.md](docs/DOCS_LAYOUT.md)** - Where new documentation belongs
+- **[AGENTS.md](AGENTS.md)** — Always-true project facts for agents working in **this** repository.
+- **[docs/README.md](docs/README.md)** — Documentation index
+- **[docs/SETUP-GUIDE.md](docs/SETUP-GUIDE.md)** — First-time adoption (files-only or doctor embed)
+- **[docs/guides/usage.md](docs/guides/usage.md)** — Common commands and workflows
+- **[docs/architecture/overview.md](docs/architecture/overview.md)** — Project structure and design principles
+- **[docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)** — Troubleshooting guide
+- **[docs/BEST-PRACTICES.md](docs/BEST-PRACTICES.md)** — Technology-agnostic best practices
+- **[docs/DOCS_LAYOUT.md](docs/DOCS_LAYOUT.md)** — Where new documentation belongs
 
 ## Contributing
 
@@ -283,9 +152,3 @@ See [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md) for the build/test loop a
 ## License
 
 MIT License - see [LICENSE](LICENSE) for details.
-
----
-
-**Built for indie developers who want to ship quality code without the setup tax.**
-
-Star ⭐ this repo if DevEnvTemplate saves you time!
