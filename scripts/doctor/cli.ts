@@ -253,11 +253,17 @@ async function runDoctor(options: CliOptions = {}) {
     process.exit(1);
   }
 
-  // Step 1.5: Integrate cursor rules if requested or if needed
-  if (
-    options.integrateCursorRules ||
-    (stackData.cursorRules && stackData.cursorRules.needsIntegration)
-  ) {
+  // Step 1.5: Integrate the agent context layer, but only when explicitly asked.
+  //
+  // This used to run whenever `needsIntegration` was true, which meant a plain `npm run doctor`
+  // wrote roughly 45KB of rules and skills into whatever project it was pointed at. A diagnostic
+  // that modifies the thing it is diagnosing cannot be trusted, and it made the tool unusable for
+  // a one-off inspection of someone else's repository.
+  //
+  // `--fix` deliberately does not come through here. It reaches the same integration through the
+  // `setup-agent-layer` quick win, and running both meant doing the work twice and printing the
+  // recommendations twice.
+  if (options.integrateCursorRules) {
     if (!options.json) {
       console.log('📋 Integrating Cursor rules...');
     }
@@ -962,7 +968,12 @@ OPTIONS:
   --debug            Enable verbose logging (writes to stdout; avoid with --json)
   --offline          Disable network operations (prevents VPN interference)
   --project-root     Explicitly set the project root to analyze
+  --integrate-cursor-rules
+                     Copy the stack-scoped rules and skills into this project
   -h, --help         Show this help message
+
+Without --fix or --integrate-cursor-rules, the doctor only reads. It writes reports to .devenv/
+and changes nothing else.
 
 EXAMPLES:
   Pass flags after '--' so npm forwards them to the doctor instead of consuming them.

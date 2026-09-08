@@ -416,8 +416,10 @@ export const QUICK_WINS: QuickWin[] = [
           dryRun: false,
         });
 
-        const message = [`Copied ${result.copied.length} file(s)`, ...result.recommendations].join(
-          '. '
+        // Recommendations are already sentences, so join on a space. Joining on '. ' produced
+        // doubled periods mid-message.
+        const message = [`Copied ${result.copied.length} file(s).`, ...result.recommendations].join(
+          ' '
         );
 
         return {
