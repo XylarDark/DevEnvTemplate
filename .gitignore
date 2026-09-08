@@ -28,7 +28,8 @@ input.txt
 # Keep structure but ignore generated content
 
 # Build artifacts
-dist/
+# dist/ is committed so doctor runs after npm install without a manual tsc step.
+# CI runs `npm run check:dist-sync` to keep it aligned with TypeScript sources.
 node_modules/
 tsconfig.tsbuildinfo
 *.tsbuildinfo

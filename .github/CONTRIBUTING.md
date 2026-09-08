@@ -33,9 +33,11 @@ Requires Node 24 or newer (`.nvmrc` pins it; `volta` and `nvm` both read it).
 
 ### Why tests run against `dist/`
 
-The `.devenv/` folder vendored into other repositories contains only the compiled output.
-Testing the compiled files is what guarantees we never depend on a TypeScript-only construct
-at runtime, and every test command rebuilds first so `dist/` cannot drift from the sources.
+The `.devenv/` folder vendored into other repositories contains the compiled output in
+`dist/`, which is committed in this repository so `npm run doctor` works after
+`npm install` alone. Testing the compiled files is what guarantees we never depend on a
+TypeScript-only construct at runtime, and every test command rebuilds first so local
+`dist/` cannot drift from the sources during development.
 
 Run `npm run clean` if you suspect stale build output. `tsc --build --clean` only removes
 what the current config emits, so it leaves behind artifacts from earlier directory layouts —
@@ -56,7 +58,8 @@ Note the `--`: `npm run doctor --fix` passes the flag to npm rather than to the 
 
 - Put substantive logic in TypeScript under `scripts/**/*.ts`. The `.js` files in this repo are
   thin wrappers that require from `dist/`, or bootstrap scripts that must run before a build.
-- Never edit anything in `dist/`. It is generated.
+- Never hand-edit anything in `dist/`. Regenerate with `npm run build` and commit the result;
+  CI runs `npm run check:dist-sync` to catch drift.
 - New fixtures and sample projects go under `tests/fixtures/`, which is excluded from
   formatting because those files are authored inputs — some are intentionally malformed to
   exercise error paths.
