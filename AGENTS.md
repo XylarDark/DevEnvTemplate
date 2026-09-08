@@ -20,6 +20,12 @@ This file is the canonical, always-loaded context. Everything else loads on dema
 Do not add always-applied rules. Context that loads on every turn measurably degrades accuracy,
 so the budget for this file is roughly 200 lines and the always-apply rule count is zero.
 
+**A skill's `description` is always-loaded too.** Only the body is deferred; every description is
+read each turn to decide relevance. Thirteen skills currently cost about 900 tokens per turn on
+top of this file's ~2,400, so the always-on budget is roughly 3,500 tokens in total. Adding a
+skill is a permanent charge against it. Before adding one, prefer extending an existing skill,
+and keep the `description` to a single sentence naming the trigger.
+
 ## Stack
 
 - TypeScript, strict mode, ES2022 target, CommonJS modules.
