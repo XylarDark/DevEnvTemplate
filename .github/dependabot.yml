@@ -1,6 +1,17 @@
 # Dependabot configuration
 # https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
 #
+# Tuned for a solo maintainer: the scarce resource is attention, not CI minutes, so this file
+# optimizes for the smallest number of pull requests that still surfaces everything.
+#
+# Every group below includes `major`. Without it, a major bump matches no group and Dependabot
+# opens a pull request per dependency - that is how this repository accumulated ten at once.
+# Grouping majors keeps them visible while costing one review instead of ten. Read the group's
+# diff before merging: a grouped major bump can still break the build.
+#
+# Security updates ignore this file's schedule and grouping. Slowing version updates down does
+# not slow a security patch down.
+#
 # Note on cooldowns: Dependabot applies a 3-day cooldown by default and exempts security
 # updates from it. Do not additionally set a resolver-level delay (npm's `min-release-age`
 # in .npmrc, or the pnpm/Yarn equivalents) - those have no security exception, so stacking
@@ -8,12 +19,11 @@
 
 version: 2
 updates:
-  # Enable version updates for npm
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 5
+      interval: "monthly"
+    open-pull-requests-limit: 3
     commit-message:
       prefix: "chore"
       prefix-development: "chore"
@@ -22,26 +32,37 @@ updates:
       - "dependencies"
       - "automated"
     groups:
-      # One PR per ecosystem area keeps review cheap on the Actions free tier.
       dev-dependencies:
         dependency-type: "development"
         update-types:
+          - "major"
           - "minor"
           - "patch"
       production-dependencies:
         dependency-type: "production"
         update-types:
+          - "major"
           - "minor"
           - "patch"
 
-  # Keep workflow actions current; pinned SHAs still need bumping.
+  # Keep workflow actions current; pinned SHAs still need bumping. Without a group here, each
+  # action becomes its own pull request.
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
+    open-pull-requests-limit: 1
     commit-message:
       prefix: "ci"
       include: "scope"
     labels:
       - "dependencies"
       - "automated"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+        update-types:
+          - "major"
+          - "minor"
+          - "patch"
