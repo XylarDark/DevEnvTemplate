@@ -22,8 +22,8 @@ Do not add always-applied rules. Context that loads on every turn measurably deg
 so the budget for this file is roughly 200 lines and the always-apply rule count is zero.
 
 **A skill's `description` is always-loaded too.** Only the body is deferred; every description is
-read each turn to decide relevance. Six core skills currently cost about 420 tokens per turn on
-top of this file's ~2,400, so the always-on budget is roughly 2,820 tokens in total. Extras in
+read each turn to decide relevance. Six core skills currently cost about 400 tokens per turn on
+top of this file's ~3,000, so the always-on budget is roughly 3,400 tokens in total. Extras in
 `.agents/skills-extras/` cost nothing until copied into `.agents/skills/`. Adding a core skill is
 a permanent charge against the budget. Before adding one, prefer extending an existing skill or
 placing it in extras, and keep the `description` to a single sentence naming the trigger.
