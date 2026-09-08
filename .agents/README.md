@@ -5,8 +5,9 @@ relevance; the body loads only when that description matches the task.
 
 ## Core (`.agents/skills/`)
 
-Default adopters copy **only** these five skills. They cover workflow, planning, verification,
-security, and multi-agent coordination — the minimum the doctor and `AGENTS.md` expect.
+Default adopters copy **only** these six core skills. They cover workflow, planning, verification,
+security, multi-agent coordination, and token-efficient context — the minimum the doctor and
+`AGENTS.md` expect.
 
 | Skill | Trigger |
 | ----- | ------- |
@@ -14,6 +15,7 @@ security, and multi-agent coordination — the minimum the doctor and `AGENTS.md
 | [multi-agent-collaboration](skills/multi-agent-collaboration/SKILL.md) | More than one agent or person in the same tree |
 | [plan-first](skills/plan-first/SKILL.md) | Multi-file or architectural work |
 | [secure-coding](skills/secure-coding/SKILL.md) | Input, secrets, auth, or dependencies |
+| [token-efficient-context](skills/token-efficient-context/SKILL.md) | Planning multi-file work, agent runs, tokens, MCP, or editing rules/skills/AGENTS.md |
 | [verification-evidence](skills/verification-evidence/SKILL.md) | Audits, health checks, guard tests, CI gates |
 
 `integrateCursorRules` copies core skills into a host's `.agents/skills/` automatically.
@@ -57,7 +59,7 @@ npm run doctor:fix
 ```
 
 Hosts that already copied the full skill set before this split can leave extra skills in place;
-nothing breaks. New adopters start with the five core skills above.
+nothing breaks. New adopters start with the six core skills above.
 
 ## Portability
 

@@ -67,8 +67,8 @@ describe('skill portability', () => {
   test('inspects a plausible number of skills', () => {
     // An empty or mis-rooted scan would let every assertion below pass by examining nothing.
     assert.ok(
-      skills.length >= 5,
-      `expected to find the shipped skills under .agents/skills, found ${skills.length}`
+      skills.length >= 6,
+      `expected to find the shipped core skills under .agents/skills, found ${skills.length}`
     );
   });
 
