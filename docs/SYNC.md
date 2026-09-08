@@ -1,203 +1,81 @@
-﻿# Syncing .devenv with DevEnvTemplate
+﻿# Syncing from DevEnvTemplate
 
-This document explains how to keep `.devenv` synchronized with the `DevEnvTemplate` repository while preserving project-specific files.
+Keep adopted layers current without re-reading a quarterly checklist. Sync copies **only the
+allowlisted paths** for the layer you chose. Dry-run is the default.
 
-## Overview
+## Quick start
 
-The `.devenv` directory is a separate git repository that should be kept in sync with `DevEnvTemplate`. However, some files are project-specific and should be preserved during sync:
+From a host project that already adopted one or more layers:
 
-- `health-report.json` - Project health scores
-- `gaps-report.md` - Gap analysis for this project
-- `stack-report.json` - Detected technology stack for this project
-- `health-before.json` - Previous health snapshot (if exists)
-- `health-after.json` - Health after fixes (if exists)
-- `input.txt` - Any project-specific input files
+```bash
+# Preview agent-context updates (skills, glob-scoped rules, .cursorignore)
+npm run sync -- --layer agent-context --template /path/to/DevEnvTemplate
 
-## Quick Sync
+# Apply operational-memory entry shapes when they are still missing
+npm run sync -- --layer operational-memory --template /path/to/DevEnvTemplate --apply
 
-### Bash/Linux/macOS
+# Refresh a vendored .devenv/ doctor checkout (file copy)
+npm run sync -- --layer doctor --template /path/to/DevEnvTemplate --apply
+```
+
+PowerShell: quote the separator when passing flags — `npm run sync '--' --layer agent-context ...`.
+
+Set `DEVENV_TEMPLATE_PATH` to skip repeating `--template`.
+
+## Layers and allowlists
+
+Configured in [`config/sync-layers.json`](../config/sync-layers.json). Edit that file when a
+layer's shape changes.
+
+| Layer | What sync refreshes | Overwrite policy |
+| ----- | ------------------- | ---------------- |
+| **agent-context** | `.agents/skills/` (optional `core/` / `extras/` groups when present), stack-matching glob-scoped `.cursor/rules/`, `.cursorignore`, `.cursor/rules/README.md` | Add missing files only; never overwrite host edits |
+| **operational-memory** | `docs/KNOWN_ERRORS.md`, `docs/operational/automation-gaps.md`, `docs/DOCS_LAYOUT.md` | Add missing entry shapes only |
+| **doctor** | Doctor toolchain under an existing `.devenv/` (`scripts/doctor`, `scripts/tools`, `scripts/utils`, `scripts/cleanup`, `config/`, core package/tsconfig/eslint files) | Refresh template files; restore project reports listed in the config |
+
+## Safety rules (always on)
+
+- **Never overwrites host root `AGENTS.md`.** Write your own; sync will not replace it.
+- **Never copies MCP configs** (`.cursor/mcp.json`, `.mcp.json`). Start from
+  [`.cursor/mcp.json.example`](../.cursor/mcp.json.example) manually.
+- **Never copies retired always-applied Cursor rules.** Migrate those to `AGENTS.md` and
+  `.agents/skills/` instead.
+
+## Embedded `.devenv/` git merge (legacy)
+
+When `.devenv/` is its own git checkout, the shell wrappers still run a git merge and restore
+project-specific reports:
 
 ```bash
 cd .devenv
-./scripts/sync-from-template.sh [path-to-DevEnvTemplate]
+./scripts/sync-from-template.sh /path/to/DevEnvTemplate --apply
 ```
-
-### PowerShell/Windows
 
 ```powershell
-cd .devenv
-.\scripts\sync-from-template.ps1 [path-to-DevEnvTemplate]
+Set-Location .devenv
+.\scripts\sync-from-template.ps1 C:\dev\DevEnvTemplate --apply
 ```
 
-If `DevEnvTemplate` is in `../../DevEnvTemplate` relative to `.devenv`, you can omit the path argument.
-
-## What the Sync Script Does
-
-1. **Backs up project-specific files** to a temporary directory
-2. **Stashes uncommitted changes** in `.devenv` (if any)
-3. **Fetches updates** from the template repository
-4. **Merges updates** from the template branch
-5. **Restores project-specific files** from backup
-6. **Rebuilds** the project (runs `npm install` and `npm run build`)
-
-## Manual Sync Process
-
-If you prefer to sync manually:
-
-### 1. Backup Project-Specific Files
+Or from the host root:
 
 ```bash
-# Bash
-mkdir -p .backup
-cp health-report.json gaps-report.md stack-report.json .backup/ 2>/dev/null || true
-
-# PowerShell
-New-Item -ItemType Directory -Path .backup -Force
-Copy-Item health-report.json, gaps-report.md, stack-report.json .backup/ -ErrorAction SilentlyContinue
+npm run sync -- --devenv-merge --template /path/to/DevEnvTemplate --apply
 ```
 
-### 2. Stash Uncommitted Changes
-
-```bash
-cd .devenv
-git stash push -m "Backup before sync $(date +%Y-%m-%d)"
-```
-
-### 3. Add Template Remote (if not already added)
-
-```bash
-# If DevEnvTemplate is a local directory
-git remote add template ../DevEnvTemplate
-# Or if it's a remote repository
-git remote add template https://github.com/XylarDark/DevEnvTemplate.git
-```
-
-### 4. Fetch and Merge
-
-```bash
-# Get the branch name from template
-cd ../DevEnvTemplate
-TEMPLATE_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-cd ../.devenv
-
-# Fetch and merge
-git fetch template $TEMPLATE_BRANCH
-git merge template/$TEMPLATE_BRANCH --no-edit
-```
-
-### 5. Restore Project-Specific Files
-
-```bash
-# Bash
-cp .backup/* . 2>/dev/null || true
-rm -rf .backup
-
-# PowerShell
-Copy-Item .backup\* . -ErrorAction SilentlyContinue
-Remove-Item -Recurse -Force .backup
-```
-
-### 6. Rebuild
-
-```bash
-npm install
-npm run build
-```
-
-## Handling Merge Conflicts
-
-If merge conflicts occur:
-
-1. **Resolve conflicts manually** using your preferred git tool
-2. **Restore project-specific files** from backup (they won't conflict, but may have been overwritten)
-3. **Complete the merge** with `git merge --continue`
-4. **Rebuild** the project
-
-## Project-Specific Files
-
-These files are **always preserved** during sync:
-
-| File                 | Description                   |
-| -------------------- | ----------------------------- |
-| `health-report.json` | Overall project health scores |
-| `gaps-report.md`     | Detailed gap analysis report  |
-| `stack-report.json`  | Detected technology stack     |
-| `health-before.json` | Previous health snapshot      |
-| `health-after.json`  | Health after fixes            |
-| `input.txt`          | Project-specific input files  |
-
-These files are **gitignored** in DevEnvTemplate, so they won't cause conflicts, but the sync script backs them up to be safe.
-
-## Project-Specific Directories
-
-These directories may contain project-specific content and should be preserved:
-
-- `best-practices/` - Project-specific best practices
-- `config/project/` - Project-specific configuration files
-- `docs/archive/` - Historical project documentation
-
-The sync scripts preserve these directories automatically.
-
-## Git Remote Configuration
-
-The sync script automatically adds a `template` remote pointing to your DevEnvTemplate repository. You can verify this:
-
-```bash
-cd .devenv
-git remote -v
-```
-
-You should see:
-
-```
-origin    https://github.com/XylarDark/DevEnvTemplate.git (fetch)
-origin    https://github.com/XylarDark/DevEnvTemplate.git (push)
-template  /path/to/DevEnvTemplate (fetch)
-template  /path/to/DevEnvTemplate (push)
-```
-
-## Best Practices
-
-1. **Sync regularly** - Keep `.devenv` up to date with the latest DevEnvTemplate improvements
-2. **Review changes** - After syncing, review what changed: `git log template/master..HEAD`
-3. **Test after sync** - Run `npm run doctor` to ensure everything still works
-4. **Commit after sync** - If you make any project-specific customizations, commit them separately
+Project files preserved during merge: `health-report.json`, `gaps-report.md`, `stack-report.json`,
+`health-before.json`, `health-after.json`, `input.txt`, `gaps-report.json`.
 
 ## Troubleshooting
 
-### "Template path does not exist"
+**Template path does not exist** — pass an absolute path or set `DEVENV_TEMPLATE_PATH`.
 
-Make sure the path to DevEnvTemplate is correct. You can specify it explicitly:
+**Doctor layer skipped** — the host has no `.devenv/` directory. Vendor the doctor first; see
+[embedded usage](guides/embedded-usage.md).
 
-```bash
-./scripts/sync-from-template.sh /absolute/path/to/DevEnvTemplate
-```
+**Merge conflicts (`--devenv-merge`)** — resolve in git, then restore preserved files from the
+backup directory named in the error.
 
-### "Merge conflicts detected"
+## Related
 
-Resolve conflicts manually, then restore project files:
-
-```bash
-# Resolve conflicts in your editor
-git add .
-git merge --continue
-
-# Restore project files (if needed)
-cp .backup/* . 2>/dev/null || true
-```
-
-### "Build fails after sync"
-
-Try cleaning and rebuilding:
-
-```bash
-rm -rf node_modules dist
-npm install
-npm run build
-```
-
-## Related Documentation
-
-- [EMBEDDED-USAGE.md](guides/embedded-usage.md) - Using DevEnvTemplate in embedded mode
-- [SETUP-GUIDE.md](SETUP-GUIDE.md) - Initial setup instructions
-- [LEARNINGS-FROM-EMBEDDED-USAGE.md](archive/embedded-usage-learnings.md) - Insights from real-world usage
+- [README — Adopt it in layers](../README.md#adopt-it-in-layers)
+- [embedded-usage.md](guides/embedded-usage.md) — ongoing `.devenv/` workflows
