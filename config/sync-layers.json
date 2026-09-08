@@ -1,0 +1,81 @@
+{
+  "globalNeverCopy": [
+    "AGENTS.md",
+    ".cursor/mcp.json",
+    ".mcp.json"
+  ],
+  "layers": {
+    "agent-context": {
+      "description": "Skills, glob-scoped Cursor rules, .cursorignore",
+      "paths": [
+        {
+          "src": ".agents/skills",
+          "kind": "skills",
+          "overwrite": false
+        },
+        {
+          "src": ".cursor/rules",
+          "kind": "cursor-rules",
+          "overwrite": false
+        },
+        {
+          "src": ".cursorignore",
+          "kind": "file",
+          "overwrite": false
+        },
+        {
+          "src": ".cursor/rules/README.md",
+          "kind": "file",
+          "overwrite": false
+        }
+      ],
+      "optionalSkillGroups": {
+        "core": ".agents/skills/core",
+        "extras": ".agents/skills/extras"
+      }
+    },
+    "operational-memory": {
+      "description": "Entry shapes for known errors, automation gaps, and docs layout",
+      "paths": [
+        {
+          "src": "docs/KNOWN_ERRORS.md",
+          "kind": "file",
+          "overwrite": false
+        },
+        {
+          "src": "docs/operational/automation-gaps.md",
+          "kind": "file",
+          "overwrite": false
+        },
+        {
+          "src": "docs/DOCS_LAYOUT.md",
+          "kind": "file",
+          "overwrite": false
+        }
+      ]
+    },
+    "doctor": {
+      "description": "Doctor toolchain into an existing .devenv/ checkout",
+      "requiresDevenv": true,
+      "preserveInDevenv": [
+        "health-report.json",
+        "gaps-report.md",
+        "stack-report.json",
+        "health-before.json",
+        "health-after.json",
+        "input.txt",
+        "gaps-report.json"
+      ],
+      "paths": [
+        { "src": "scripts/doctor", "kind": "directory", "overwrite": true },
+        { "src": "scripts/tools", "kind": "directory", "overwrite": true },
+        { "src": "scripts/utils", "kind": "directory", "overwrite": true },
+        { "src": "scripts/cleanup", "kind": "directory", "overwrite": true },
+        { "src": "config", "kind": "directory", "overwrite": true },
+        { "src": "package.json", "kind": "file", "overwrite": true },
+        { "src": "tsconfig.json", "kind": "file", "overwrite": true },
+        { "src": "eslint.config.js", "kind": "file", "overwrite": true }
+      ]
+    }
+  }
+}
