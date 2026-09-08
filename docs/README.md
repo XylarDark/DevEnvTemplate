@@ -34,9 +34,10 @@ subdirectory that fits, not to this root.
 
 ## Decisions
 
-| Document                                                                       | Decides                                                                 |
-| ------------------------------------------------------------------------------ | ----------------------------------------------------------------------- |
-| [adr/001-agent-hook-failure-posture.md](adr/001-agent-hook-failure-posture.md) | Whether the secret-scan hook fails open or closed, and what that costs. |
+| Document                                                                         | Decides                                                                             |
+| -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| [adr/001-agent-hook-failure-posture.md](adr/001-agent-hook-failure-posture.md)   | Superseded. Whether the secret-scan hook fails open or closed, and what that costs. |
+| [adr/002-remove-the-secret-scan-hook.md](adr/002-remove-the-secret-scan-hook.md) | Why the hook was removed, and which controls carry secret protection now.           |
 
 ## Agent context
 

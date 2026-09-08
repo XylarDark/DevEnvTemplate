@@ -27,7 +27,7 @@ The layers are independent, and they are listed in the order most consumers actu
 
 | Layer                          | What it is                                                                                                   | Depends on                                                    |
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------- |
-| **Agent context**              | `AGENTS.md` as a shape, `.agents/skills/`, glob-scoped `.cursor/rules/`, the secret-scan hook                | Nothing. Any language, any stack.                             |
+| **Agent context**              | `AGENTS.md` as a shape, `.agents/skills/`, glob-scoped `.cursor/rules/`                                      | Nothing. Any language, any stack.                             |
 | **Operational memory**         | `docs/KNOWN_ERRORS.md`, `docs/operational/automation-gaps.md`, `docs/DOCS_LAYOUT.md`                         | Nothing. These are entry shapes, not content.                 |
 | **Verification with evidence** | The `verify` pipeline pattern: each stage names what passing it proves and extracts a number from its output | A test runner of some kind. Not this one.                     |
 | **The doctor**                 | `npm run doctor`, gap analysis, quick-win auto-fixes, the CI workflow                                        | Node.js in the host, or the host vendors it under `.devenv/`. |

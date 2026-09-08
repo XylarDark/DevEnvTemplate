@@ -1,9 +1,15 @@
 # ADR 001: the failure posture of the agent secret-scan hook
 
-- **Status:** Accepted
+- **Status:** Superseded — the hook was removed on 2026-09-08. See
+  [ADR 002](002-remove-the-secret-scan-hook.md).
 - **Date:** 2026-09-08
 - **Applies to:** `.cursor/hooks.json`, `.cursor/hooks/secret-scan.cjs`, and every
   project that copied them
+
+> **This decision no longer governs anything shipped.** It is kept because the
+> reasoning below is the input to ADR 002: once the posture had to be fail-open, the
+> control's remaining value was an audit log, and that did not justify a scanner on
+> every file read. Read this first if you are tempted to reintroduce the hook.
 
 ## Context
 

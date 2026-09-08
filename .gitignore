@@ -24,7 +24,6 @@ health-before.json
 health-after.json
 input.txt
 *.log
-hook-audit.log
 
 # Keep structure but ignore generated content
 

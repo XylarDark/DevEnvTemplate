@@ -50,6 +50,11 @@
 
 ## Real entries
 
+> **The next four entries describe a component that no longer ships.** The secret-scan hook was
+> removed on 2026-09-08 ([adr/002-remove-the-secret-scan-hook.md](adr/002-remove-the-secret-scan-hook.md)).
+> They are kept because they are the specification for anyone reintroducing it, and because three
+> of the four defects are general to any Cursor hook, not to this one.
+
 ### The secret-scan hook blocked every read and command, silently
 
 - **Date:** 2026-09-08
