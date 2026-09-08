@@ -7,8 +7,9 @@
   },
   "scripts": {
     "postinstall": "node scripts/tools/ensure-gitignore.js",
+    "clean": "node scripts/tools/clean.js",
     "build": "tsc --build",
-    "postbuild": "node scripts/tools/copy-static.js",
+    "build:clean": "npm run clean && npm run build",
     "build:watch": "tsc --build --watch",
     "prebuild": "tsc --noEmit",
     "test": "npm run build && node --test tests/**/*.test.js",
