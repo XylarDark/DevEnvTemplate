@@ -206,20 +206,29 @@ function ask(userMessage, agentMessage) {
   return { permission: 'ask', user_message: userMessage, agent_message: agentMessage };
 }
 
+/** Set when the stdin safety timeout fires, meaning the payload read may be incomplete. */
+let stdinTimedOut = false;
+
 function readStdin() {
   return new Promise(resolve => {
     let data = '';
     let settled = false;
 
-    // Resolve well below the `timeout` configured in hooks.json so this script produces a
-    // decision rather than being killed, which Cursor treats as a hook failure. The margin is
-    // wide because Node's startup on a Windows machine with live antivirus scanning is both slow
-    // and variable, and the budget covers startup plus this wait plus the flush.
-    const timer = setTimeout(() => finish(), 1500);
+    // A safety net only, sized well below the `timeout` in hooks.json so this script produces a
+    // decision rather than being killed, which Cursor treats as a hook failure.
+    //
+    // It must not fire in normal operation. `beforeReadFile` carries the entire file being read,
+    // which for a large file arrives in many chunks; resolving on a 1500ms timer meant deciding
+    // on a partial payload and then writing while Cursor was still sending. The wait is now long
+    // enough that `end` always wins, and the payload is always complete when it is parsed.
+    const timer = setTimeout(() => finish(true), 5000);
 
-    function finish() {
+    function finish(viaTimeout) {
       if (settled) return;
       settled = true;
+      // Recorded because a payload cut short here is almost certainly incomplete JSON, and the
+      // resulting denial would otherwise look like a policy decision rather than a truncation.
+      if (viaTimeout) stdinTimedOut = true;
       // Clearing the timer matters: an outstanding timer keeps the process alive for its full
       // duration, which would add seconds of latency to every hook invocation.
       clearTimeout(timer);
@@ -427,30 +436,64 @@ async function main() {
     ...describeInput(raw),
     permission: decision.permission,
     inputBytes: raw.length,
+    stdinTimedOut: stdinTimedOut || undefined,
     reason: decision.user_message || undefined,
   });
 
-  // Release the input pipe so nothing keeps this process alive once the decision is written.
-  process.stdin.destroy();
-
-  // Write synchronously to fd 1, then exit.
+  // Write the decision, then let the process end on its own.
   //
-  // `process.stdout.write()` is asynchronous on a Windows pipe, and its callback fires when the
-  // data is queued rather than delivered. Both obvious spellings therefore lose the payload:
-  // exiting after the callback can truncate it, and exiting naturally can drop it too. The audit
-  // log recorded a complete 59-byte write on invocations that Cursor reported as returning no
-  // output - and with `failClosed` set, no output blocks the operation.
+  // Getting this wrong is expensive: under `failClosed`, output that does not arrive blocks the
+  // operation, so a delivery bug is indistinguishable from a denial. Three separate ways to lose
+  // it, all of which were observed:
   //
-  // `fs.writeSync` blocks until the OS accepts the bytes, which removes the race entirely.
+  // 1. `process.stdout.write()` is asynchronous on a Windows pipe and its callback fires when the
+  //    data is queued rather than delivered, so exiting after it can truncate the payload.
+  //    `fs.writeSync` blocks until the OS accepts the bytes.
+  // 2. A single `writeSync` can accept fewer bytes than it was given, or throw `EAGAIN` when the
+  //    pipe is non-blocking. Both are normal, and both silently produced no usable output.
+  //    `writeAllSync` loops until every byte is accepted.
+  // 3. `process.stdin.destroy()` closed the read end while Cursor was still writing the payload.
+  //    Small payloads had already arrived so it looked harmless, but `beforeReadFile` carries the
+  //    entire file, and breaking the pipe mid-write cost the response. Nothing is destroyed now;
+  //    `unref` is enough to stop stdin holding the event loop open.
   try {
-    fs.writeSync(1, payload);
+    writeAllSync(1, payload);
     audit({ wrote: payload.length });
   } catch (error) {
     // EPIPE means Cursor stopped reading, so there is nothing left to report to.
     audit({ writeFailed: error.message });
   }
 
-  process.exit(0);
+  if (typeof process.stdin.unref === 'function') {
+    process.stdin.unref();
+  }
+
+  // Deliberately not `process.exit()`. An explicit exit is what truncated the payload in the
+  // first place; a natural exit cannot run before the write above has completed.
+  process.exitCode = 0;
+}
+
+/**
+ * Write a complete string to a file descriptor, tolerating partial writes and a non-blocking pipe.
+ *
+ * @param {number} fd Descriptor to write to.
+ * @param {string} text Payload to deliver in full.
+ * @throws {Error} If the descriptor reports an error other than a full buffer.
+ */
+function writeAllSync(fd, text) {
+  const buffer = Buffer.from(text, 'utf8');
+  let offset = 0;
+
+  while (offset < buffer.length) {
+    try {
+      offset += fs.writeSync(fd, buffer, offset, buffer.length - offset);
+    } catch (error) {
+      // EAGAIN means the pipe is full and non-blocking, not that the write failed. Retrying is
+      // the documented handling; treating it as an error threw away the whole decision.
+      if (error.code === 'EAGAIN') continue;
+      throw error;
+    }
+  }
 }
 
 // Only read stdin when run as a hook; requiring this file (in tests) must not block on input.
