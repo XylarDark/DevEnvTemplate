@@ -5,7 +5,7 @@
  *
  * Analyzes detected stack against development best practices
  * and generates recommendations for improvement.
- * 
+ *
  * Enhanced with comprehensive checks for documentation, dependencies,
  * performance, accessibility, Docker, environment variables, and git hooks.
  */
@@ -31,7 +31,10 @@ if (inlineModeArg) {
 }
 if (!parsedMode) {
   const modeIndex = cliArgs.indexOf('--mode');
-  if (modeIndex !== -1 && (cliArgs[modeIndex + 1] === 'fast' || cliArgs[modeIndex + 1] === 'full')) {
+  if (
+    modeIndex !== -1 &&
+    (cliArgs[modeIndex + 1] === 'fast' || cliArgs[modeIndex + 1] === 'full')
+  ) {
     parsedMode = cliArgs[modeIndex + 1] as 'fast' | 'full';
   }
 }
@@ -42,11 +45,43 @@ if (!parsedMode && cliArgs.includes('--full')) {
   parsedMode = 'full';
 }
 const analyzerMode: 'fast' | 'full' = parsedMode === 'fast' ? 'fast' : 'full';
-const NODE_TECH_HINTS = ['node.js', 'node', 'react', 'next.js', 'nextjs', 'vite', 'express', 'typescript', 'javascript', 'svelte'];
-const PYTHON_TECH_HINTS = ['python', 'fastapi', 'django', 'flask', 'pytest', 'black', 'ruff', 'mypy', 'pytorch', 'pychrono', 'numpy', 'scipy', 'pandas'];
+const NODE_TECH_HINTS = [
+  'node.js',
+  'node',
+  'react',
+  'next.js',
+  'nextjs',
+  'vite',
+  'express',
+  'typescript',
+  'javascript',
+  'svelte',
+];
+const PYTHON_TECH_HINTS = [
+  'python',
+  'fastapi',
+  'django',
+  'flask',
+  'pytest',
+  'black',
+  'ruff',
+  'mypy',
+  'pytorch',
+  'pychrono',
+  'numpy',
+  'scipy',
+  'pandas',
+];
 const NODE_PACKAGE_MANAGERS = ['npm', 'pnpm', 'yarn', 'bun'];
 const PYTHON_PACKAGE_MANAGERS = ['pip', 'pipenv', 'poetry', 'uv'];
-const ENV_SAMPLE_FILES = ['.env.example', '.env.sample', 'env.example', 'env.sample', 'env-example.txt', 'env-example.env'];
+const ENV_SAMPLE_FILES = [
+  '.env.example',
+  '.env.sample',
+  'env.example',
+  'env.sample',
+  'env-example.txt',
+  'env-example.env',
+];
 
 class GapAnalyzer {
   private rootDir: string;
@@ -71,9 +106,10 @@ class GapAnalyzer {
       const stackReportPath = path.join(this.rootDir, '.devenv', 'stack-report.json');
       const content = await fs.readFile(stackReportPath, 'utf8');
       this.stack = JSON.parse(content) as StackReport;
-      const inferredProfiles = Array.isArray(this.stack.profiles) && this.stack.profiles.length > 0
-        ? this.stack.profiles
-        : this.detectProfilesFromStack();
+      const inferredProfiles =
+        Array.isArray(this.stack.profiles) && this.stack.profiles.length > 0
+          ? this.stack.profiles
+          : this.detectProfilesFromStack();
       this.profiles = new Set(inferredProfiles);
       this.applyManifestProfiles();
       const stackLanguageProfile = (this.stack as any).languageProfile;
@@ -86,7 +122,7 @@ class GapAnalyzer {
       logger.info('Stack report loaded successfully');
       this.logDebug('Stack report loaded', {
         profiles: Array.from(this.profiles),
-        languageProfile: this.languageProfile
+        languageProfile: this.languageProfile,
       });
     } catch (error) {
       logger.error('Stack report not found. Run stack-detector first.');
@@ -94,7 +130,9 @@ class GapAnalyzer {
     }
 
     if (this.isFastMode()) {
-      logger.info('Fast mode enabled: skipping documentation, accessibility, Docker, and git-hook checks.');
+      logger.info(
+        'Fast mode enabled: skipping documentation, accessibility, Docker, and git-hook checks.'
+      );
     }
 
     await this.runStage('TypeScript', () => this.analyzeTypeScript());
@@ -104,18 +142,19 @@ class GapAnalyzer {
     await this.runStage('CI/CD', () => this.analyzeCI());
     await this.runStage('Boundaries', () => this.analyzeBoundaries());
     await this.runStage('Quality Gates', () => this.analyzeQualityGates());
-    
+
     if (this.isFastMode()) {
       await this.runStage('Dependencies', () => this.analyzeDependencies());
       this.gaps.push({
         category: 'documentation',
         severity: 'low',
         title: 'Fast doctor run (partial coverage)',
-        description: 'Fast mode skips documentation, accessibility, Docker, environment, and git-hook checks.',
+        description:
+          'Fast mode skips documentation, accessibility, Docker, environment, and git-hook checks.',
         impact: 'Some gaps only appear in full scans.',
         recommendation: 'Re-run `npm run doctor --full` before releases for complete coverage.',
         effort: 'low',
-        files: []
+        files: [],
       });
       this.logDebug('Inserted fast-mode diagnostics gap');
     } else {
@@ -156,7 +195,7 @@ class GapAnalyzer {
         recommendation: 'Add TypeScript dependency and tsconfig.json with strict settings',
         effort: 'medium',
         files: ['package.json', 'tsconfig.json'],
-        resources: ['https://www.typescriptlang.org/docs/handbook/tsconfig-json.html']
+        resources: ['https://www.typescriptlang.org/docs/handbook/tsconfig-json.html'],
       });
     } else if (!hasTSConfig) {
       this.gaps.push({
@@ -177,7 +216,7 @@ class GapAnalyzer {
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   }
-}`
+}`,
       });
     } else {
       const tsConfig = this.stack!.configurations.find(c => c.type === 'typescript');
@@ -186,11 +225,12 @@ class GapAnalyzer {
           category: 'typescript',
           severity: 'medium',
           title: 'TypeScript Strict Mode Disabled',
-          description: 'Strict mode provides better type safety but may require more explicit typing.',
+          description:
+            'Strict mode provides better type safety but may require more explicit typing.',
           impact: 'Potential runtime errors from type issues',
           recommendation: 'Enable "strict": true in tsconfig.json',
           effort: 'medium',
-          files: ['tsconfig.json']
+          files: ['tsconfig.json'],
         });
       }
     }
@@ -208,9 +248,10 @@ class GapAnalyzer {
           title: 'ESLint Not Configured',
           description: 'ESLint enforces consistent code style and catches potential issues.',
           impact: 'Inconsistent code quality and potential bugs',
-          recommendation: 'Adopt ESLint with the official flat config and plugin:boundaries for architecture checks',
+          recommendation:
+            'Adopt ESLint with the official flat config and plugin:boundaries for architecture checks',
           effort: 'low',
-          files: ['package.json', 'eslint.config.js']
+          files: ['package.json', 'eslint.config.js'],
         });
       } else if (!hasESLintConfig) {
         this.gaps.push({
@@ -221,11 +262,14 @@ class GapAnalyzer {
           impact: 'Linting rules not enforced',
           recommendation: 'Create eslint.config.js with TypeScript + accessibility presets',
           effort: 'low',
-          files: ['eslint.config.js']
+          files: ['eslint.config.js'],
         });
       }
 
-      if (hasESLint && !this.stack!.configurations.some(c => c.configFile?.includes('boundaries'))) {
+      if (
+        hasESLint &&
+        !this.stack!.configurations.some(c => c.configFile?.includes('boundaries'))
+      ) {
         this.gaps.push({
           category: 'linting',
           severity: 'medium',
@@ -234,7 +278,7 @@ class GapAnalyzer {
           impact: 'Code organization may become unstructured',
           recommendation: 'Extend eslint-plugin-boundaries with feature/domain layer rules',
           effort: 'medium',
-          files: ['package.json', 'eslint.config.js']
+          files: ['package.json', 'eslint.config.js'],
         });
       }
     }
@@ -251,12 +295,13 @@ class GapAnalyzer {
         category: 'linting',
         severity: 'medium',
         title: 'Ruff Linter Not Configured',
-        description: 'Ruff is the recommended Python linter because it is fast and bundles common Flake8 rules.',
+        description:
+          'Ruff is the recommended Python linter because it is fast and bundles common Flake8 rules.',
         impact: 'Inconsistent style and missed Python-specific issues',
         recommendation: 'Add Ruff via pyproject.toml and run it in CI: `ruff check .`',
         effort: 'low',
         files: ['pyproject.toml', 'ruff.toml'],
-        resources: ['https://docs.astral.sh/ruff/']
+        resources: ['https://docs.astral.sh/ruff/'],
       });
     }
   }
@@ -281,7 +326,7 @@ class GapAnalyzer {
         impact: 'Cannot safely refactor code or catch regressions',
         recommendation: 'Add a minimal test harness (e.g., pytest, Vitest) and run it in CI',
         effort: 'medium',
-        files: ['tests/']
+        files: ['tests/'],
       });
     }
   }
@@ -299,12 +344,14 @@ class GapAnalyzer {
         impact: 'Refactors may break behavior silently',
         recommendation: 'Add Vitest with a watch mode and run `vitest run --coverage` in CI',
         effort: 'medium',
-        files: ['package.json', 'vitest.config.ts']
+        files: ['package.json', 'vitest.config.ts'],
       });
     }
 
     const hasPlaywright = this.hasTestingFramework('Playwright');
-    const isUIProject = this.stack!.technologies.some(t => ['React', 'Next.js', 'Vue'].includes(t.name));
+    const isUIProject = this.stack!.technologies.some(t =>
+      ['React', 'Next.js', 'Vue'].includes(t.name)
+    );
 
     if (!hasPlaywright && isUIProject) {
       this.gaps.push({
@@ -315,7 +362,7 @@ class GapAnalyzer {
         impact: 'Cannot verify complete application functionality',
         recommendation: 'Add a Playwright smoke suite (login + critical flows) and run nightly',
         effort: 'medium',
-        files: ['package.json', 'playwright.config.ts', 'tests/e2e/']
+        files: ['package.json', 'playwright.config.ts', 'tests/e2e/'],
       });
     }
   }
@@ -332,7 +379,7 @@ class GapAnalyzer {
         impact: 'No regression safety net for services or notebooks',
         recommendation: 'Install pytest and add `pytest.ini`; run `pytest -q` in CI',
         effort: 'medium',
-        files: ['pyproject.toml', 'pytest.ini']
+        files: ['pyproject.toml', 'pytest.ini'],
       });
     }
   }
@@ -378,22 +425,25 @@ class GapAnalyzer {
         impact: 'Sensitive credentials may leak or go unsanitized',
         recommendation,
         effort: severity === 'high' ? 'medium' : 'low',
-        files
+        files,
       });
     } else if (!this.stack!.quality.security) {
       this.gaps.push({
         category: 'security',
         severity: 'high',
         title: 'Security Measures Not Detected',
-        description: 'Basic security practices like environment variable management and dependency scanning are missing.',
+        description:
+          'Basic security practices like environment variable management and dependency scanning are missing.',
         impact: 'Potential security vulnerabilities and data exposure',
-        recommendation: 'Add .env example files, ignore `.env` in git, and enable dependency scanning (Dependabot/pip-audit) in CI',
+        recommendation:
+          'Add .env example files, ignore `.env` in git, and enable dependency scanning (Dependabot/pip-audit) in CI',
         effort: 'medium',
-        files: ['.env.example', '.github/workflows/security.yml']
+        files: ['.env.example', '.github/workflows/security.yml'],
       });
     }
 
-    const hasNextJS = this.hasProfile('node') && this.stack!.configurations.some(c => c.type === 'nextjs');
+    const hasNextJS =
+      this.hasProfile('node') && this.stack!.configurations.some(c => c.type === 'nextjs');
     if (hasNextJS) {
       this.gaps.push({
         category: 'security',
@@ -403,7 +453,7 @@ class GapAnalyzer {
         impact: 'Application vulnerable to injection attacks',
         recommendation: 'Implement CSP headers in next.config.js',
         effort: 'low',
-        files: ['next.config.js']
+        files: ['next.config.js'],
       });
     }
   }
@@ -418,7 +468,7 @@ class GapAnalyzer {
         impact: 'Cannot ensure code quality or automate deployment',
         recommendation: 'Add GitHub Actions workflow with lint, test, and security scans',
         effort: 'medium',
-        files: ['.github/workflows/ci.yml']
+        files: ['.github/workflows/ci.yml'],
       });
     } else if (this.stack!.ci.type === 'github-actions') {
       this.gaps.push({
@@ -429,7 +479,7 @@ class GapAnalyzer {
         impact: 'Poor code quality may be merged',
         recommendation: 'Add quality gate jobs to CI workflow',
         effort: 'low',
-        files: ['.github/workflows/ci.yml']
+        files: ['.github/workflows/ci.yml'],
       });
     }
   }
@@ -444,7 +494,7 @@ class GapAnalyzer {
       impact: 'Code may be harder to navigate and maintain',
       recommendation: 'Organize code into src/, tests/, docs/, scripts/, .github/',
       effort: 'low',
-      files: ['[restructure directories]']
+      files: ['[restructure directories]'],
     });
   }
 
@@ -456,22 +506,26 @@ class GapAnalyzer {
         category: 'quality',
         severity: 'low',
         title: 'Experiment Budgets Not Defined',
-        description: 'Simulation/ML projects still need guardrails on runtime, dataset freshness, and numerical drift.',
+        description:
+          'Simulation/ML projects still need guardrails on runtime, dataset freshness, and numerical drift.',
         impact: 'Long-running experiments and stale datasets go unnoticed',
-        recommendation: 'Add an experiment-budgets.yaml with max runtime, min epochs, and dataset checksum expectations',
+        recommendation:
+          'Add an experiment-budgets.yaml with max runtime, min epochs, and dataset checksum expectations',
         effort: 'low',
-        files: ['experiments/budgets.yaml', 'pyproject.toml']
+        files: ['experiments/budgets.yaml', 'pyproject.toml'],
       });
 
       this.gaps.push({
         category: 'observability',
         severity: 'low',
         title: 'Run Tracking Not Configured',
-        description: 'Run tracking (Weights & Biases, MLflow, or JSON logs) keeps a provenance trail for physics/AI studies.',
+        description:
+          'Run tracking (Weights & Biases, MLflow, or JSON logs) keeps a provenance trail for physics/AI studies.',
         impact: 'Cannot compare experiments or reproduce regressions',
-        recommendation: 'Log each experiment with metrics + params via mlflow/wandb or append JSONL entries under data/runs/',
+        recommendation:
+          'Log each experiment with metrics + params via mlflow/wandb or append JSONL entries under data/runs/',
         effort: 'medium',
-        files: ['data/runs/', 'scripts/track_runs.py']
+        files: ['data/runs/', 'scripts/track_runs.py'],
       });
       return;
     }
@@ -484,7 +538,7 @@ class GapAnalyzer {
       impact: 'Cannot track or prevent quality degradation',
       recommendation: 'Add quality-budgets.json with bundle size and performance limits',
       effort: 'low',
-      files: ['quality-budgets.json']
+      files: ['quality-budgets.json'],
     });
 
     this.gaps.push({
@@ -495,7 +549,7 @@ class GapAnalyzer {
       impact: 'Cannot measure and improve development processes',
       recommendation: 'Add JSONL logging for prompt lifecycle metrics',
       effort: 'medium',
-      files: ['provenance/', 'scripts/agent/metrics-log.js']
+      files: ['provenance/', 'scripts/agent/metrics-log.js'],
     });
   }
 
@@ -516,7 +570,7 @@ class GapAnalyzer {
           recommendation: `Move misplaced files to appropriate directories: ${misplaced.join(', ')}. Run 'devenv organize-docs --auto-fix' to automatically organize.`,
           effort: 'low',
           files: misplaced,
-          resources: ['https://github.com/XylarDark/DevEnvTemplate']
+          resources: ['https://github.com/XylarDark/DevEnvTemplate'],
         });
       }
     } catch (error: any) {
@@ -526,10 +580,10 @@ class GapAnalyzer {
     try {
       const readmePath = path.join(this.rootDir, 'README.md');
       const readme = await fs.readFile(readmePath, 'utf8');
-      
+
       const requiredSections = ['Installation', 'Usage', 'Contributing', 'License'];
-      const missingSections = requiredSections.filter(section => 
-        !readme.toLowerCase().includes(section.toLowerCase())
+      const missingSections = requiredSections.filter(
+        section => !readme.toLowerCase().includes(section.toLowerCase())
       );
 
       if (missingSections.length > 0) {
@@ -541,13 +595,13 @@ class GapAnalyzer {
           impact: 'New contributors may struggle to understand and use the project',
           recommendation: `Add sections for: ${missingSections.join(', ')}`,
           effort: 'low',
-          files: ['README.md']
+          files: ['README.md'],
         });
       }
 
       // Check for API documentation
       const hasAPIReference = readme.includes('API') || readme.includes('Reference');
-      if (!hasAPIReference && (readme.length > 1000)) {
+      if (!hasAPIReference && readme.length > 1000) {
         this.gaps.push({
           category: 'documentation',
           severity: 'low',
@@ -556,7 +610,7 @@ class GapAnalyzer {
           impact: 'Developers need to read source code to understand APIs',
           recommendation: 'Add API documentation section or generate with TypeDoc',
           effort: 'medium',
-          files: ['README.md', 'docs/api/']
+          files: ['README.md', 'docs/api/'],
         });
       }
     } catch (error) {
@@ -568,7 +622,7 @@ class GapAnalyzer {
         impact: 'Project is not documented for users or contributors',
         recommendation: 'Create comprehensive README.md with project overview',
         effort: 'low',
-        files: ['README.md']
+        files: ['README.md'],
       });
     }
   }
@@ -581,9 +635,10 @@ class GapAnalyzer {
         title: 'Dependency Health Check Needed',
         description: 'Regular dependency updates prevent security vulnerabilities',
         impact: 'Outdated dependencies may have known security issues',
-        recommendation: 'Run `npm audit` / `npm outdated` weekly and enable Dependabot security updates',
+        recommendation:
+          'Run `npm audit` / `npm outdated` weekly and enable Dependabot security updates',
         effort: 'low',
-        files: ['package.json', '.github/dependabot.yml']
+        files: ['package.json', '.github/dependabot.yml'],
       });
 
       const hasPackageJson = this.stack!.technologies.some(t => t.name === 'Node.js');
@@ -594,9 +649,10 @@ class GapAnalyzer {
           title: 'Lock File Best Practices',
           description: 'Lock files ensure consistent dependency versions',
           impact: 'Different environments may have different dependency versions',
-          recommendation: 'Commit package-lock.json or pnpm-lock.yaml and fail CI when it changes unintentionally',
+          recommendation:
+            'Commit package-lock.json or pnpm-lock.yaml and fail CI when it changes unintentionally',
           effort: 'low',
-          files: ['package-lock.json', 'pnpm-lock.yaml']
+          files: ['package-lock.json', 'pnpm-lock.yaml'],
         });
       }
     }
@@ -608,16 +664,17 @@ class GapAnalyzer {
         title: 'Python Dependency Hygiene Not Verified',
         description: 'Poetry/pip-tools lock files keep virtualenvs reproducible.',
         impact: 'Production environments may drift from local installs',
-        recommendation: 'Use Poetry or pip-tools with a committed lock file and schedule `pip-audit`',
+        recommendation:
+          'Use Poetry or pip-tools with a committed lock file and schedule `pip-audit`',
         effort: 'medium',
-        files: ['pyproject.toml', 'poetry.lock', 'requirements.txt']
+        files: ['pyproject.toml', 'poetry.lock', 'requirements.txt'],
       });
     }
   }
 
   private analyzePerformance(): void {
     const hasReact = this.stack!.technologies.some(t => t.name === 'React' || t.name === 'Next.js');
-    
+
     if (hasReact) {
       this.gaps.push({
         category: 'performance',
@@ -634,7 +691,7 @@ module.exports = {
     optimizePackageImports: ['@mui/icons-material']
   }
 };
-`
+`,
       });
 
       this.gaps.push({
@@ -645,7 +702,7 @@ module.exports = {
         impact: 'Large images slow down page load',
         recommendation: 'Use Next.js Image component or image optimization tools',
         effort: 'low',
-        files: ['next.config.js']
+        files: ['next.config.js'],
       });
     }
   }
@@ -663,8 +720,8 @@ module.exports = {
   }
 
   private analyzeAccessibility(): void {
-    const isUIProject = this.stack!.technologies.some(t => 
-      t.name === 'React' || t.name === 'Next.js' || t.name === 'Vue'
+    const isUIProject = this.stack!.technologies.some(
+      t => t.name === 'React' || t.name === 'Next.js' || t.name === 'Vue'
     );
 
     if (isUIProject) {
@@ -676,7 +733,7 @@ module.exports = {
         impact: 'Application may not be accessible to users with disabilities',
         recommendation: 'Add eslint-plugin-jsx-a11y and axe-core for a11y testing',
         effort: 'low',
-        files: ['package.json', '.eslintrc.json']
+        files: ['package.json', '.eslintrc.json'],
       });
 
       this.gaps.push({
@@ -687,7 +744,7 @@ module.exports = {
         impact: 'Screen reader users may have difficulty navigating',
         recommendation: 'Review all interactive elements for proper ARIA attributes',
         effort: 'medium',
-        files: ['src/components/**/*.tsx']
+        files: ['src/components/**/*.tsx'],
       });
     }
   }
@@ -695,7 +752,7 @@ module.exports = {
   private async analyzeDocker(): Promise<void> {
     try {
       await fs.access(path.join(this.rootDir, 'Dockerfile'));
-      
+
       // Check for .dockerignore
       try {
         await fs.access(path.join(this.rootDir, '.dockerignore'));
@@ -714,7 +771,7 @@ module.exports = {
 .env
 *.log
 .next
-dist`
+dist`,
         });
       }
 
@@ -729,7 +786,7 @@ dist`
           impact: 'Docker images may be larger than necessary',
           recommendation: 'Use multi-stage Dockerfile with builder and runtime stages',
           effort: 'medium',
-          files: ['Dockerfile']
+          files: ['Dockerfile'],
         });
       }
     } catch {
@@ -748,7 +805,7 @@ dist`
         impact: 'Developers may not know which environment variables are needed',
         recommendation: 'Create .env.example with placeholder values under the repo root',
         effort: 'low',
-        files: ['.env.example']
+        files: ['.env.example'],
       });
     } else if (!envSample.startsWith('.env')) {
       this.gaps.push({
@@ -759,7 +816,7 @@ dist`
         impact: 'Tooling like dotenv/pre-commit may not auto-detect the template file',
         recommendation: `Rename ${envSample} to .env.example and update docs referencing it`,
         effort: 'low',
-        files: [envSample]
+        files: [envSample],
       });
     }
 
@@ -775,7 +832,7 @@ dist`
           impact: 'Secrets may be accidentally committed to version control',
           recommendation: 'Add .env to .gitignore immediately',
           effort: 'low',
-          files: ['.gitignore']
+          files: ['.gitignore'],
         });
       }
     } catch {
@@ -794,7 +851,8 @@ dist`
         title: 'Pre-commit Hooks Not Configured',
         description: 'pre-commit keeps Ruff/Black/Mypy/Pytest in sync with CI for Python repos.',
         impact: 'Developers may skip the fast fail checks that CI enforces',
-        recommendation: 'Add pre-commit with Ruff/Black/Mypy/Pytest stages and run `pre-commit install`',
+        recommendation:
+          'Add pre-commit with Ruff/Black/Mypy/Pytest stages and run `pre-commit install`',
         effort: 'low',
         files: ['.pre-commit-config.yaml'],
         codeSnippet: `repos:
@@ -806,7 +864,7 @@ dist`
     hooks:
       - id: pytest
         entry: python -m pytest`,
-        resources: ['https://pre-commit.com/']
+        resources: ['https://pre-commit.com/'],
       });
       return;
     }
@@ -823,7 +881,7 @@ dist`
         files: ['package.json', '.husky/pre-commit'],
         codeSnippet: `npm install --save-dev husky
 npx husky init
-echo "npm run lint && npm run format:check" > .husky/pre-commit`
+echo "npm run lint && npm run format:check" > .husky/pre-commit`,
       });
     } else if (!hasPreCommit && !hasHusky) {
       this.gaps.push({
@@ -834,17 +892,17 @@ echo "npm run lint && npm run format:check" > .husky/pre-commit`
         impact: 'Local commits may skip formatting/linting',
         recommendation: 'Add either pre-commit (Python) or Husky (Node) with lint/test tasks',
         effort: 'low',
-        files: ['.pre-commit-config.yaml', '.husky/pre-commit']
+        files: ['.pre-commit-config.yaml', '.husky/pre-commit'],
       });
     }
   }
 
   private analyzeFrameworks(): void {
     const frameworks = {
-      'React': ['prop-types', 'eslint-plugin-react-hooks'],
+      React: ['prop-types', 'eslint-plugin-react-hooks'],
       'Next.js': ['next-seo', 'sharp'],
-      'Vue': ['vue-router', 'pinia'],
-      'Angular': ['@angular/cli', '@angular/forms']
+      Vue: ['vue-router', 'pinia'],
+      Angular: ['@angular/cli', '@angular/forms'],
     };
 
     Object.entries(frameworks).forEach(([framework, essentialPackages]) => {
@@ -859,7 +917,7 @@ echo "npm run lint && npm run format:check" > .husky/pre-commit`
           recommendation: `Review ${framework} documentation and consider: ${essentialPackages.join(', ')}`,
           effort: 'low',
           files: ['package.json'],
-          resources: [`https://react.dev/`, `https://nextjs.org/docs`]
+          resources: [`https://react.dev/`, `https://nextjs.org/docs`],
         });
       }
     });
@@ -875,11 +933,13 @@ echo "npm run lint && npm run format:check" > .husky/pre-commit`
         category: 'quality',
         severity: 'medium',
         title: 'Black Formatter Not Enabled',
-        description: 'Black provides opinionated formatting for Python projects and keeps diffs small.',
+        description:
+          'Black provides opinionated formatting for Python projects and keeps diffs small.',
         impact: 'Inconsistent formatting slows down code reviews',
-        recommendation: 'Add Black to pyproject.toml and run `black .` in CI or as a pre-commit hook',
+        recommendation:
+          'Add Black to pyproject.toml and run `black .` in CI or as a pre-commit hook',
         effort: 'low',
-        files: ['pyproject.toml', 'pyproject.lock']
+        files: ['pyproject.toml', 'pyproject.lock'],
       });
     }
 
@@ -892,7 +952,7 @@ echo "npm run lint && npm run format:check" > .husky/pre-commit`
         impact: 'Refactors may introduce silent type errors',
         recommendation: 'Add Mypy with `python -m mypy src/` and enable strict optional checking',
         effort: 'medium',
-        files: ['mypy.ini', 'pyproject.toml']
+        files: ['mypy.ini', 'pyproject.toml'],
       });
     }
   }
@@ -1026,7 +1086,8 @@ echo "npm run lint && npm run format:check" > .husky/pre-commit`
       report += `## ${category.charAt(0).toUpperCase() + category.slice(1)} (${gaps.length} gaps)\n\n`;
 
       gaps.forEach(gap => {
-        const severityIcon = gap.severity === 'high' ? '🔴' : gap.severity === 'medium' ? '🟡' : '🟢';
+        const severityIcon =
+          gap.severity === 'high' ? '🔴' : gap.severity === 'medium' ? '🟡' : '🟢';
         report += `### ${severityIcon} ${gap.title}\n\n`;
         report += `**Category:** ${gap.category}\n\n`;
         report += `${gap.description}\n\n`;
@@ -1034,15 +1095,15 @@ echo "npm run lint && npm run format:check" > .husky/pre-commit`
         report += `**Recommendation:** ${gap.recommendation}\n\n`;
         report += `**Effort:** ${gap.effort}\n\n`;
         report += `**Files:** ${gap.files.join(', ')}\n\n`;
-        
+
         if (gap.codeSnippet) {
           report += `**Code Example:**\n\`\`\`\n${gap.codeSnippet}\n\`\`\`\n\n`;
         }
-        
+
         if (gap.resources && gap.resources.length > 0) {
           report += `**Resources:** ${gap.resources.map(r => `[Link](${r})`).join(', ')}\n\n`;
         }
-        
+
         report += '---\n\n';
       });
     });
@@ -1058,7 +1119,8 @@ echo "npm run lint && npm run format:check" > .husky/pre-commit`
     report += `🟢 Low Priority: ${lowPriority} gaps\n\n`;
 
     if (highPriority > 0) {
-      report += '**Recommendation:** Address high-priority gaps first for maximum impact on code quality and security.\n\n';
+      report +=
+        '**Recommendation:** Address high-priority gaps first for maximum impact on code quality and security.\n\n';
     }
 
     report += '## Next Steps\n\n';
@@ -1095,7 +1157,7 @@ echo "npm run lint && npm run format:check" > .husky/pre-commit`
       mediumPriority: this.gaps.filter(gap => gap.severity === 'medium').length,
       lowPriority: this.gaps.filter(gap => gap.severity === 'low').length,
       gaps: [...this.gaps],
-      categories
+      categories,
     };
   }
 
@@ -1120,7 +1182,8 @@ echo "npm run lint && npm run format:check" > .husky/pre-commit`
 // Run the analyzer
 if (require.main === module) {
   const analyzer = new GapAnalyzer({ mode: analyzerMode, debug: debugFlag });
-  analyzer.analyze()
+  analyzer
+    .analyze()
     .then(async report => {
       console.log(report);
       await analyzer.saveReport(report);
@@ -1133,4 +1196,3 @@ if (require.main === module) {
 }
 
 export default GapAnalyzer;
-

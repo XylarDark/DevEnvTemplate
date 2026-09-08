@@ -1,6 +1,6 @@
 /**
  * Environment Variable Validation Checks
- * 
+ *
  * Provides doctor checks for:
  * - Required environment variables
  * - Environment variable formats
@@ -31,17 +31,17 @@ export async function checkRequiredEnvVars(projectRoot: string): Promise<{
   hint?: string;
 }> {
   const envExamplePath = path.join(projectRoot, '.env.example');
-  
+
   if (!fs.existsSync(envExamplePath)) {
     return {
       passed: true,
-      message: '.env.example not found - skipping environment variable checks'
+      message: '.env.example not found - skipping environment variable checks',
     };
   }
-  
+
   const envExampleContent = fs.readFileSync(envExamplePath, 'utf-8');
   const requiredVars: string[] = [];
-  
+
   // Extract variable names from .env.example
   const lines = envExampleContent.split('\n');
   for (const line of lines) {
@@ -53,28 +53,28 @@ export async function checkRequiredEnvVars(projectRoot: string): Promise<{
       }
     }
   }
-  
+
   if (requiredVars.length === 0) {
     return {
       passed: true,
-      message: 'No environment variables found in .env.example'
+      message: 'No environment variables found in .env.example',
     };
   }
-  
+
   const missing = checkMissingEnvVars(requiredVars);
-  
+
   if (missing.length > 0) {
     return {
       passed: false,
       message: `Missing required environment variables: ${missing.join(', ')}`,
       missing,
-      hint: `Set these variables in your .env file or export them in your shell. See .env.example for expected values.`
+      hint: `Set these variables in your .env file or export them in your shell. See .env.example for expected values.`,
     };
   }
-  
+
   return {
     passed: true,
-    message: `All required environment variables are set (${requiredVars.length} variables)`
+    message: `All required environment variables are set (${requiredVars.length} variables)`,
   };
 }
 
@@ -88,17 +88,17 @@ export async function checkEncryptionKeys(projectRoot: string): Promise<{
   hint?: string;
 }> {
   const envExamplePath = path.join(projectRoot, '.env.example');
-  
+
   if (!fs.existsSync(envExamplePath)) {
     return {
       passed: true,
-      message: '.env.example not found - skipping encryption key checks'
+      message: '.env.example not found - skipping encryption key checks',
     };
   }
-  
+
   const envExampleContent = fs.readFileSync(envExamplePath, 'utf-8');
   const encryptionKeyVars: string[] = [];
-  
+
   // Find variables that look like encryption keys
   const lines = envExampleContent.split('\n');
   for (const line of lines) {
@@ -116,50 +116,50 @@ export async function checkEncryptionKeys(projectRoot: string): Promise<{
       }
     }
   }
-  
+
   if (encryptionKeyVars.length === 0) {
     return {
       passed: true,
-      message: 'No encryption key variables found in .env.example'
+      message: 'No encryption key variables found in .env.example',
     };
   }
-  
+
   const invalidKeys: string[] = [];
-  
+
   for (const varName of encryptionKeyVars) {
     if (!hasEnvVar(varName)) {
       continue; // Skip missing vars (handled by checkRequiredEnvVars)
     }
-    
+
     const value = process.env[varName];
     if (!value) {
       continue;
     }
-    
+
     // Check if it looks like a base64 key (length >= 40)
     if (value.length >= 40) {
       // Try to validate as 32-byte or 64-byte key
       const isValid32 = verifyKeyFormat(value, 32);
       const isValid64 = verifyKeyFormat(value, 64);
-      
+
       if (!isValid32 && !isValid64) {
         invalidKeys.push(varName);
       }
     }
   }
-  
+
   if (invalidKeys.length > 0) {
     return {
       passed: false,
       message: `Invalid encryption key format: ${invalidKeys.join(', ')}`,
       invalidKeys,
-      hint: `Generate valid keys using: node dist/scripts/tools/generate-key.js --length 32`
+      hint: `Generate valid keys using: node dist/scripts/tools/generate-key.js --length 32`,
     };
   }
-  
+
   return {
     passed: true,
-    message: `All encryption keys have valid format (${encryptionKeyVars.length} keys)`
+    message: `All encryption keys have valid format (${encryptionKeyVars.length} keys)`,
   };
 }
 
@@ -173,24 +173,24 @@ export async function checkEnvFile(projectRoot: string): Promise<{
 }> {
   const envPath = path.join(projectRoot, '.env');
   const envExamplePath = path.join(projectRoot, '.env.example');
-  
+
   if (!fs.existsSync(envPath)) {
     if (fs.existsSync(envExamplePath)) {
       return {
         passed: false,
         message: '.env file not found',
-        hint: 'Create .env file based on .env.example and set required variables'
+        hint: 'Create .env file based on .env.example and set required variables',
       };
     }
     return {
       passed: true,
-      message: '.env file not found, but no .env.example exists'
+      message: '.env file not found, but no .env.example exists',
     };
   }
-  
+
   return {
     passed: true,
-    message: '.env file exists'
+    message: '.env file exists',
   };
 }
 
@@ -207,39 +207,38 @@ export async function runEnvValidationChecks(projectRoot: string): Promise<{
   }>;
 }> {
   const checks = [];
-  
+
   // Check for .env file
   const envFileCheck = await checkEnvFile(projectRoot);
   checks.push({
     name: 'Environment File',
     passed: envFileCheck.passed,
     message: envFileCheck.message,
-    hint: envFileCheck.hint
+    hint: envFileCheck.hint,
   });
-  
+
   // Check for required environment variables
   const requiredVarsCheck = await checkRequiredEnvVars(projectRoot);
   checks.push({
     name: 'Required Environment Variables',
     passed: requiredVarsCheck.passed,
     message: requiredVarsCheck.message,
-    hint: requiredVarsCheck.hint
+    hint: requiredVarsCheck.hint,
   });
-  
+
   // Check for encryption key formats
   const encryptionKeysCheck = await checkEncryptionKeys(projectRoot);
   checks.push({
     name: 'Encryption Key Formats',
     passed: encryptionKeysCheck.passed,
     message: encryptionKeysCheck.message,
-    hint: encryptionKeysCheck.hint
+    hint: encryptionKeysCheck.hint,
   });
-  
+
   const allPassed = checks.every(check => check.passed);
-  
+
   return {
     passed: allPassed,
-    checks
+    checks,
   };
 }
-

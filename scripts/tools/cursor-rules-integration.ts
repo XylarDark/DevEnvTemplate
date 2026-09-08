@@ -2,7 +2,7 @@
 
 /**
  * Cursor Rules Integration
- * 
+ *
  * Handles copying and merging cursor rules from .devenv/.cursor/rules to project.
  */
 
@@ -15,7 +15,7 @@ import {
   shouldIncludeRule,
   HOST_CORE_FILES,
   STANDARD_CORE_FILES,
-  STANDARD_CONDITIONAL_FILES
+  STANDARD_CONDITIONAL_FILES,
 } from './cursor-rules-adapter';
 
 const logger = createLogger({ context: 'cursor-rules-integration' });
@@ -59,7 +59,10 @@ async function copyCoreRules(
       await fs.access(templateFile);
 
       // Check if project file exists
-      const projectExists = await fs.access(projectFile).then(() => true).catch(() => false);
+      const projectExists = await fs
+        .access(projectFile)
+        .then(() => true)
+        .catch(() => false);
 
       if (!projectExists || overwrite) {
         // Copy file
@@ -103,7 +106,10 @@ async function copyConditionalRules(
       await fs.access(templateFile);
 
       // Check if project file exists
-      const projectExists = await fs.access(projectFile).then(() => true).catch(() => false);
+      const projectExists = await fs
+        .access(projectFile)
+        .then(() => true)
+        .catch(() => false);
 
       if (!projectExists) {
         // Copy file (don't overwrite existing project files)
@@ -129,7 +135,7 @@ async function preserveProjectRules(projectPath: string): Promise<string[]> {
 
   try {
     const entries = await fs.readdir(projectPath, { withFileTypes: true });
-    
+
     for (const entry of entries) {
       if (entry.isFile() && entry.name.endsWith('.mdc')) {
         // Check if it's a project-specific file (not in standard list)
@@ -154,20 +160,20 @@ async function preserveProjectRules(projectPath: string): Promise<string[]> {
 /**
  * Copy README if it exists
  */
-async function copyReadme(
-  templatePath: string,
-  projectPath: string
-): Promise<boolean> {
+async function copyReadme(templatePath: string, projectPath: string): Promise<boolean> {
   const templateReadme = path.join(templatePath, 'README.md');
   const projectReadme = path.join(projectPath, 'README.md');
 
   try {
     await fs.access(templateReadme);
     const content = await fs.readFile(templateReadme, 'utf8');
-    
+
     // Check if project README exists
-    const projectExists = await fs.access(projectReadme).then(() => true).catch(() => false);
-    
+    const projectExists = await fs
+      .access(projectReadme)
+      .then(() => true)
+      .catch(() => false);
+
     if (!projectExists) {
       await fs.writeFile(projectReadme, content, 'utf8');
       return true;
@@ -192,7 +198,7 @@ export async function integrateCursorRules(
     templateRulesPath,
     stackReport,
     overwriteCore = false,
-    dryRun = false
+    dryRun = false,
   } = options;
 
   const result: IntegrationResult = {
@@ -201,7 +207,7 @@ export async function integrateCursorRules(
     preserved: [],
     skipped: [],
     conflicts: [],
-    recommendations: []
+    recommendations: [],
   };
 
   const projectRulesPath = path.join(projectRoot, '.cursor', 'rules');
@@ -213,7 +219,7 @@ export async function integrateCursorRules(
     logger.info('[DRY RUN] Would integrate cursor rules', {
       projectPath: projectRulesPath,
       templatePath: templateRulesPath,
-      existingRules: existingRules.existingFiles.length
+      existingRules: existingRules.existingFiles.length,
     });
     return result;
   }
@@ -260,19 +266,19 @@ export async function integrateCursorRules(
     );
   }
 
-  if (existingRules.present && existingRules.coreFiles.filter(f => HOST_CORE_FILES.includes(f)).length < HOST_CORE_FILES.length) {
+  if (
+    existingRules.present &&
+    existingRules.coreFiles.filter(f => HOST_CORE_FILES.includes(f)).length < HOST_CORE_FILES.length
+  ) {
     const missing = HOST_CORE_FILES.filter(f => !existingRules.coreFiles.includes(f));
-    result.recommendations.push(
-      `Added ${missing.length} missing core rule file(s).`
-    );
+    result.recommendations.push(`Added ${missing.length} missing core rule file(s).`);
   }
 
   logger.info('Cursor rules integration complete', {
     copied: result.copied.length,
     updated: result.updated.length,
-    preserved: result.preserved.length
+    preserved: result.preserved.length,
   });
 
   return result;
 }
-

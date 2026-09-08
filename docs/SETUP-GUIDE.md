@@ -40,6 +40,7 @@ npm run build        # compile doctor/stack-detector/gap-analyzer
 ```
 
 This populates `dist/` so that `npm run doctor` works from CI and terminals.
+
 > **Auto Gitignore:** During `npm install`, DevEnvTemplate now appends `.devenv/` to your parent `.gitignore` if it isn’t already there, so you don’t accidentally commit the embedded tooling repo.
 
 ## 3. Capture Project Intent (Optional, Recommended)
@@ -61,22 +62,24 @@ The first run is intentionally technology-agnostic and writes `.devenv/stack-rep
 
 ### Stack-Specific Notes
 
-| Stack profile | What to expect | Recommended commands |
-|---------------|----------------|-----------------------|
-| **Node / TypeScript** | Doctor will recommend Vitest + ESLint + Playwright once detected. | `npm run doctor --preset nextjs` (or vite/express) if the repo is empty but you already know the stack. |
-| **Python-only** | Doctor pivots to Pytest + Ruff + Black + Mypy once `pyproject.toml` / `requirements.txt` are present. | Add `pyproject.toml` or `requirements.txt`, then re-run `npm run doctor`. No ESLint/TypeScript guidance will appear after the first detection. |
-| **Polyglot** | Multiple profiles can be active. Doctor outputs one section per profile. | Run `npm run doctor --json` if you need to programmatically separate profile-specific issues. |
+| Stack profile         | What to expect                                                                                        | Recommended commands                                                                                                                           |
+| --------------------- | ----------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Node / TypeScript** | Doctor will recommend Vitest + ESLint + Playwright once detected.                                     | `npm run doctor --preset nextjs` (or vite/express) if the repo is empty but you already know the stack.                                        |
+| **Python-only**       | Doctor pivots to Pytest + Ruff + Black + Mypy once `pyproject.toml` / `requirements.txt` are present. | Add `pyproject.toml` or `requirements.txt`, then re-run `npm run doctor`. No ESLint/TypeScript guidance will appear after the first detection. |
+| **Polyglot**          | Multiple profiles can be active. Doctor outputs one section per profile.                              | Run `npm run doctor --json` if you need to programmatically separate profile-specific issues.                                                  |
 
 ### Python Project Setup Example
 
 For a Python project like `lunar_mining_sim`:
 
 1. **Create virtual environment:**
+
    ```powershell
    # Windows PowerShell
    python -m venv venv
    .\venv\Scripts\Activate.ps1
    ```
+
    ```bash
    # Linux/macOS
    python -m venv venv
@@ -84,11 +87,13 @@ For a Python project like `lunar_mining_sim`:
    ```
 
 2. **Install package:**
+
    ```bash
    pip install -e .
    ```
 
 3. **Add DevEnvTemplate:**
+
    ```bash
    git clone https://github.com/XylarDark/DevEnvTemplate .devenv
    cd .devenv
@@ -103,6 +108,7 @@ For a Python project like `lunar_mining_sim`:
    ```
 
 The doctor will detect Python stack and recommend:
+
 - Pytest for testing
 - Ruff for linting
 - Black for formatting
@@ -193,4 +199,3 @@ npm run doctor
 ```
 
 Once the stack profile flips to `python`, future doctor runs will only recommend Pytest/Ruff/Black/Mypy quick wins—no TypeScript noise.
-

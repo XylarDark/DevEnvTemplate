@@ -25,5 +25,3 @@ Status: No critical issues found. The following improvements are recommended to 
 6. Phase 4c: Progress & Benchmarks (scheduled)
    - CLI progress bars; benchmark suite; docs.
    - Acceptance: Benchmark CI job produces trend artifacts; documented thresholds.
-
-

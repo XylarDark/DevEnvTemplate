@@ -13,12 +13,14 @@
 This file is a **technology-agnostic template** for creating project-specific LLM reference guides. For detailed DevEnvTemplate command reference, workflows, and decision trees, see **[LLM-CONTEXT-GUIDE.md](LLM-CONTEXT-GUIDE.md)**.
 
 **When creating a project-specific extension:**
+
 1. **Copy this file** to your project's `.devenv/docs/` directory
 2. **Extend it** with project-specific information (language-specific commands, framework details, project structure)
 3. **Reference LLM-CONTEXT-GUIDE.md** for detailed DevEnvTemplate commands instead of duplicating them
 4. **Backport improvements** - If you add technology-agnostic improvements, contribute them back to DevEnvTemplate
 
 **When using this template:**
+
 - Keep only project-specific content in your extension
 - Reference LLM-CONTEXT-GUIDE.md for DevEnvTemplate command details
 - Maintain the same structure for consistency across projects
@@ -29,35 +31,35 @@ This file is a **technology-agnostic template** for creating project-specific LL
 
 ### User Intent → Command Pipeline
 
-| User Intent | Command Sequence | Auto-Execute? |
-|------------|------------------|---------------|
-| "Set up new project" | `agent:init` → `doctor --preset X --fix` → `test` → `git init` | ✅ Yes |
-| "Fix my project" | `doctor --json` → `doctor --fix --dry-run` → `doctor --fix` | ✅ Yes |
-| "Make it production ready" | `doctor --strict` → `format:check` → `test` → `build` | ✅ Yes |
-| "Quick improvements" | `doctor` → `doctor --fix --no-install` → `format` | ✅ Yes |
-| "Set up CI" | `doctor --fix` → create workflow → `doctor --strict` | ✅ Yes |
-| "Check health" | `doctor` | ✅ Yes |
-| "Clean up project" | `cleanup --dry-run` → (ask user) → `cleanup --apply` | ⚠️ Ask first |
-| "Deploy my app" | Quality Gate → build → deploy command | ✅ Yes |
+| User Intent                | Command Sequence                                               | Auto-Execute? |
+| -------------------------- | -------------------------------------------------------------- | ------------- |
+| "Set up new project"       | `agent:init` → `doctor --preset X --fix` → `test` → `git init` | ✅ Yes        |
+| "Fix my project"           | `doctor --json` → `doctor --fix --dry-run` → `doctor --fix`    | ✅ Yes        |
+| "Make it production ready" | `doctor --strict` → `format:check` → `test` → `build`          | ✅ Yes        |
+| "Quick improvements"       | `doctor` → `doctor --fix --no-install` → `format`              | ✅ Yes        |
+| "Set up CI"                | `doctor --fix` → create workflow → `doctor --strict`           | ✅ Yes        |
+| "Check health"             | `doctor`                                                       | ✅ Yes        |
+| "Clean up project"         | `cleanup --dry-run` → (ask user) → `cleanup --apply`           | ⚠️ Ask first  |
+| "Deploy my app"            | Quality Gate → build → deploy command                          | ✅ Yes        |
 
 ### Framework Presets
 
-| Preset | When to Use | Auto-Detected From |
-|--------|-------------|-------------------|
-| `nextjs` | Next.js projects | next.config.*, app/, pages/ |
-| `vite` | Vite projects | vite.config.*, @vitejs/plugin |
-| `express` | Express APIs | express dep, server.* files |
-| `vanilla` | Plain JS/TS | No framework detected |
+| Preset    | When to Use      | Auto-Detected From             |
+| --------- | ---------------- | ------------------------------ |
+| `nextjs`  | Next.js projects | next.config.\*, app/, pages/   |
+| `vite`    | Vite projects    | vite.config.\*, @vitejs/plugin |
+| `express` | Express APIs     | express dep, server.\* files   |
+| `vanilla` | Plain JS/TS      | No framework detected          |
 
 ### Health Score → Action Matrix
 
-| Score Range | Status | Recommended Action | Pipeline |
-|-------------|--------|-------------------|----------|
-| 90-100 | 🟢 Excellent | Maintain | None |
-| 80-89 | 🟢 Good | Optional improvements | Quick wins |
-| 60-79 | 🟡 Fair | Apply fixes | Full fix pipeline |
-| 40-59 | 🟡 Needs Work | Complete overhaul | Full fix + manual |
-| 0-39 | 🔴 Poor | Rebuild tooling | Fresh setup |
+| Score Range | Status        | Recommended Action    | Pipeline          |
+| ----------- | ------------- | --------------------- | ----------------- |
+| 90-100      | 🟢 Excellent  | Maintain              | None              |
+| 80-89       | 🟢 Good       | Optional improvements | Quick wins        |
+| 60-79       | 🟡 Fair       | Apply fixes           | Full fix pipeline |
+| 40-59       | 🟡 Needs Work | Complete overhaul     | Full fix + manual |
+| 0-39        | 🔴 Poor       | Rebuild tooling       | Fresh setup       |
 
 ---
 
@@ -68,11 +70,13 @@ This file is a **technology-agnostic template** for creating project-specific LL
 **Purpose:** Analyze project health and identify gaps
 
 **Syntax:**
+
 ```bash
 npm run doctor [flags]
 ```
 
 **All Flags:**
+
 - `--fix` - Apply automatic fixes to detected issues
 - `--no-install` - Skip dependency installation (use with --fix)
 - `--preset <type>` - Override framework detection (nextjs|vite|express|vanilla)
@@ -111,6 +115,7 @@ npm run doctor --fast
 **Output Format:**
 
 Terminal output shows:
+
 - Health score (0-100)
 - Health breakdown by category
 - Critical issues
@@ -123,11 +128,13 @@ JSON output (`--json`) provides structured data for automation.
 **Purpose:** Interactive setup for new projects (5 questions)
 
 **Syntax:**
+
 ```bash
 npm run agent:init
 ```
 
 **Questions:**
+
 1. What are you building? (Side Project/SaaS, API/Backend, Full-Stack, Static Website, Other)
 2. Primary language? (JavaScript, TypeScript, Python, Other)
 3. Framework? (Next.js, React, Vue, Svelte, Vanilla JS)
@@ -137,6 +144,7 @@ npm run agent:init
 **Output:** Creates `project.manifest.json`
 
 **When to Use:**
+
 - Starting a brand new project
 - Empty directory with just package.json
 - Before writing any code
@@ -147,21 +155,25 @@ npm run agent:init
 **Purpose:** Preview template artifacts that can be removed
 
 **Syntax:**
+
 ```bash
 npm run cleanup [--dry-run|--apply]
 ```
 
 **Flags:**
+
 - Default (no flag): Dry run mode
 - `--dry-run`: Show what would be removed
 - `--apply`: Actually remove the files
 
 **When to Use:**
+
 - After initial setup is complete
 - Before first commit
 - Cleaning up template remnants
 
 **Examples:**
+
 ```bash
 # Preview what will be removed (safe)
 npm run cleanup
@@ -182,6 +194,7 @@ npm run cleanup --apply
 **User Intent:** "Set up my new [framework] project"
 
 **Complete Sequence:**
+
 ```bash
 # 1. Initialize project
 mkdir my-project && cd my-project
@@ -211,6 +224,7 @@ cp .github/workflows/indie-ci.yml.example .github/workflows/indie-ci.yml
 ```
 
 **Expected Outcome:**
+
 - ✅ Project manifest created
 - ✅ TypeScript with strict mode
 - ✅ ESLint + Prettier configured
@@ -225,6 +239,7 @@ cp .github/workflows/indie-ci.yml.example .github/workflows/indie-ci.yml
 **User Intent:** "Fix my project" or "Make my project better"
 
 **Complete Sequence:**
+
 ```bash
 # 1. Initial assessment
 npm run doctor --json > .devenv/health-before.json
@@ -255,6 +270,7 @@ npm run doctor --json > .devenv/health-after.json
 ```
 
 **Expected Outcome:**
+
 - Health score improved by 15-30 points
 - All quick-win issues resolved
 - Code formatted consistently
@@ -265,6 +281,7 @@ npm run doctor --json > .devenv/health-after.json
 **User Intent:** "Is my project ready to deploy?" or "Production ready check"
 
 **Complete Sequence:**
+
 ```bash
 # 1. Strict health check (fails on warnings)
 npm run doctor --strict --json
@@ -288,6 +305,7 @@ echo "Deployment readiness: PASS" > deployment-ready.txt
 **LLM Should Execute All Steps** and only return combined result.
 
 **If Any Check Fails:**
+
 - Automatically run Pipeline 2 (Health & Fix)
 - Re-run quality gate
 - Report when all checks pass
@@ -297,6 +315,7 @@ echo "Deployment readiness: PASS" > deployment-ready.txt
 **User Intent:** "Make my code better fast" or "Quick improvements"
 
 **Complete Sequence:**
+
 ```bash
 # 1. Assess quick wins only
 npm run doctor
@@ -431,12 +450,14 @@ START: Need to determine framework
 ### PowerShell/Windows Compatibility
 
 **Critical Rules:**
+
 - ❌ **NEVER use emoji in commit messages** (causes PowerShell parse errors)
 - ❌ **NEVER use `&&` for command chaining in PowerShell** (use `;` instead)
 - ✅ **Use `;` for command sequencing in PowerShell**
 - ✅ **Use `Write-Output` or plain `echo` without `-e` flag**
 
 **Examples:**
+
 ```powershell
 # ❌ Wrong - fails in PowerShell
 cd project && npm run build
@@ -452,6 +473,7 @@ npm run build
 ### Cross-Stack Development Practices
 
 **Key Principles:**
+
 1. **Avoid Unix-only shell utilities** in cross-platform workflows
    - Don't use `wc`, `sed`, `awk`, `grep` in automation scripts
    - Prefer language-native solutions (Python `len()`, `re.sub()`, etc.)
@@ -482,6 +504,7 @@ npm run build
 ### AI-Assisted Development Patterns
 
 **Critical Rules:**
+
 1. **Always re-read target files immediately before applying patches**
    - File contents may have changed since initial read
    - Always perform fresh read immediately before constructing patch
@@ -503,6 +526,7 @@ npm run build
 ### Unicode & Encoding
 
 **Rules:**
+
 - **Default to ASCII-safe output**
   - Avoid non-ASCII characters in CLI output (no emoji, superscripts, degree symbols)
   - Use ASCII equivalents: `m/s^2` instead of `m/s²`, `deg` instead of `°`
@@ -516,18 +540,18 @@ npm run build
 
 ### Common Issues
 
-| Issue | Solution |
-|-------|----------|
-| Installation fails | `rm -rf node_modules package-lock.json && npm install` |
-| Doctor not found | `npm run build` (compile TypeScript first) |
-| Tests timeout | `npm run test:fast` (run only fast tests) |
-| CI fails | Test locally first: `npm test` |
-| Cleanup removes too much | Use `--keep` flag |
-| Config not found | Ensure `config/` directory exists |
-| PowerShell errors | Use `;` instead of `&&` |
-| Low health score | Focus on critical issues only |
-| JSON parsing errors | Validate JSON syntax, check for trailing commas |
-| Stack detection wrong | Use `--preset` flag to override |
+| Issue                           | Solution                                               |
+| ------------------------------- | ------------------------------------------------------ |
+| Installation fails              | `rm -rf node_modules package-lock.json && npm install` |
+| Doctor not found                | `npm run build` (compile TypeScript first)             |
+| Tests timeout                   | `npm run test:fast` (run only fast tests)              |
+| CI fails                        | Test locally first: `npm test`                         |
+| Cleanup removes too much        | Use `--keep` flag                                      |
+| Config not found                | Ensure `config/` directory exists                      |
+| PowerShell errors               | Use `;` instead of `&&`                                |
+| Low health score                | Focus on critical issues only                          |
+| JSON parsing errors             | Validate JSON syntax, check for trailing commas        |
+| Stack detection wrong           | Use `--preset` flag to override                        |
 | Doctor inspects wrong directory | Use `--project-root` flag or set `DEVENV_PROJECT_ROOT` |
 
 ### Stack Detection Issues
@@ -535,6 +559,7 @@ npm run build
 **Problem:** Doctor not detecting framework correctly
 
 **Solution:**
+
 ```bash
 # Check what was detected
 npm run doctor --json | grep -A5 "frameworks"
@@ -554,6 +579,7 @@ npm run doctor
 **Problem:** `npm run doctor` fails with "Cannot find module" when embedded
 
 **Solution:**
+
 ```bash
 # Build TypeScript first
 cd .devenv
@@ -569,6 +595,7 @@ npm run doctor
 **Problem:** Doctor analyzes DevEnvTemplate instead of parent project
 
 **Solution:**
+
 ```bash
 # Run from project root with explicit project root
 npm run doctor --prefix .devenv -- --project-root ..
@@ -590,12 +617,14 @@ npm run doctor --prefix .devenv
 ### Initial Embedding
 
 1. **Add `.devenv/` to Your Project**
+
    ```bash
    # Inside your project root
    git clone https://github.com/XylarDark/DevEnvTemplate .devenv
    ```
 
 2. **Install & Build DevEnvTemplate Once**
+
    ```bash
    cd .devenv
    npm install          # install DevEnvTemplate dependencies
@@ -603,9 +632,11 @@ npm run doctor --prefix .devenv
    ```
 
 3. **Capture Project Intent (Optional, Recommended)**
+
    ```bash
    npm run agent:init
    ```
+
    Answer the 5 interactive questions. This creates `project.manifest.json`.
 
 4. **Run the First Doctor Pass**
@@ -674,6 +705,7 @@ DEVENV_PROJECT_ROOT=../other-project npm run doctor -- --project-root ../other-p
 ### When to Ask vs Proceed
 
 **Proceed Automatically:**
+
 - ✅ Health checks (read-only)
 - ✅ Fixes with --dry-run
 - ✅ Config-only changes
@@ -683,6 +715,7 @@ DEVENV_PROJECT_ROOT=../other-project npm run doctor -- --project-root ../other-p
 - ✅ Clear framework detection
 
 **Ask User First:**
+
 - ⚠️ Destructive operations (cleanup --apply)
 - ⚠️ Enabling strict mode if large codebase
 - ⚠️ Framework migration
@@ -699,16 +732,19 @@ DEVENV_PROJECT_ROOT=../other-project npm run doctor -- --project-root ../other-p
 **Preset:** `nextjs`
 
 **Detection Signals:**
+
 - `next.config.js/mjs/ts` file exists
 - `next` dependency in package.json
 - `app/` or `pages/` directory exists
 
 **Recommended Setup:**
+
 ```bash
 npm run doctor --preset nextjs --fix
 ```
 
 **What It Configures:**
+
 - ESLint with `next/core-web-vitals`
 - TypeScript with Next.js plugins
 - Environment variables with `NEXT_PUBLIC_` prefix
@@ -719,16 +755,19 @@ npm run doctor --preset nextjs --fix
 **Preset:** `vite`
 
 **Detection Signals:**
+
 - `vite.config.ts/js` file exists
 - `vite` dependency in package.json
 - `index.html` in root directory
 
 **Recommended Setup:**
+
 ```bash
 npm run doctor --preset vite --fix
 ```
 
 **What It Configures:**
+
 - ESLint with React/Vue/Svelte plugins
 - TypeScript with `react-jsx`
 - Environment variables with `VITE_` prefix
@@ -738,16 +777,19 @@ npm run doctor --preset vite --fix
 **Preset:** `express`
 
 **Detection Signals:**
+
 - `express` dependency in package.json
 - `server.js/ts` or `app.js/ts` with express patterns
 - No frontend framework config files
 
 **Recommended Setup:**
+
 ```bash
 npm run doctor --preset express --fix
 ```
 
 **What It Configures:**
+
 - ESLint for Node.js
 - TypeScript with `commonjs` module
 - Environment variables for API (NODE_ENV, PORT, etc.)
@@ -761,8 +803,12 @@ npm run doctor --preset express --fix
 **Problem:** Base64 encoding errors are common when generating encryption keys manually.
 
 **Solution:** Use DevEnvTemplate utilities:
+
 ```typescript
-import { generateEncryptionKey, validateBase64Key } from './scripts/utils/crypto-helpers';
+import {
+  generateEncryptionKey,
+  validateBase64Key,
+} from './scripts/utils/crypto-helpers';
 
 // Generate a key
 const key = generateEncryptionKey(32); // 32 bytes for AES-256
@@ -775,6 +821,7 @@ if (!validation.valid) {
 ```
 
 **CLI Tool:**
+
 ```bash
 node dist/scripts/tools/generate-key.js --length 32
 ```
@@ -784,12 +831,16 @@ node dist/scripts/tools/generate-key.js --length 32
 **Problem:** Missing or invalid environment variables cause runtime errors.
 
 **Solution:** Use validation utilities:
+
 ```typescript
-import { requireEnvVar, requireEncryptionKey } from './scripts/utils/env-validator';
+import {
+  requireEnvVar,
+  requireEncryptionKey,
+} from './scripts/utils/env-validator';
 
 // Check for required variable
 const apiKey = requireEnvVar('API_KEY', {
-  hint: 'Set API_KEY in your .env file'
+  hint: 'Set API_KEY in your .env file',
 });
 
 // Validate encryption key format
@@ -801,8 +852,12 @@ const encryptionKey = requireEncryptionKey('ENCRYPTION_KEY', 32);
 **Problem:** Generic error messages don't help users fix issues.
 
 **Solution:** Use error helpers for actionable messages:
+
 ```typescript
-import { createActionableError, createJsonParseError } from './scripts/utils/error-helpers';
+import {
+  createActionableError,
+  createJsonParseError,
+} from './scripts/utils/error-helpers';
 
 // JSON parsing errors
 try {
@@ -812,16 +867,13 @@ try {
 }
 
 // General errors with hints
-throw createActionableError(
-  'Invalid encryption key format',
-  {
-    hints: [
-      'Key must be 44 characters for a 32-byte key',
-      'Generate a new key using: node dist/scripts/tools/generate-key.js'
-    ],
-    docs: 'docs/BEST-PRACTICES.md#encryption-key-generation'
-  }
-);
+throw createActionableError('Invalid encryption key format', {
+  hints: [
+    'Key must be 44 characters for a 32-byte key',
+    'Generate a new key using: node dist/scripts/tools/generate-key.js',
+  ],
+  docs: 'docs/BEST-PRACTICES.md#encryption-key-generation',
+});
 ```
 
 ### Verification Procedures
@@ -829,8 +881,12 @@ throw createActionableError(
 **Problem:** No standardized way to verify project setup before commit/deploy.
 
 **Solution:** Use verification utilities:
+
 ```typescript
-import { verifyPreCommit, verifyPreDeployment } from './scripts/utils/verification';
+import {
+  verifyPreCommit,
+  verifyPreDeployment,
+} from './scripts/utils/verification';
 
 // Pre-commit checks
 const result = await verifyPreCommit(projectRoot);
@@ -850,6 +906,7 @@ if (!deployResult.passed) {
 **Problem:** Shell commands differ between Windows PowerShell and Bash.
 
 **Solution:** Use shell helpers:
+
 ```typescript
 import { formatCommand, getShellExample } from './scripts/utils/shell-helpers';
 
@@ -880,5 +937,4 @@ For detailed information, see:
 
 **End of LLM Reference Guide**
 
-*This guide enables AI assistants to autonomously help developers with DevEnvTemplate by providing complete command context, decision-making frameworks, and automated workflows.*
-
+_This guide enables AI assistants to autonomously help developers with DevEnvTemplate by providing complete command context, decision-making frameworks, and automated workflows._

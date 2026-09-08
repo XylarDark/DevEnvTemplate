@@ -37,7 +37,10 @@ export function resolveConfigPath(configName: string, workingDir: string = proce
  * @param workingDir - Working directory (defaults to __dirname/../../)
  * @returns Resolved pack path or null if not found
  */
-export function resolvePackPath(packName: string, workingDir: string = path.join(__dirname, '../..')): string | null {
+export function resolvePackPath(
+  packName: string,
+  workingDir: string = path.join(__dirname, '../..')
+): string | null {
   const newPath = path.join(workingDir, 'packs', packName);
   const oldPath = path.join(workingDir, 'presets', packName);
 
@@ -108,7 +111,7 @@ export function configExists(configName: string, workingDir: string = process.cw
  */
 export function resolveProjectRoot(startDir: string = process.cwd()): string {
   let current = path.resolve(startDir);
-  
+
   // Check if we're in .devenv subdirectory
   if (path.basename(current) === '.devenv') {
     const parent = path.dirname(current);
@@ -116,12 +119,12 @@ export function resolveProjectRoot(startDir: string = process.cwd()): string {
       current = parent;
     }
   }
-  
+
   // Walk up to find project root (has package.json, pyproject.toml, or .git)
   const rootMarkers = ['package.json', 'pyproject.toml', '.git', 'Cargo.toml', 'go.mod'];
   const maxDepth = 10; // Prevent infinite loops
   let depth = 0;
-  
+
   while (depth < maxDepth && current !== path.dirname(current)) {
     // Check for root markers
     for (const marker of rootMarkers) {
@@ -129,11 +132,11 @@ export function resolveProjectRoot(startDir: string = process.cwd()): string {
         return current;
       }
     }
-    
+
     current = path.dirname(current);
     depth++;
   }
-  
+
   // Fallback to start directory
   return startDir;
 }
@@ -146,4 +149,3 @@ export function resolveProjectRoot(startDir: string = process.cwd()): string {
 export function normalizePath(filePath: string): string {
   return path.normalize(filePath);
 }
-

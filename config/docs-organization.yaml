@@ -5,7 +5,7 @@
 rootExceptions:
   - README.md
   - CHANGELOG.md
-  - BOOTSTRAP.md  # DevEnvTemplate specific
+  - BOOTSTRAP.md # DevEnvTemplate specific
   - CONTRIBUTING.md
   - LICENSE.md
 
@@ -18,21 +18,21 @@ directoryRules:
       - "DEPLOYMENT*.md"
       - "*_DEPLOY*.md"
     target: "docs/deployment"
-  
+
   guides:
     patterns:
       - "*_GUIDE.md"
       - "*GUIDE*.md"
       - "GUIDE*.md"
     target: "docs/guides"
-  
+
   api:
     patterns:
       - "*_API*.md"
       - "API*.md"
       - "*API_*.md"
     target: "docs/api"
-  
+
   quickstart:
     patterns:
       - "*_QUICK_START.md"
@@ -40,14 +40,14 @@ directoryRules:
       - "QUICK_START*.md"
       - "*_QUICKSTART.md"
     target: "docs"
-  
+
   railway:
     patterns:
       - "*RAILWAY*.md"
       - "RAILWAY*.md"
       - "*_RAILWAY.md"
     target: "docs/deployment"
-  
+
   vercel:
     patterns:
       - "*VERCEL*.md"
@@ -57,4 +57,3 @@ directoryRules:
 
 # Default target directory for files that don't match any pattern
 defaultTarget: "docs"
-

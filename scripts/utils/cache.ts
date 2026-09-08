@@ -112,7 +112,7 @@ export class FileCache {
       hash: contentHash,
       timestamp: Date.now(),
       data,
-      ttl: ttl || this.ttl
+      ttl: ttl || this.ttl,
     };
 
     // Store in memory cache
@@ -142,7 +142,7 @@ export class FileCache {
    */
   public async clear(): Promise<void> {
     this.memoryCache.clear();
-    
+
     try {
       const files = await fs.readdir(this.cacheDir);
       await Promise.all(
@@ -164,7 +164,7 @@ export class FileCache {
     try {
       const files = await fs.readdir(this.cacheDir);
       entries = files.length;
-      
+
       const sizes = await Promise.all(
         files.map(async file => {
           try {
@@ -175,7 +175,7 @@ export class FileCache {
           }
         })
       );
-      
+
       size = sizes.reduce((sum, s) => sum + s, 0);
     } catch (error) {
       // Directory doesn't exist or can't be read
@@ -184,7 +184,7 @@ export class FileCache {
     return {
       entries,
       size,
-      memoryEntries: this.memoryCache.size
+      memoryEntries: this.memoryCache.size,
     };
   }
 
@@ -205,13 +205,13 @@ export class FileCache {
     // Prune disk cache
     try {
       const files = await fs.readdir(this.cacheDir);
-      
+
       for (const file of files) {
         try {
           const cachePath = path.join(this.cacheDir, file);
           const content = await fs.readFile(cachePath, 'utf8');
           const entry: CacheEntry = JSON.parse(content);
-          
+
           if (!this.isValid(entry)) {
             await fs.unlink(cachePath);
             pruned++;
@@ -242,7 +242,8 @@ export class ConfigCache {
   private ttl: number;
   private logger: Logger;
 
-  constructor(ttl: number = 60 * 60 * 1000) { // 1 hour default
+  constructor(ttl: number = 60 * 60 * 1000) {
+    // 1 hour default
     this.cache = new Map();
     this.ttl = ttl;
     this.logger = createLogger({ context: 'ConfigCache' });
@@ -253,7 +254,7 @@ export class ConfigCache {
    */
   public get(configPath: string, currentHash: string): any | null {
     const entry = this.cache.get(configPath);
-    
+
     if (!entry) {
       this.logger.debug('Config cache miss', { configPath });
       return null;
@@ -285,7 +286,7 @@ export class ConfigCache {
     this.cache.set(configPath, {
       config,
       hash,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
     this.logger.debug('Config cached', { configPath });
   }
@@ -305,4 +306,3 @@ export class ConfigCache {
     return this.cache.size;
   }
 }
-

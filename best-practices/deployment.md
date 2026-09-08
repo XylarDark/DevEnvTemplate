@@ -44,6 +44,7 @@ secrets/
 ### Environment Variables
 
 Set in Vercel dashboard:
+
 - `NEXT_PUBLIC_API_URL` - Backend API URL
 - `NEXT_PUBLIC_API_KEY` - Optional API key
 
@@ -56,7 +57,7 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true, // For Vercel deployment
   },
-}
+};
 ```
 
 ## Backend Deployment (Railway/Render)
@@ -94,9 +95,9 @@ services:
       - key: PORT
         value: 8000
       - key: DEMO_MODE
-        value: "true"
+        value: 'true'
       - key: CORS_ORIGINS
-        value: "https://your-vercel-app.vercel.app"
+        value: 'https://your-vercel-app.vercel.app'
 ```
 
 ## Health Checks
@@ -109,7 +110,7 @@ export async function GET() {
   return Response.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
-  })
+  });
 }
 ```
 
@@ -131,12 +132,12 @@ Consider using Sentry for error tracking:
 
 ```typescript
 // lib/sentry.ts
-import * as Sentry from "@sentry/nextjs"
+import * as Sentry from '@sentry/nextjs';
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
   environment: process.env.NODE_ENV,
-})
+});
 ```
 
 ### Performance Monitoring
@@ -165,6 +166,7 @@ engine = create_engine(
 ### HTTPS Only
 
 Ensure all deployments use HTTPS:
+
 - Vercel: Automatic HTTPS
 - Railway: Automatic HTTPS
 - Render: Automatic HTTPS
@@ -191,4 +193,3 @@ Before deploying:
 - [ ] Database connection pooling (if applicable)
 - [ ] Logging configured
 - [ ] Backup strategy (if applicable)
-

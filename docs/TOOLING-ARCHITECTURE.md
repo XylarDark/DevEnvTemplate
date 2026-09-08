@@ -12,7 +12,7 @@ That single runtime assumption unlocks a predictable experience on macOS, Linux,
 
 ## What belongs in the TypeScript core?
 
-Use the TypeScript + Node toolchain for features that need to work across *all* projects:
+Use the TypeScript + Node toolchain for features that need to work across _all_ projects:
 
 - `stack-detector`, `gap-analyzer`, `plan-generator`, the cleanup engine, and future shared doctor rules.
 - Repo-wide automation that inspects a filesystem, parses JSON/TOML/YAML, or generates reports in `.devenv`.
@@ -33,7 +33,7 @@ Projects can and should keep helper scripts in their native stacks when the chec
 
 Guidelines:
 
-- If a helper only makes sense for *one* repository, keep it in that repo and document it locally.
+- If a helper only makes sense for _one_ repository, keep it in that repo and document it locally.
 - If you discover a helper that would benefit every DevEnvTemplate user, port the idea into the TypeScript core so it runs inside `.devenv`.
 - Avoid introducing new shared runtimes (Python/Go/Rust) in `.devenv` unless there is a strong reason—every new runtime would complicate installation for users.
 
@@ -48,4 +48,3 @@ Until then, TypeScript + Node remains the single source of truth for DevEnvTempl
 - **File-system caching:** the stack detector memoizes reads of package manifests, workflow files, and configs so repeated checks don’t thrash disk I/O.
 - **Directory ignore lists:** both stack detector and gap analyzer skip heavy folders (`node_modules`, `dist/`, `.venv/`, datasets, etc.) and cap workflow traversal to a handful of files per CI folder.
 - **Fast mode (`npm run doctor --fast`):** runs the short path (stack detection + core quality/security checks) and skips documentation, accessibility, Docker, and git-hook analyses. Default/full scans still run everything before releases.
-

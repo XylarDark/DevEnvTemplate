@@ -2,7 +2,7 @@
 
 /**
  * Simplified Agent CLI for Indie Developers
- * 
+ *
  * 5 questions max, opinionated defaults, fast setup
  */
 
@@ -14,12 +14,12 @@ class SimpleAgentCLI {
   constructor() {
     this.rl = readline.createInterface({
       input: process.stdin,
-      output: process.stdout
+      output: process.stdout,
     });
   }
 
   async prompt(question, options = null, defaultIndex = 0) {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       let fullQuestion = question;
       if (options && options.length > 0) {
         fullQuestion += `\n${options.map((opt, idx) => `${idx + 1}) ${opt}`).join('\n')}`;
@@ -27,7 +27,7 @@ class SimpleAgentCLI {
       }
       fullQuestion += '\n> ';
 
-      this.rl.question(fullQuestion, (answer) => {
+      this.rl.question(fullQuestion, answer => {
         if (options && options.length > 0) {
           const index = parseInt(answer.trim()) - 1;
           if (!isNaN(index) && index >= 0 && index < options.length) {
@@ -58,7 +58,7 @@ class SimpleAgentCLI {
         'API / Backend Service',
         'Full-Stack App (frontend + backend)',
         'Static Website / Landing Page',
-        'Other'
+        'Other',
       ],
       0 // Default: Side Project
     );
@@ -66,12 +66,7 @@ class SimpleAgentCLI {
     // Question 2: Primary language
     const language = await this.prompt(
       '\n2️⃣  Primary language?',
-      [
-        'JavaScript',
-        'TypeScript',
-        'Python',
-        'Other'
-      ],
+      ['JavaScript', 'TypeScript', 'Python', 'Other'],
       1 // Default: TypeScript
     );
 
@@ -141,14 +136,15 @@ class SimpleAgentCLI {
       packageManager: confirmedPM,
       deployment: {
         target: 'cloud-free-tier',
-        platforms: this.suggestPlatforms(projectType, framework)
+        platforms: this.suggestPlatforms(projectType, framework),
       },
       rationale: {
         productType: `Building a ${projectType.toLowerCase()}`,
         technologies: `Using ${language} with ${framework}`,
-        features: features.length > 0 ? `Core features: ${features.join(', ')}` : 'Minimal feature set',
-        deployment: 'Optimized for free-tier deployment (Vercel, Railway, Fly.io)'
-      }
+        features:
+          features.length > 0 ? `Core features: ${features.join(', ')}` : 'Minimal feature set',
+        deployment: 'Optimized for free-tier deployment (Vercel, Railway, Fly.io)',
+      },
     };
 
     // Save manifest
@@ -176,11 +172,11 @@ class SimpleAgentCLI {
 
   mapTechnologies(language, framework) {
     const tech = [];
-    
+
     if (language === 'JavaScript') tech.push('javascript');
     if (language === 'TypeScript') tech.push('typescript', 'javascript');
     if (language === 'Python') tech.push('python');
-    
+
     const frameworkLower = framework.toLowerCase();
     if (frameworkLower.includes('next')) tech.push('nextjs', 'react');
     else if (frameworkLower.includes('react')) tech.push('react');
@@ -190,11 +186,16 @@ class SimpleAgentCLI {
     else if (frameworkLower.includes('fastify')) tech.push('fastify', 'nodejs');
     else if (frameworkLower.includes('nestjs')) tech.push('nestjs', 'nodejs');
     else if (frameworkLower.includes('astro')) tech.push('astro');
-    
-    if (tech.includes('express') || tech.includes('fastify') || tech.includes('nestjs') || tech.includes('nextjs')) {
+
+    if (
+      tech.includes('express') ||
+      tech.includes('fastify') ||
+      tech.includes('nestjs') ||
+      tech.includes('nextjs')
+    ) {
       if (!tech.includes('nodejs')) tech.push('nodejs');
     }
-    
+
     return tech;
   }
 
@@ -222,4 +223,3 @@ if (require.main === module) {
 }
 
 module.exports = SimpleAgentCLI;
-

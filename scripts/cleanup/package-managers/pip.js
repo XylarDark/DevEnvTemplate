@@ -29,18 +29,20 @@ class PipManager extends BasePackageManager {
     if (rule.remove_deps) {
       const filteredLines = lines.filter(line => {
         const trimmed = line.trim();
-        
+
         // Keep empty lines and comments
         if (!trimmed || trimmed.startsWith('#')) return true;
 
         // Check if this line contains any of the packages to remove
         const shouldRemove = rule.remove_deps.some(dep => {
           // Handle various pip formats (with version, extras, etc.)
-          return trimmed.startsWith(dep) || 
-                 trimmed.startsWith(dep.replace('-', '_')) ||
-                 trimmed.includes(dep + '==') ||
-                 trimmed.includes(dep + '>=') ||
-                 trimmed.includes(dep + '[');
+          return (
+            trimmed.startsWith(dep) ||
+            trimmed.startsWith(dep.replace('-', '_')) ||
+            trimmed.includes(dep + '==') ||
+            trimmed.includes(dep + '>=') ||
+            trimmed.includes(dep + '[')
+          );
         });
 
         if (shouldRemove) {
@@ -64,4 +66,3 @@ class PipManager extends BasePackageManager {
 }
 
 module.exports = { PipManager };
-

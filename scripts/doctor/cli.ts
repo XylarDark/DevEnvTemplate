@@ -2,7 +2,7 @@
 
 /**
  * Development Environment Doctor Mode
- * 
+ *
  * Acts as a "doctor" for your development environment:
  * - Diagnoses issues (stack-detector)
  * - Prescribes solutions (gap-analyzer)
@@ -85,15 +85,15 @@ const DEFAULT_HEALTH_SCORE_CONFIG: HealthScoreConfig = {
     dependencies: 'security',
     docker: 'security',
     documentation: 'documentation',
-    observability: 'documentation'
-  }
+    observability: 'documentation',
+  },
 };
 
 /** Maps analyzer gap severity onto the doctor's issue severity. */
 const SEVERITY_TO_ISSUE: Record<GapSeverity, Issue['severity']> = {
   high: 'critical',
   medium: 'warning',
-  low: 'info'
+  low: 'info',
 };
 
 interface CliOptions {
@@ -127,7 +127,7 @@ async function runDoctor(options: CliOptions = {}) {
       console.log('📴 Offline mode enabled: network operations disabled\n');
     }
   }
-  
+
   if (options.debug && !process.env.LOG_LEVEL) {
     process.env.LOG_LEVEL = 'DEBUG';
   }
@@ -173,7 +173,7 @@ async function runDoctor(options: CliOptions = {}) {
       ? stackDetectorSourcePath
       : stackDetectorDistPath;
   let stackData: any;
-  
+
   try {
     const stackArgs = ['--json'];
     if (scanMode === 'fast') {
@@ -190,12 +190,13 @@ async function runDoctor(options: CliOptions = {}) {
       cwd: workingDir,
       encoding: 'utf8',
       stdio: ['pipe', 'pipe', 'pipe'],
-      env: { ...process.env }
+      env: { ...process.env },
     });
     stackData = JSON.parse(stackOutput);
-    const profiles = Array.isArray(stackData.profiles) && stackData.profiles.length > 0
-      ? stackData.profiles
-      : ['agnostic'];
+    const profiles =
+      Array.isArray(stackData.profiles) && stackData.profiles.length > 0
+        ? stackData.profiles
+        : ['agnostic'];
     if (!options.json) {
       console.log(`🧠 Stack profile${profiles.length > 1 ? 's' : ''}: ${profiles.join(', ')}`);
     }
@@ -203,7 +204,7 @@ async function runDoctor(options: CliOptions = {}) {
     const stderr = error?.stderr?.toString()?.trim();
     const stdout = error?.stdout?.toString()?.trim();
     const details = stderr || stdout || error.message;
-    
+
     // Check if it's a JSON parsing error
     if (error instanceof SyntaxError || details.includes('JSON') || details.includes('parse')) {
       console.error('❌ Failed to parse stack detector output as JSON');
@@ -214,24 +215,29 @@ async function runDoctor(options: CliOptions = {}) {
       }
     } else {
       console.error('❌ Failed to detect stack:', details);
-      console.error('   Make sure you are running from the project root or use --project-root flag.');
+      console.error(
+        '   Make sure you are running from the project root or use --project-root flag.'
+      );
     }
     process.exit(1);
   }
 
   // Step 1.5: Integrate cursor rules if requested or if needed
-  if (options.integrateCursorRules || (stackData.cursorRules && stackData.cursorRules.needsIntegration)) {
+  if (
+    options.integrateCursorRules ||
+    (stackData.cursorRules && stackData.cursorRules.needsIntegration)
+  ) {
     if (!options.json) {
       console.log('📋 Integrating Cursor rules...');
     }
-    
+
     try {
       // Find .cursor/rules path within .devenv (self-contained)
       // Check .devenv/.cursor/rules relative to project root and __dirname relative paths
       let templateRulesPath: string | null = null;
       const possiblePaths = [
         path.join(workingDir, '.devenv', '.cursor', 'rules'),
-        path.join(__dirname, '../../../.cursor/rules')
+        path.join(__dirname, '../../../.cursor/rules'),
       ];
 
       for (const possiblePath of possiblePaths) {
@@ -248,7 +254,7 @@ async function runDoctor(options: CliOptions = {}) {
           templateRulesPath,
           stackReport: stackData,
           overwriteCore: false,
-          dryRun: options.dryRun || false
+          dryRun: options.dryRun || false,
         });
 
         if (!options.json) {
@@ -259,7 +265,9 @@ async function runDoctor(options: CliOptions = {}) {
             console.log(`  ✓ Updated ${integrationResult.updated.length} rule file(s)`);
           }
           if (integrationResult.preserved.length > 0) {
-            console.log(`  ✓ Preserved ${integrationResult.preserved.length} project-specific rule file(s)`);
+            console.log(
+              `  ✓ Preserved ${integrationResult.preserved.length} project-specific rule file(s)`
+            );
           }
           if (integrationResult.recommendations.length > 0) {
             integrationResult.recommendations.forEach(rec => {
@@ -279,7 +287,7 @@ async function runDoctor(options: CliOptions = {}) {
       }
       // Don't fail the entire doctor run if integration fails
     }
-    
+
     if (!options.json) {
       console.log('');
     }
@@ -291,7 +299,7 @@ async function runDoctor(options: CliOptions = {}) {
   }
   const gapAnalyzerPath = path.join(__dirname, '../tools/gap-analyzer.js');
   let gapReport: GapReport;
-  
+
   try {
     const gapArgs: string[] = [];
     if (scanMode === 'fast') {
@@ -313,9 +321,9 @@ async function runDoctor(options: CliOptions = {}) {
       cwd: workingDir,
       encoding: 'utf8',
       stdio: ['pipe', 'pipe', options.debug ? 'inherit' : 'pipe'],
-      env: { ...process.env }
+      env: { ...process.env },
     });
-    
+
     // Read the structured report. The markdown sibling is for humans only.
     const gapsJsonPath = path.join(reportDir, 'gaps-report.json');
 
@@ -353,7 +361,7 @@ async function runDoctor(options: CliOptions = {}) {
   // Step 5: Save full report
   const reportPath = path.join(reportDir, 'health-report.json');
   await fs.writeFile(reportPath, JSON.stringify(report, null, 2));
-  
+
   if (!options.json) {
     console.log(`\n💾 Full report saved: ${path.relative(workingDir, reportPath)}`);
   }
@@ -386,7 +394,7 @@ async function runDoctor(options: CliOptions = {}) {
 async function loadHealthScoreConfig(workingDir: string): Promise<HealthScoreConfig> {
   const candidatePaths = [
     path.join(workingDir, 'config', 'quality-budgets.json'),
-    path.join(__dirname, '../../../config/quality-budgets.json')
+    path.join(__dirname, '../../../config/quality-budgets.json'),
   ];
 
   for (const candidate of candidatePaths) {
@@ -407,13 +415,11 @@ async function loadHealthScoreConfig(workingDir: string): Promise<HealthScoreCon
         weights: { ...DEFAULT_HEALTH_SCORE_CONFIG.weights, ...(configured.weights || {}) },
         categoryMap: {
           ...DEFAULT_HEALTH_SCORE_CONFIG.categoryMap,
-          ...(configured.categoryMap || {})
-        }
+          ...(configured.categoryMap || {}),
+        },
       };
     } catch (error: any) {
-      console.error(
-        `⚠️  Ignoring malformed healthScore config in ${candidate}: ${error.message}`
-      );
+      console.error(`⚠️  Ignoring malformed healthScore config in ${candidate}: ${error.message}`);
     }
   }
 
@@ -446,7 +452,7 @@ function buildDoctorReport(gapReport: GapReport, config: HealthScoreConfig): Doc
       category: gap.category,
       message: gap.title,
       estimatedFix: estimateFixTime(gap),
-      ...(dimension ? { dimension } : {})
+      ...(dimension ? { dimension } : {}),
     };
 
     if (issue.severity === 'critical') {
@@ -469,7 +475,7 @@ function buildDoctorReport(gapReport: GapReport, config: HealthScoreConfig): Doc
     warnings,
     info,
     quickWins,
-    unscoredCategories: [...unscoredCategories].sort()
+    unscoredCategories: [...unscoredCategories].sort(),
   };
 }
 
@@ -491,7 +497,7 @@ function calculateHealthScore(gaps: Gap[], config: HealthScoreConfig): HealthSco
     'testing',
     'ci',
     'typeSafety',
-    'documentation'
+    'documentation',
   ];
 
   const penaltyByDimension = new Map<ScoredDimension, number>(
@@ -518,7 +524,7 @@ function calculateHealthScore(gaps: Gap[], config: HealthScoreConfig): HealthSco
     testing: scoreFor('testing'),
     ci: scoreFor('ci'),
     typeSafety: scoreFor('typeSafety'),
-    documentation: scoreFor('documentation')
+    documentation: scoreFor('documentation'),
   };
 
   // Normalize by the weights actually present so a partial config cannot deflate the overall.
@@ -544,9 +550,9 @@ function calculateHealthScore(gaps: Gap[], config: HealthScoreConfig): HealthSco
  */
 function displayReport(report: DoctorReport) {
   // Overall health
-  const healthColor = report.healthScore.overall >= 80 ? '🟢' : 
-                      report.healthScore.overall >= 60 ? '🟡' : '🔴';
-  
+  const healthColor =
+    report.healthScore.overall >= 80 ? '🟢' : report.healthScore.overall >= 60 ? '🟡' : '🔴';
+
   console.log(`${healthColor} Project Health: ${report.healthScore.overall}/100`);
   console.log('');
 
@@ -636,7 +642,7 @@ function formatScore(score: number): string {
 const EFFORT_TO_ESTIMATE: Record<Gap['effort'], string> = {
   low: '< 10 min',
   medium: '~1 hour',
-  high: '> 1 day'
+  high: '> 1 day',
 };
 
 function estimateFixTime(gap: Gap): string {
@@ -686,7 +692,7 @@ function createQuickWinContext(rootDir: string, stack: any, packageJson: any): Q
         ? JSON.parse(await fs.readFile(absolutePath, 'utf8'))
         : {};
       await fs.writeFile(absolutePath, `${JSON.stringify(updater(existing), null, 2)}\n`);
-    }
+    },
   };
 }
 
@@ -782,12 +788,12 @@ function parseArgs(): CliOptions {
     noInstall: false,
     dryRun: false,
     strict: false,
-    json: false
+    json: false,
   };
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
-    
+
     switch (arg) {
       case '--fix':
         options.fix = true;
@@ -921,7 +927,10 @@ WORKFLOW:
 `);
 }
 
-async function resolveProjectRoot(cwd: string, override?: string): Promise<{ projectRoot: string; autoDetected: boolean }> {
+async function resolveProjectRoot(
+  cwd: string,
+  override?: string
+): Promise<{ projectRoot: string; autoDetected: boolean }> {
   const envOverride = process.env.DEVENV_PROJECT_ROOT;
   const requested = override || envOverride;
   let candidate = requested ? path.resolve(cwd, requested) : cwd;
@@ -974,7 +983,6 @@ export {
   calculateHealthScore,
   loadHealthScoreConfig,
   runDoctor,
-  DEFAULT_HEALTH_SCORE_CONFIG
+  DEFAULT_HEALTH_SCORE_CONFIG,
 };
 export type { DoctorReport, HealthScore, HealthScoreConfig, Issue, ScoredDimension };
-

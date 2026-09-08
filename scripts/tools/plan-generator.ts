@@ -11,7 +11,14 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { createLogger, Logger } from '../../scripts/utils/logger';
 import { Gap, GapCategory } from '../types/gaps';
-import { Task, TaskGroup, HardeningPlan, CodeSnippet, PlanGeneratorOptions, PlanMetadata } from '../types/plan';
+import {
+  Task,
+  TaskGroup,
+  HardeningPlan,
+  CodeSnippet,
+  PlanGeneratorOptions,
+  PlanMetadata,
+} from '../types/plan';
 
 export class PlanGenerator {
   private rootDir: string;
@@ -42,7 +49,9 @@ export class PlanGenerator {
       this.parseGaps(gapsReport);
       this.logger.debug(`Parsed ${this.gaps.length} gaps from report`);
     } catch (error: any) {
-      this.logger.error('Failed to load gaps report. Run gap-analyzer first.', { error: error.message });
+      this.logger.error('Failed to load gaps report. Run gap-analyzer first.', {
+        error: error.message,
+      });
       throw new Error('Gaps report not found. Run gap-analyzer first.');
     }
 
@@ -78,7 +87,8 @@ export class PlanGenerator {
   private parseGaps(report: string): void {
     const lines = report.split('\n');
     let currentGap: Partial<Gap> | null = null;
-    let inSection: 'description' | 'impact' | 'recommendation' | 'files' | 'resources' | null = null;
+    let inSection: 'description' | 'impact' | 'recommendation' | 'files' | 'resources' | null =
+      null;
 
     for (const line of lines) {
       if (line.startsWith('### ')) {
@@ -102,7 +112,7 @@ export class PlanGenerator {
             recommendation: '',
             effort: 'medium' as 'low' | 'medium' | 'high',
             files: [],
-            resources: []
+            resources: [],
           };
           inSection = null;
         }
@@ -110,7 +120,12 @@ export class PlanGenerator {
         if (line.startsWith('**Category:**')) {
           const categoryStr = line.replace('**Category:**', '').trim();
           currentGap.category = categoryStr as GapCategory;
-        } else if (line.trim() && !line.startsWith('**') && !line.startsWith('---') && !currentGap.description) {
+        } else if (
+          line.trim() &&
+          !line.startsWith('**') &&
+          !line.startsWith('---') &&
+          !currentGap.description
+        ) {
           currentGap.description = line.trim();
         } else if (line.startsWith('**Impact:**')) {
           currentGap.impact = line.replace('**Impact:**', '').trim();
@@ -120,7 +135,10 @@ export class PlanGenerator {
           inSection = 'recommendation';
         } else if (line.startsWith('**Effort:**')) {
           const effortStr = line.replace('**Effort:**', '').trim().toLowerCase();
-          currentGap.effort = (effortStr === 'low' || effortStr === 'medium' || effortStr === 'high') ? effortStr : 'medium';
+          currentGap.effort =
+            effortStr === 'low' || effortStr === 'medium' || effortStr === 'high'
+              ? effortStr
+              : 'medium';
           inSection = null;
         } else if (line.startsWith('**Files:**')) {
           const filesStr = line.replace('**Files:**', '').trim();
@@ -165,7 +183,7 @@ export class PlanGenerator {
       codeSnippets: [],
       dependencies: [],
       estimatedMinutes: this.estimateEffort(gap.effort),
-      priorityScore: 0
+      priorityScore: 0,
     };
   }
 
@@ -180,7 +198,7 @@ export class PlanGenerator {
     const estimates = {
       low: 30,
       medium: 90,
-      high: 180
+      high: 180,
     };
     return estimates[effort];
   }
@@ -201,22 +219,29 @@ export class PlanGenerator {
     const dependencyRules = [
       {
         // TypeScript should be set up before ESLint TypeScript config
-        if: (task: Task) => task.category === 'linting' && task.title.toLowerCase().includes('typescript'),
-        dependsOn: (tasks: Task[]) => tasks.find(t => t.category === 'typescript' && t.title.toLowerCase().includes('not configured')),
-        reason: 'TypeScript must be configured before TypeScript ESLint rules'
+        if: (task: Task) =>
+          task.category === 'linting' && task.title.toLowerCase().includes('typescript'),
+        dependsOn: (tasks: Task[]) =>
+          tasks.find(
+            t => t.category === 'typescript' && t.title.toLowerCase().includes('not configured')
+          ),
+        reason: 'TypeScript must be configured before TypeScript ESLint rules',
       },
       {
         // Testing framework before E2E tests
         if: (task: Task) => task.category === 'testing' && task.title.toLowerCase().includes('e2e'),
-        dependsOn: (tasks: Task[]) => tasks.find(t => t.category === 'testing' && t.title.toLowerCase().includes('framework')),
-        reason: 'Base testing framework required for E2E tests'
+        dependsOn: (tasks: Task[]) =>
+          tasks.find(t => t.category === 'testing' && t.title.toLowerCase().includes('framework')),
+        reason: 'Base testing framework required for E2E tests',
       },
       {
         // CI setup before CI quality gates
-        if: (task: Task) => task.category === 'ci' && task.title.toLowerCase().includes('quality gate'),
-        dependsOn: (tasks: Task[]) => tasks.find(t => t.category === 'ci' && t.title.toLowerCase().includes('not configured')),
-        reason: 'CI pipeline must exist before adding quality gates'
-      }
+        if: (task: Task) =>
+          task.category === 'ci' && task.title.toLowerCase().includes('quality gate'),
+        dependsOn: (tasks: Task[]) =>
+          tasks.find(t => t.category === 'ci' && t.title.toLowerCase().includes('not configured')),
+        reason: 'CI pipeline must exist before adding quality gates',
+      },
     ];
 
     this.tasks.forEach(task => {
@@ -227,7 +252,7 @@ export class PlanGenerator {
             task.dependencies = task.dependencies || [];
             task.dependencies.push({
               taskId: dependency.id,
-              reason: rule.reason
+              reason: rule.reason,
             });
           }
         }
@@ -267,12 +292,12 @@ export class PlanGenerator {
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
-}`
+}`,
       });
       snippets.push({
         language: 'bash',
         description: 'Install TypeScript',
-        code: `npm install --save-dev typescript @types/node`
+        code: `npm install --save-dev typescript @types/node`,
       });
     }
 
@@ -296,12 +321,12 @@ export class PlanGenerator {
     "no-console": "warn",
     "no-unused-vars": "error"
   }
-}`
+}`,
       });
       snippets.push({
         language: 'bash',
         description: 'Install ESLint',
-        code: `npm install --save-dev eslint`
+        code: `npm install --save-dev eslint`,
       });
     }
 
@@ -311,7 +336,7 @@ export class PlanGenerator {
         language: 'bash',
         description: 'Node.js native test runner (recommended)',
         code: `# Node.js 18+ has built-in test runner
-node --test tests/**/*.test.js`
+node --test tests/**/*.test.js`,
       });
       snippets.push({
         language: 'json',
@@ -322,7 +347,7 @@ node --test tests/**/*.test.js`
     "test": "node --test tests/**/*.test.js",
     "test:watch": "node --test --watch tests/**/*.test.js"
   }
-}`
+}`,
       });
     }
 
@@ -350,7 +375,7 @@ jobs:
           node-version: '18'
       - run: npm ci
       - run: npm test
-      - run: npm run lint`
+      - run: npm run lint`,
       });
     }
 
@@ -368,7 +393,7 @@ PORT=3000
 DATABASE_URL=postgresql://user:pass@localhost:5432/db
 
 # API Keys (replace with your own)
-API_KEY=your_api_key_here`
+API_KEY=your_api_key_here`,
       });
     }
 
@@ -386,7 +411,7 @@ dist
 .DS_Store
 *.md
 tests
-coverage`
+coverage`,
       });
     }
 
@@ -398,7 +423,7 @@ coverage`
         code: `npm install --save-dev husky
 npx husky install
 npx husky add .husky/pre-commit "npm test"
-npx husky add .husky/pre-commit "npm run lint"`
+npx husky add .husky/pre-commit "npm run lint"`,
       });
     }
 
@@ -412,8 +437,10 @@ npx husky add .husky/pre-commit "npm run lint"`
     let plan = '# Development Environment Hardening Plan\n\n';
     plan += `**Generated:** ${metadata.generatedAt}\n`;
     plan += `**Version:** ${metadata.version}\n\n`;
-    plan += '> This plan outlines specific, actionable tasks to align your project with development best practices.\n';
-    plan += '> Tasks are prioritized by impact and include code snippets for quick implementation.\n\n';
+    plan +=
+      '> This plan outlines specific, actionable tasks to align your project with development best practices.\n';
+    plan +=
+      '> Tasks are prioritized by impact and include code snippets for quick implementation.\n\n';
 
     // Plan Summary
     plan += '## 📊 Plan Summary\n\n';
@@ -453,7 +480,8 @@ npx husky add .husky/pre-commit "npm run lint"`
 
     plan += '---\n\n';
     plan += '*Auto-generated by Development Environment Plan Generator*\n';
-    plan += '*Follow the [Prompt Lifecycle Guide](../docs/guides/prompt-lifecycle.md) for best results*\n';
+    plan +=
+      '*Follow the [Prompt Lifecycle Guide](../docs/guides/prompt-lifecycle.md) for best results*\n';
 
     return plan;
   }
@@ -468,7 +496,7 @@ npx husky add .husky/pre-commit "npm run lint"`
       totalEstimatedHours: totalMinutes / 60,
       quickWins: quickWins.length,
       criticalTasks: this.tasks.filter(t => t.severity === 'high').length,
-      version: '1.0.0'
+      version: '1.0.0',
     };
   }
 
@@ -480,15 +508,16 @@ npx husky add .husky/pre-commit "npm run lint"`
         description: 'Address these first for maximum impact on quality and security.',
         tasks: this.tasks.filter(t => t.priority === 'high'),
         totalEffort: 0,
-        totalImpact: 0
+        totalImpact: 0,
       },
       {
         priority: 'medium',
         title: '⚠️ Medium Priority Tasks',
-        description: 'Important improvements that enhance maintainability and developer experience.',
+        description:
+          'Important improvements that enhance maintainability and developer experience.',
         tasks: this.tasks.filter(t => t.priority === 'medium'),
         totalEffort: 0,
-        totalImpact: 0
+        totalImpact: 0,
       },
       {
         priority: 'low',
@@ -496,8 +525,8 @@ npx husky add .husky/pre-commit "npm run lint"`
         description: 'Quality of life improvements that can be addressed when time allows.',
         tasks: this.tasks.filter(t => t.priority === 'low'),
         totalEffort: 0,
-        totalImpact: 0
-      }
+        totalImpact: 0,
+      },
     ];
 
     groups.forEach(group => {
@@ -508,8 +537,8 @@ npx husky add .husky/pre-commit "npm run lint"`
   }
 
   private identifyQuickWins(): Task[] {
-    return this.tasks.filter(task =>
-      task.effort === 'low' && (task.severity === 'high' || task.severity === 'medium')
+    return this.tasks.filter(
+      task => task.effort === 'low' && (task.severity === 'high' || task.severity === 'medium')
     );
   }
 
@@ -606,7 +635,7 @@ npx husky add .husky/pre-commit "npm run lint"`
     const icons = {
       high: '🔴 High',
       medium: '🟡 Medium',
-      low: '🟢 Low'
+      low: '🟢 Low',
     };
     return icons[priority as keyof typeof icons] || priority;
   }
@@ -659,13 +688,17 @@ npx husky add .husky/pre-commit "npm run lint"`
     md += '- [Gap Analysis](.devenv/gaps-report.md) - Detailed gap analysis\n';
     md += '- [Architecture Guide](../docs/ARCHITECTURE.md) - Project structure and design\n';
     md += '- [Best Practices](../docs/BEST-PRACTICES.md) - Technology-agnostic best practices\n';
-    md += '- [Cursor Plan Integration](../docs/guides/cursor-plan-integration.md) - Plan mode guide\n';
+    md +=
+      '- [Cursor Plan Integration](../docs/guides/cursor-plan-integration.md) - Plan mode guide\n';
     md += '- [DevEnvTemplate README](../README.md) - Template documentation\n\n';
 
     return md;
   }
 
-  public async saveReport(planContent: string, filename: string = 'hardening-plan.md'): Promise<void> {
+  public async saveReport(
+    planContent: string,
+    filename: string = 'hardening-plan.md'
+  ): Promise<void> {
     const devenvDir = path.join(this.rootDir, '.devenv');
     await fs.mkdir(devenvDir, { recursive: true });
     const planPath = path.join(devenvDir, filename);
@@ -677,16 +710,16 @@ npx husky add .husky/pre-commit "npm run lint"`
 // CLI execution
 if (require.main === module) {
   const generator = new PlanGenerator();
-  generator.generate()
-    .then(async (plan) => {
+  generator
+    .generate()
+    .then(async plan => {
       console.log(plan);
       await generator.saveReport(plan);
     })
-    .catch((error) => {
+    .catch(error => {
       console.error('Plan generation failed:', error.message);
       process.exit(1);
     });
 }
 
 export default PlanGenerator;
-

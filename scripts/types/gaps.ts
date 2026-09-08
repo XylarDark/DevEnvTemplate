@@ -121,14 +121,14 @@ export interface StackReport {
 }
 
 export type GapSeverity = 'high' | 'medium' | 'low';
-export type GapCategory = 
-  | 'typescript' 
-  | 'linting' 
-  | 'testing' 
-  | 'security' 
-  | 'ci' 
-  | 'architecture' 
-  | 'quality' 
+export type GapCategory =
+  | 'typescript'
+  | 'linting'
+  | 'testing'
+  | 'security'
+  | 'ci'
+  | 'architecture'
+  | 'quality'
   | 'observability'
   | 'documentation'
   | 'dependencies'
@@ -169,4 +169,3 @@ export interface GapAnalysisOptions {
   mode?: 'fast' | 'full';
   debug?: boolean;
 }
-

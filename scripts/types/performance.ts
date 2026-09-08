@@ -87,7 +87,7 @@ export class PerformanceTracker {
       errors: 0,
       parallelEnabled: false,
       concurrency: 1,
-      batchCount: 0
+      batchCount: 0,
     };
     this.ruleMetrics = new Map();
     this.fileMetrics = [];
@@ -116,10 +116,16 @@ export class PerformanceTracker {
     this.captureMemory();
   }
 
-  public trackFileProcessed(filePath: string, size: number, processingTime: number, rulesApplied: number, cacheHit: boolean): void {
+  public trackFileProcessed(
+    filePath: string,
+    size: number,
+    processingTime: number,
+    rulesApplied: number,
+    cacheHit: boolean
+  ): void {
     this.metrics.filesProcessed++;
     this.metrics.bytesProcessed += size;
-    
+
     if (cacheHit) {
       this.metrics.cacheHits++;
     } else {
@@ -131,7 +137,7 @@ export class PerformanceTracker {
       size,
       processingTime,
       rulesApplied,
-      cacheHit
+      cacheHit,
     });
   }
 
@@ -139,9 +145,14 @@ export class PerformanceTracker {
     this.metrics.filesScanned++;
   }
 
-  public trackRuleExecution(ruleId: string, duration: number, filesAffected: number = 0, error: boolean = false): void {
+  public trackRuleExecution(
+    ruleId: string,
+    duration: number,
+    filesAffected: number = 0,
+    error: boolean = false
+  ): void {
     this.metrics.rulesExecuted++;
-    
+
     if (error) {
       this.metrics.errors++;
     }
@@ -160,7 +171,7 @@ export class PerformanceTracker {
         totalDuration: duration,
         averageDuration: duration,
         filesAffected,
-        errors: error ? 1 : 0
+        errors: error ? 1 : 0,
       });
     }
   }
@@ -176,7 +187,7 @@ export class PerformanceTracker {
       heapUsed: mem.heapUsed,
       heapTotal: mem.heapTotal,
       external: mem.external,
-      rss: mem.rss
+      rss: mem.rss,
     };
   }
 
@@ -187,14 +198,15 @@ export class PerformanceTracker {
   public generateReport(): PerformanceReport {
     const duration = this.metrics.duration || 0;
     const filesProcessed = this.metrics.filesProcessed;
-    const throughput = duration > 0 ? (filesProcessed / (duration / 1000)) : 0;
-    const averageFileTime = filesProcessed > 0 ? (duration / filesProcessed) : 0;
+    const throughput = duration > 0 ? filesProcessed / (duration / 1000) : 0;
+    const averageFileTime = filesProcessed > 0 ? duration / filesProcessed : 0;
     const totalCache = this.metrics.cacheHits + this.metrics.cacheMisses;
     const cacheEfficiency = totalCache > 0 ? (this.metrics.cacheHits / totalCache) * 100 : 0;
 
     // Sort rules by total duration (slowest first)
-    const sortedRules = Array.from(this.ruleMetrics.values())
-      .sort((a, b) => b.totalDuration - a.totalDuration);
+    const sortedRules = Array.from(this.ruleMetrics.values()).sort(
+      (a, b) => b.totalDuration - a.totalDuration
+    );
 
     // Sort files by processing time (slowest first)
     const slowestFiles = [...this.fileMetrics]
@@ -207,37 +219,54 @@ export class PerformanceTracker {
 
     // Generate recommendations
     const recommendations: string[] = [];
-    
+
     if (cacheEfficiency < 50 && totalCache > 10) {
-      recommendations.push('Low cache efficiency detected. Consider reviewing cache key generation.');
+      recommendations.push(
+        'Low cache efficiency detected. Consider reviewing cache key generation.'
+      );
     }
-    
+
     if (sortedRules.length > 0 && sortedRules[0].totalDuration > duration * 0.3) {
-      recommendations.push(`Rule "${sortedRules[0].ruleId}" accounts for ${((sortedRules[0].totalDuration / duration) * 100).toFixed(1)}% of total time. Consider optimization.`);
+      recommendations.push(
+        `Rule "${sortedRules[0].ruleId}" accounts for ${((sortedRules[0].totalDuration / duration) * 100).toFixed(1)}% of total time. Consider optimization.`
+      );
     }
-    
+
     if (slowestFiles.length > 0 && slowestFiles[0].processingTime > averageFileTime * 5) {
-      recommendations.push(`File "${slowestFiles[0].path}" took ${slowestFiles[0].processingTime.toFixed(0)}ms. Consider excluding or caching.`);
+      recommendations.push(
+        `File "${slowestFiles[0].path}" took ${slowestFiles[0].processingTime.toFixed(0)}ms. Consider excluding or caching.`
+      );
     }
-    
-    if (maxHeap > 500 * 1024 * 1024) { // 500MB
-      recommendations.push('High memory usage detected. Consider processing files in smaller batches.');
+
+    if (maxHeap > 500 * 1024 * 1024) {
+      // 500MB
+      recommendations.push(
+        'High memory usage detected. Consider processing files in smaller batches.'
+      );
     }
 
     // Parallel processing recommendations
     if (!this.metrics.parallelEnabled && filesProcessed > 50) {
-      recommendations.push('Consider using --parallel flag for faster processing of large file sets.');
+      recommendations.push(
+        'Consider using --parallel flag for faster processing of large file sets.'
+      );
     }
 
     // Parallel metrics
-    const parallelInfo = this.metrics.parallelEnabled ? {
-      enabled: true,
-      concurrency: this.metrics.concurrency || 1,
-      batchCount: this.metrics.batchCount || 0,
-      speedup: this.metrics.concurrency && this.metrics.concurrency > 1 
-        ? Math.min(this.metrics.concurrency * 0.7, filesProcessed / Math.max(1, this.metrics.batchCount || 1))
-        : undefined
-    } : undefined;
+    const parallelInfo = this.metrics.parallelEnabled
+      ? {
+          enabled: true,
+          concurrency: this.metrics.concurrency || 1,
+          batchCount: this.metrics.batchCount || 0,
+          speedup:
+            this.metrics.concurrency && this.metrics.concurrency > 1
+              ? Math.min(
+                  this.metrics.concurrency * 0.7,
+                  filesProcessed / Math.max(1, this.metrics.batchCount || 1)
+                )
+              : undefined,
+        }
+      : undefined;
 
     return {
       summary: {
@@ -247,7 +276,7 @@ export class PerformanceTracker {
         bytesProcessed: this.metrics.bytesProcessed,
         throughput,
         averageFileTime,
-        cacheEfficiency
+        cacheEfficiency,
       },
       parallel: parallelInfo,
       rules: sortedRules,
@@ -255,19 +284,19 @@ export class PerformanceTracker {
       memoryPeak: {
         heapUsed: maxHeap,
         heapTotal: memoryPeak.heapTotal,
-        rss: memoryPeak.rss
+        rss: memoryPeak.rss,
       },
-      recommendations
+      recommendations,
     };
   }
 
   public printReport(): void {
     const report = this.generateReport();
-    
+
     console.log('\n═══════════════════════════════════════');
     console.log('       PERFORMANCE REPORT');
     console.log('═══════════════════════════════════════\n');
-    
+
     console.log('📊 Summary:');
     console.log(`  Total Duration:    ${(report.summary.totalDuration / 1000).toFixed(2)}s`);
     console.log(`  Files Processed:   ${report.summary.filesProcessed}`);
@@ -276,7 +305,7 @@ export class PerformanceTracker {
     console.log(`  Throughput:        ${report.summary.throughput.toFixed(2)} files/sec`);
     console.log(`  Avg File Time:     ${report.summary.averageFileTime.toFixed(2)}ms`);
     console.log(`  Cache Efficiency:  ${report.summary.cacheEfficiency.toFixed(1)}%\n`);
-    
+
     if (report.parallel) {
       console.log('⚡ Parallel Processing:');
       console.log(`  Enabled:           ${report.parallel.enabled ? 'Yes' : 'No'}`);
@@ -287,16 +316,18 @@ export class PerformanceTracker {
       }
       console.log('');
     }
-    
+
     if (report.rules.length > 0) {
       console.log('⚡ Slowest Rules:');
       report.rules.slice(0, 5).forEach((rule, i) => {
         console.log(`  ${i + 1}. ${rule.ruleId}`);
-        console.log(`     Duration: ${rule.totalDuration.toFixed(0)}ms | Avg: ${rule.averageDuration.toFixed(2)}ms | Executions: ${rule.executionCount}`);
+        console.log(
+          `     Duration: ${rule.totalDuration.toFixed(0)}ms | Avg: ${rule.averageDuration.toFixed(2)}ms | Executions: ${rule.executionCount}`
+        );
       });
       console.log('');
     }
-    
+
     if (report.slowestFiles.length > 0) {
       console.log('🐌 Slowest Files:');
       report.slowestFiles.slice(0, 5).forEach((file, i) => {
@@ -304,12 +335,12 @@ export class PerformanceTracker {
       });
       console.log('');
     }
-    
+
     console.log('💾 Memory Peak:');
     console.log(`  Heap Used:  ${(report.memoryPeak.heapUsed / 1024 / 1024).toFixed(2)} MB`);
     console.log(`  Heap Total: ${(report.memoryPeak.heapTotal / 1024 / 1024).toFixed(2)} MB`);
     console.log(`  RSS:        ${(report.memoryPeak.rss / 1024 / 1024).toFixed(2)} MB\n`);
-    
+
     if (report.recommendations.length > 0) {
       console.log('💡 Recommendations:');
       report.recommendations.forEach((rec, i) => {
@@ -317,8 +348,7 @@ export class PerformanceTracker {
       });
       console.log('');
     }
-    
+
     console.log('═══════════════════════════════════════\n');
   }
 }
-

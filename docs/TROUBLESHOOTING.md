@@ -11,6 +11,7 @@ Quick solutions to common issues.
 **Problem:** `npm install` fails with dependency errors.
 
 **Solution:**
+
 ```bash
 # Clear cache and reinstall
 rm -rf node_modules package-lock.json
@@ -22,6 +23,7 @@ npm install
 **Problem:** `npm run doctor` returns "command not found".
 
 **Solution:**
+
 ```bash
 # Rebuild TypeScript
 npm run build
@@ -35,6 +37,7 @@ npm run doctor
 **Problem:** Stack detection or gap analysis behaves unexpectedly and you need more context.
 
 **Solution:**
+
 ```bash
 # Run doctor with verbose logs (avoid mixing with --json)
 npm run doctor -- --debug
@@ -43,6 +46,7 @@ npm run doctor -- --debug
 node .github/tools/stack-detector.js --debug --json
 node .github/tools/gap-analyzer.js --debug
 ```
+
 This sets `LOG_LEVEL=DEBUG` so the tools print detailed progress. Re-run without `--debug` once you’re done to keep console noise down.
 
 ## Stack Detection Issues
@@ -54,6 +58,7 @@ This sets `LOG_LEVEL=DEBUG` so the tools print detailed progress. Re-run without
 **Cause:** The TypeScript build has not been run yet, so `dist/scripts/tools/stack-detector.js` does not exist.
 
 **Solution:**
+
 ```bash
 # Compile TypeScript (prebuild + build)
 npm run build
@@ -69,6 +74,7 @@ npm run doctor
 **Cause:** Invalid JSON syntax in configuration files (e.g., `package.json`, `tsconfig.json`, `pyproject.toml`).
 
 **Solution:**
+
 1. Check the file mentioned in the error message for syntax errors
 2. Validate JSON using a JSON validator (e.g., jsonlint.com)
 3. Common issues:
@@ -78,6 +84,7 @@ npm run doctor
    - Unquoted strings
 
 **Example Error Message:**
+
 ```
 Failed to parse JSON in package.json
 
@@ -99,6 +106,7 @@ For more information, see [Best Practices Guide](BEST-PRACTICES.md#error-handlin
 **Cause:** Missing `package.json` or project files.
 
 **Solution:**
+
 ```bash
 # Ensure package.json exists
 npm init -y
@@ -114,6 +122,7 @@ node .github/tools/stack-detector.js
 **Cause:** Conflicting dependencies or configuration files.
 
 **Solution:**
+
 ```bash
 # Check package.json dependencies
 cat package.json | grep dependencies
@@ -128,6 +137,7 @@ cat package.json | grep dependencies
 **Cause:** Stack detector is still seeing JavaScript signals (leftover `package.json`, `node_modules`, or TS config).
 
 **Solution:**
+
 ```bash
 # Remove stale JS artifacts if this repo really is Python-only
 rm -rf node_modules package-lock.json tsconfig.json
@@ -145,6 +155,7 @@ npm run doctor -- --json > nul  # or node dist/scripts/tools/stack-detector.js
 **Cause:** Running from a nested tools directory without telling the doctor where the real project root lives.
 
 **Solution:**
+
 ```bash
 # In Windows PowerShell
 Set-Location .\my-project\.devenv
@@ -164,6 +175,7 @@ DEVENV_PROJECT_ROOT=../.. npm run doctor
 **Cause:** The target project's configuration file is malformed (extra commas, missing quotes, etc.).
 
 **Solution:**
+
 ```bash
 # Validate JSON (Node 20+)
 node -e "JSON.parse(require('fs').readFileSync('package.json','utf8'))"
@@ -182,6 +194,7 @@ npm run doctor
 **Cause:** Stack detection failed first.
 
 **Solution:**
+
 ```bash
 # Run stack detection first
 node .github/tools/stack-detector.js
@@ -208,11 +221,13 @@ cat .devenv/gaps-report.md
 **Problem:** CI workflow fails on push.
 
 **Common Causes:**
+
 1. Tests failing locally
 2. Missing dependencies
 3. TypeScript errors
 
 **Solution:**
+
 ```bash
 # Run locally first
 npm run build
@@ -233,11 +248,13 @@ npx tsc --noEmit
 **Problem:** Running `npm run doctor` from `.devenv/` analyzes DevEnvTemplate itself instead of the parent project.
 
 **Symptoms:**
+
 - Stack detection shows DevEnvTemplate's stack
 - Generated reports end up in `.devenv/.devenv/`
 - No analysis of actual project
 
 **Solution:**
+
 ```bash
 # Run from project root with explicit project root
 npm run doctor --prefix .devenv -- --project-root ..
@@ -257,11 +274,13 @@ npm run doctor --prefix .devenv
 **Problem:** Commands copied from documentation use `&&` which fails in PowerShell.
 
 **Symptoms:**
+
 ```
 && : The term '&&' is not recognized as the name of a cmdlet
 ```
 
 **Solution:**
+
 ```powershell
 # ❌ Wrong
 cd .devenv && npm run doctor
@@ -281,11 +300,13 @@ npm run doctor
 **Problem:** `npm run doctor` fails with "Cannot find module" when DevEnvTemplate is embedded.
 
 **Symptoms:**
+
 ```
 Cannot find module '...scripts/doctor/cli.js'
 ```
 
 **Solution:**
+
 ```bash
 # Build TypeScript first
 cd .devenv
@@ -301,11 +322,13 @@ npm run doctor
 **Problem:** Stack detector output includes logs mixed with JSON, causing parse errors.
 
 **Symptoms:**
+
 ```
 Expected ',' or ']' after array element in JSON at position 5
 ```
 
 **Solution:**
+
 ```bash
 # Use --json flag for clean output
 npm run doctor --prefix .devenv -- --json
@@ -321,11 +344,13 @@ LOG_LEVEL=ERROR npm run doctor --prefix .devenv -- --json
 **Problem:** After cloning `.devenv`, `npm run doctor` points to `node scripts/doctor/cli.js`, but only `.ts` sources exist (no compiled `.js`).
 
 **Symptoms:**
+
 ```
 Cannot find module '...scripts\doctor\cli.js'
 ```
 
 **Solution:**
+
 ```bash
 # Build TypeScript first
 cd .devenv
@@ -341,6 +366,7 @@ npm run doctor
 **Problem:** Even after manually running stack detector, logs show it's inspecting the wrong directory (`.devenv/.devenv/` instead of the actual project).
 
 **Symptoms:**
+
 ```
 Stack report saved to ...\.devenv\.devenv\stack-report.json
 ```
@@ -348,6 +374,7 @@ Stack report saved to ...\.devenv\.devenv\stack-report.json
 **Cause:** Running from `.devenv/` directory without specifying project root.
 
 **Solution:**
+
 ```bash
 # Run from project root
 cd ..
@@ -380,7 +407,7 @@ See [Embedded Usage Guide](EMBEDDED-USAGE.md) for complete workflow.
 # Reduce frequency
 on:
   push:
-    branches: [main]  # Only main, not all branches
+    branches: [main] # Only main, not all branches
 ```
 
 ## Test Failures
@@ -390,6 +417,7 @@ on:
 **Problem:** Tests never complete or hang indefinitely.
 
 **Solution:**
+
 ```bash
 # Run only fast tests
 npm run test:fast
@@ -417,6 +445,7 @@ npm test
 **Problem:** Cleanup engine deletes files you want to keep.
 
 **Solution:**
+
 ```bash
 # Always use dry-run first (default)
 npm run cleanup
@@ -435,6 +464,7 @@ npm run cleanup -- --exclude remove-docs --apply
 **Cause:** Running in dry-run mode (default for safety).
 
 **Solution:**
+
 ```bash
 # Apply changes explicitly
 npm run cleanup -- --apply
@@ -449,6 +479,7 @@ npm run cleanup -- --apply
 **Cause:** Looking in wrong directory.
 
 **Solution:**
+
 ```bash
 # Ensure config exists
 ls config/cleanup.config.yaml
@@ -464,6 +495,7 @@ npx devenv-init
 **Problem:** Commands with `&&` fail in PowerShell.
 
 **Solution:**
+
 ```powershell
 # Run commands separately
 npm run lint
@@ -480,6 +512,7 @@ npm run lint; npm run test
 **Cause:** PowerShell encoding issues.
 
 **Solution:**
+
 ```powershell
 # Set UTF-8 encoding
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
@@ -495,6 +528,7 @@ npm run doctor -- --json
 **Cause**: File is in .gitignore or .cursorignore, preventing direct editing.
 
 **Solution**:
+
 ```powershell
 # Option 1: Temporarily unignore (if file exists)
 git update-index --no-assume-unchanged .env.example
@@ -519,11 +553,13 @@ Set-Content -Path ".env.example" -Value "CONTENT"
 **Problem**: Missing or incorrect environment file templates.
 
 **Next.js Projects:**
+
 - Need `.env.local.example` (not just `.env.example`)
 - Must document `NEXT_PUBLIC_*` variables
 - Should include API URL, optional API key
 
 **Python Projects:**
+
 - Need `.env.example` at project root
 - Should document all required variables
 - Include safe defaults where appropriate
@@ -556,6 +592,7 @@ npm run doctor
 **Cause:** Only simple issues can be auto-fixed (.env.example, TypeScript strict mode, etc.).
 
 **Solution:** Auto-fix only handles:
+
 - Creating .env.example
 - Adding .env to .gitignore
 - Enabling TypeScript strict mode
@@ -571,6 +608,7 @@ Other issues require manual fixes.
 **Cause:** Package not installed or using sys.path hacks.
 
 **Solution:**
+
 ```bash
 # Install package in development mode
 pip install -e .
@@ -586,6 +624,7 @@ python -c "import my_package; print(my_package.__file__)"
 **Problem:** Scripts use `sys.path.insert(0, str(project_root))` to add project to path.
 
 **Symptoms:**
+
 ```python
 # ❌ Bad pattern
 import sys
@@ -598,6 +637,7 @@ from my_package import something
 **Cause:** Package not installed, trying to work around import errors.
 
 **Solution:**
+
 1. Remove all `sys.path` modifications
 2. Install package: `pip install -e .`
 3. Use proper imports: `from my_package import something`
@@ -609,6 +649,7 @@ from my_package import something
 **Problem:** Scripts can't find config files or data directories after reorganization.
 
 **Symptoms:**
+
 ```
 FileNotFoundError: [Errno 2] No such file or directory: '../data/results.json'
 ```
@@ -616,6 +657,7 @@ FileNotFoundError: [Errno 2] No such file or directory: '../data/results.json'
 **Cause:** Hardcoded paths relative to `__file__` or current working directory.
 
 **Solution:**
+
 ```python
 # ❌ Wrong - hardcoded path
 data_file = Path(__file__).parent.parent / 'data' / 'results.json'
@@ -634,6 +676,7 @@ data_file = get_data_dir() / 'results.json'
 **Cause:** Package installed in different virtual environment or system Python.
 
 **Solution:**
+
 ```bash
 # Create fresh virtual environment
 python -m venv venv
@@ -655,6 +698,7 @@ pip install -e .
 **Problem:** Python scripts fail when run from PowerShell with path or encoding errors.
 
 **Symptoms:**
+
 ```
 UnicodeDecodeError: 'charmap' codec can't decode byte
 ```
@@ -662,6 +706,7 @@ UnicodeDecodeError: 'charmap' codec can't decode byte
 **Cause:** File operations without explicit encoding, or path issues.
 
 **Solution:**
+
 ```python
 # ✅ Always specify encoding
 with open(file_path, 'r', encoding='utf-8') as f:
@@ -681,6 +726,7 @@ data_file = Path('data') / 'results.json'
 **Cause:** Tests using `sys.path` hacks or running from wrong directory.
 
 **Solution:**
+
 ```python
 # ❌ Wrong - sys.path hack in test
 import sys
@@ -700,6 +746,7 @@ from my_package.core import config
 **Cause:** Scripts assume specific directory structure or use relative imports.
 
 **Solution:**
+
 ```python
 #!/usr/bin/env python3
 """
@@ -734,6 +781,7 @@ if __name__ == "__main__":
 **Cause:** Using hardcoded path separators (`/` or `\`) or `os.path.join` incorrectly.
 
 **Solution:**
+
 ```python
 # ❌ Wrong - hardcoded separator
 data_file = 'data/results.json'  # Fails on Windows
@@ -792,18 +840,17 @@ If none of these solutions work:
 
 ## Quick Reference
 
-| Issue | Solution |
-|-------|----------|
-| Installation fails | `rm -rf node_modules && npm install` |
-| Doctor not found | `npm run build` |
-| Tests timeout | `npm run test:fast` |
-| CI fails | Test locally first: `npm test` |
-| Cleanup removes too much | Use `--keep` flag |
-| Config not found | Ensure `config/` directory exists |
-| PowerShell errors | Use `;` instead of `&&` |
-| Low health score | Focus on critical issues only |
+| Issue                    | Solution                             |
+| ------------------------ | ------------------------------------ |
+| Installation fails       | `rm -rf node_modules && npm install` |
+| Doctor not found         | `npm run build`                      |
+| Tests timeout            | `npm run test:fast`                  |
+| CI fails                 | Test locally first: `npm test`       |
+| Cleanup removes too much | Use `--keep` flag                    |
+| Config not found         | Ensure `config/` directory exists    |
+| PowerShell errors        | Use `;` instead of `&&`              |
+| Low health score         | Focus on critical issues only        |
 
 ---
 
 **Still stuck?** Open an issue with full error details and steps to reproduce.
-

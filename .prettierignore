@@ -46,3 +46,7 @@ Thumbs.db
 
 # Documentation that should preserve formatting
 CHANGELOG.md
+
+# Test fixtures are authored inputs for the doctor and must stay exactly as written.
+# Some are intentionally malformed to exercise error paths.
+tests/fixtures/

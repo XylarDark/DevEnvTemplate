@@ -15,14 +15,6 @@
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true
   },
-  "include": [
-    "scripts/**/*.ts",
-    ".github/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "tests"
-  ]
+  "include": ["scripts/**/*.ts", ".github/**/*.ts"],
+  "exclude": ["node_modules", "dist", "tests"]
 }
-

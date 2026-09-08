@@ -108,4 +108,3 @@ export interface CleanupOptions {
   progressVerbosity?: 'silent' | 'simple' | 'detailed';
   jsonProgress?: boolean;
 }
-

@@ -2,7 +2,7 @@
 
 /**
  * Cursor Rules Adapter
- * 
+ *
  * Handles intelligent selection and adaptation of cursor rules based on detected technologies.
  */
 
@@ -42,7 +42,7 @@ export const STANDARD_CORE_FILES = [
   '17-plan-first.mdc',
   '18-content-and-data-pipelines.mdc',
   '19-docs-directory-structure.mdc',
-  'automation-standards.mdc'
+  'automation-standards.mdc',
 ];
 
 /** Template-specific context; hosts write their own 08-project-context.mdc. */
@@ -62,7 +62,7 @@ export const STANDARD_CONDITIONAL_FILES = [
   '20-frontend-frameworks.mdc',
   '21-unreal-engine.mdc',
   '22-unreal-editor-ui.mdc',
-  '23-unity-csharp.mdc'
+  '23-unity-csharp.mdc',
 ];
 
 /**
@@ -70,14 +70,14 @@ export const STANDARD_CONDITIONAL_FILES = [
  */
 export async function detectExistingRules(projectRoot: string): Promise<CursorRulesInfo> {
   const rulesDir = path.join(projectRoot, '.cursor', 'rules');
-  
+
   const result: CursorRulesInfo = {
     present: false,
     existingFiles: [],
     coreFiles: [],
     conditionalFiles: [],
     projectSpecificFiles: [],
-    needsIntegration: false
+    needsIntegration: false,
   };
 
   try {
@@ -109,7 +109,6 @@ export async function detectExistingRules(projectRoot: string): Promise<CursorRu
     // Determine if integration is needed
     const missingCoreFiles = STANDARD_CORE_FILES.filter(f => !result.coreFiles.includes(f));
     result.needsIntegration = missingCoreFiles.length > 0 || result.projectSpecificFiles.length > 0;
-
   } catch (error: any) {
     if (error.code !== 'ENOENT') {
       logger.warn('Error detecting existing cursor rules', { error: error.message });
@@ -124,19 +123,28 @@ export async function detectExistingRules(projectRoot: string): Promise<CursorRu
  */
 export function shouldIncludeRule(ruleFile: string, stackReport: StackReport): boolean {
   const techNames = stackReport.technologies.map(t => t.name.toLowerCase());
-  const hasTypeScript = stackReport.quality.typescript || 
-    techNames.some(n => n.includes('typescript'));
-  const hasJavaScript = techNames.some(n => 
-    n.includes('javascript') || n.includes('node.js') || n.includes('node')
+  const hasTypeScript =
+    stackReport.quality.typescript || techNames.some(n => n.includes('typescript'));
+  const hasJavaScript = techNames.some(
+    n => n.includes('javascript') || n.includes('node.js') || n.includes('node')
   );
-  const hasPython = techNames.some(n => 
-    n.includes('python') || n.includes('pytest') || n.includes('fastapi') || 
-    n.includes('django') || n.includes('flask')
+  const hasPython = techNames.some(
+    n =>
+      n.includes('python') ||
+      n.includes('pytest') ||
+      n.includes('fastapi') ||
+      n.includes('django') ||
+      n.includes('flask')
   );
-  const hasFrontend = techNames.some(n => 
-    n.includes('react') || n.includes('next.js') || n.includes('nextjs') || 
-    n.includes('vue') || n.includes('svelte')
-  ) || stackReport.frameworks.type !== 'vanilla';
+  const hasFrontend =
+    techNames.some(
+      n =>
+        n.includes('react') ||
+        n.includes('next.js') ||
+        n.includes('nextjs') ||
+        n.includes('vue') ||
+        n.includes('svelte')
+    ) || stackReport.frameworks.type !== 'vanilla';
 
   // Rule mapping
   switch (ruleFile) {
@@ -154,9 +162,11 @@ export function shouldIncludeRule(ruleFile: string, stackReport: StackReport): b
       return true;
     case '15-shell-scripts.mdc':
       // Check if project has shell scripts
-      return stackReport.files.key_patterns.some(p => 
-        p.includes('.sh') || p.includes('.ps1') || p.includes('.bat')
-      ) || true; // Include by default as many projects have scripts
+      return (
+        stackReport.files.key_patterns.some(
+          p => p.includes('.sh') || p.includes('.ps1') || p.includes('.bat')
+        ) || true
+      ); // Include by default as many projects have scripts
     case '20-frontend-frameworks.mdc':
       return hasFrontend;
     case '21-unreal-engine.mdc':
@@ -199,7 +209,10 @@ export async function adaptRulesForStack(
 
     // Conditionally include based on stack
     for (const conditionalFile of STANDARD_CONDITIONAL_FILES) {
-      if (availableRules.includes(conditionalFile) && shouldIncludeRule(conditionalFile, stackReport)) {
+      if (
+        availableRules.includes(conditionalFile) &&
+        shouldIncludeRule(conditionalFile, stackReport)
+      ) {
         selectedRules.push(conditionalFile);
       }
     }
@@ -215,9 +228,8 @@ export async function adaptRulesForStack(
     logger.debug('Adapted rules for stack', {
       totalAvailable: availableRules.length,
       selected: selectedRules.length,
-      stack: stackReport.languageProfile
+      stack: stackReport.languageProfile,
     });
-
   } catch (error: any) {
     logger.error('Error adapting rules for stack', { error: error.message });
     throw error;
@@ -254,14 +266,15 @@ export function getRuleSelection(
     reasons.push(`Skipped ${skippedRules.length} rule(s) not matching detected stack`);
   }
   if (conditionalRules.length > 0) {
-    reasons.push(`Included ${conditionalRules.length} conditional rule(s) for detected technologies`);
+    reasons.push(
+      `Included ${conditionalRules.length} conditional rule(s) for detected technologies`
+    );
   }
 
   return {
     coreRules,
     conditionalRules,
     skippedRules,
-    reason: reasons.join('; ') || 'All available rules selected'
+    reason: reasons.join('; ') || 'All available rules selected',
   };
 }
-

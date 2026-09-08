@@ -50,15 +50,15 @@ export class ProgressBar {
    */
   update(current: number): void {
     if (this.finished) return;
-    
+
     this.current = Math.min(current, this.total);
     const now = Date.now();
-    
+
     // Throttle updates to every 100ms
     if (now - this.lastUpdate < 100 && this.current < this.total) {
       return;
     }
-    
+
     this.lastUpdate = now;
     this.render();
   }
@@ -75,7 +75,7 @@ export class ProgressBar {
    */
   finish(): void {
     if (this.finished) return;
-    
+
     this.current = this.total;
     this.finished = true;
     this.render();
@@ -89,22 +89,22 @@ export class ProgressBar {
     const percentage = this.total > 0 ? (this.current / this.total) * 100 : 0;
     const filled = Math.floor((this.width * this.current) / this.total);
     const empty = this.width - filled;
-    
+
     const bar = '█'.repeat(filled) + '░'.repeat(empty);
-    
+
     let line = `\r${this.label}: [${bar}]`;
-    
+
     if (this.showPercentage) {
       line += ` ${Math.floor(percentage)}%`;
     }
-    
+
     line += ` | ${this.current}/${this.total}`;
-    
+
     if (this.showETA && this.current > 0 && this.current < this.total) {
       const eta = this.calculateETA();
       line += ` | ETA: ${eta}`;
     }
-    
+
     this.stream.write(line);
   }
 
@@ -116,9 +116,9 @@ export class ProgressBar {
     const rate = this.current / elapsed;
     const remaining = this.total - this.current;
     const etaMs = remaining / rate;
-    
+
     const seconds = Math.ceil(etaMs / 1000);
-    
+
     if (seconds < 60) {
       return `${seconds}s`;
     } else if (seconds < 3600) {
@@ -165,19 +165,19 @@ export class ProgressTracker {
     if (this.verbosity === 'silent') {
       return null;
     }
-    
+
     // In simple mode, only allow 'overall' bar
     if (this.verbosity === 'simple' && id !== 'overall') {
       return null;
     }
-    
+
     const bar = new ProgressBar(options);
     this.bars.set(id, bar);
-    
+
     if (this.jsonOutput) {
       this.emitJSON('create', id, bar.getSnapshot());
     }
-    
+
     return bar;
   }
 
@@ -188,7 +188,7 @@ export class ProgressTracker {
     const bar = this.bars.get(id);
     if (bar) {
       bar.update(current);
-      
+
       if (this.jsonOutput) {
         this.emitJSON('update', id, bar.getSnapshot());
       }
@@ -202,7 +202,7 @@ export class ProgressTracker {
     const bar = this.bars.get(id);
     if (bar) {
       bar.increment(delta);
-      
+
       if (this.jsonOutput) {
         this.emitJSON('update', id, bar.getSnapshot());
       }
@@ -216,11 +216,11 @@ export class ProgressTracker {
     const bar = this.bars.get(id);
     if (bar) {
       bar.finish();
-      
+
       if (this.jsonOutput) {
         this.emitJSON('finish', id, bar.getSnapshot());
       }
-      
+
       this.bars.delete(id);
     }
   }
@@ -230,14 +230,14 @@ export class ProgressTracker {
    */
   getProgress(): ProgressSnapshot[] {
     const snapshots: ProgressSnapshot[] = [];
-    
+
     for (const [id, bar] of this.bars.entries()) {
       snapshots.push({
         id,
         ...bar.getSnapshot(),
       });
     }
-    
+
     return snapshots;
   }
 
@@ -252,8 +252,7 @@ export class ProgressTracker {
       ...snapshot,
       timestamp: new Date().toISOString(),
     };
-    
+
     console.log(JSON.stringify(data));
   }
 }
-

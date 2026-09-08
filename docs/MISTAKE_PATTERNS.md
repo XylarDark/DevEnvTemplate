@@ -6,6 +6,7 @@
 ## Overview
 
 This document catalogs mistake patterns discovered during development sessions, categorized by type and severity. Each pattern includes:
+
 - Description of the mistake
 - Root cause analysis
 - Impact assessment
@@ -20,23 +21,27 @@ This document catalogs mistake patterns discovered during development sessions, 
 
 **Description:** Using `&&` for command chaining, which fails in PowerShell.
 
-**Root Cause:** 
+**Root Cause:**
+
 - Bash/zsh use `&&` for conditional command execution
 - PowerShell treats `&&` as a statement separator, not a command chain operator
 - Commands copied from Unix documentation fail on Windows
 
 **Impact:**
+
 - Scripts fail on Windows PowerShell
 - CI/CD may work on Linux but fail on Windows runners
 - Developer frustration and wasted time
 
 **Prevention Strategy:**
+
 - Always test scripts in both bash and PowerShell
 - Use cross-platform shell helpers
 - Provide both bash and PowerShell examples in documentation
 - Use npm scripts for multi-command operations (they handle cross-platform)
 
 **Fix Examples:**
+
 ```bash
 # ❌ Fails in PowerShell
 cd lunar_mining_sim && npm run doctor
@@ -59,18 +64,21 @@ npm run doctor --project-root lunar_mining_sim
 **Description:** Using `Select-Object -First N` in PowerShell terminal commands to limit output, which causes VPN/network connection issues.
 
 **Root Cause:**
+
 - PowerShell pipeline operations with `Select-Object -First N` can interfere with network connections
 - Pattern was used repeatedly: `command | Select-Object -First 30`
 - Attempted to limit verbose output without considering network implications
 - Pipeline operations in terminal commands during development sessions trigger the issue
 
 **Impact:**
+
 - VPN connection drops or becomes unstable
 - Network connectivity issues during development
 - Repeated failures when same pattern is used multiple times
 - Disrupts development workflow
 
 **Prevention Strategy:**
+
 - Never use `Select-Object -First N` in terminal commands
 - Accept full output - modern terminals handle large output well
 - Use command-specific flags for output control when available (e.g., `--maxfail=1`)
@@ -78,6 +86,7 @@ npm run doctor --project-root lunar_mining_sim
 - Use `Select-String` for filtering if needed, not `Select-Object -First N`
 
 **Fix Examples:**
+
 ```powershell
 # ❌ AVOID: Causes VPN connection issues
 python -m pytest --collect-only -q 2>&1 | Select-Object -First 30
@@ -105,12 +114,14 @@ python -m pytest --collect-only -q | Select-String "test_"
 **Description:** Using `sys.path.insert()` or `sys.path.append()` to modify Python import path.
 
 **Root Cause:**
+
 - Package not properly installed via `pip install -e .`
 - Scripts run from different directories
 - Attempting to import from project root without installation
 - Copy-paste from tutorials that don't use proper packaging
 
 **Impact:**
+
 - Code smell and fragile imports
 - Breaks when project structure changes
 - Difficult to debug import errors
@@ -118,6 +129,7 @@ python -m pytest --collect-only -q | Select-String "test_"
 - Violates Python packaging best practices
 
 **Prevention Strategy:**
+
 - Always install package in development mode: `pip install -e .`
 - Use proper relative imports from installed package
 - Create path resolution utilities for config/data files
@@ -125,6 +137,7 @@ python -m pytest --collect-only -q | Select-String "test_"
 - Document installation requirement in README
 
 **Fix Examples:**
+
 ```python
 # ❌ Before: sys.path hack
 project_root = Path(__file__).parent.parent
@@ -147,18 +160,21 @@ project_root = get_project_root()
 **Description:** Package.json scripts reference `.ts` source files instead of compiled `.js` files in `dist/`.
 
 **Root Cause:**
+
 - TypeScript source files exist but not compiled
 - Package scripts point to source paths
 - Build step not run before executing scripts
 - Assumption that Node.js can run TypeScript directly
 
 **Impact:**
+
 - `Cannot find module` errors
 - Scripts fail with confusing error messages
 - Developer confusion about build process
 - Inconsistent behavior between environments
 
 **Prevention Strategy:**
+
 - Always reference `dist/` in package.json scripts
 - Add build verification before running scripts
 - Document build process clearly
@@ -166,6 +182,7 @@ project_root = get_project_root()
 - Consider using `tsx` or `ts-node` for development scripts
 
 **Fix Examples:**
+
 ```json
 // ❌ Before: References source
 {
@@ -193,18 +210,21 @@ project_root = get_project_root()
 **Description:** Using hardcoded relative paths that break when files are moved or run from different directories.
 
 **Root Cause:**
+
 - Assumptions about current working directory
 - Not using path resolution utilities
 - Copy-paste from examples without adaptation
 - Lack of centralized path management
 
 **Impact:**
+
 - Scripts fail when run from different directories
 - Breaks after project reorganization
 - Difficult to maintain
 - Not portable across environments
 
 **Prevention Strategy:**
+
 - Use `pathlib.Path` consistently in Python
 - Create centralized path resolution utilities
 - Support both installed package and development mode
@@ -212,6 +232,7 @@ project_root = get_project_root()
 - Always resolve paths relative to script location or project root
 
 **Fix Examples:**
+
 ```python
 # ❌ Before: Hardcoded paths
 project_root = Path(__file__).parent.parent
@@ -232,18 +253,21 @@ data_dir = get_data_dir()
 **Description:** Attempting to use Node.js modules (`fs`, `path`, `os`) in React client components.
 
 **Root Cause:**
+
 - Confusion about server vs client components
 - Not understanding Next.js App Router architecture
 - Copy-paste from server-side code
 - Missing `'use client'` directive awareness
 
 **Impact:**
+
 - Build errors: "Module not found: Can't resolve 'fs'"
 - Runtime errors in browser
 - Confusion about where code should run
 - Broken functionality
 
 **Prevention Strategy:**
+
 - Never import Node.js modules in client components
 - Use API routes for server-side logic
 - Understand Next.js server/client component boundaries
@@ -251,22 +275,23 @@ data_dir = get_data_dir()
 - Fetch data from API routes, don't read files directly
 
 **Fix Examples:**
+
 ```typescript
 // ❌ Wrong: Client component trying to use Node API
-'use client'
-import fs from 'fs'  // This will fail at runtime
+'use client';
+import fs from 'fs'; // This will fail at runtime
 
 // ✅ Correct: Move to API route
 // In app/api/files/route.ts
-import fs from 'fs'
+import fs from 'fs';
 export async function GET() {
-  const files = fs.readdirSync('data')
-  return Response.json(files)
+  const files = fs.readdirSync('data');
+  return Response.json(files);
 }
 
 // In client component
-const response = await fetch('/api/files')
-const files = await response.json()
+const response = await fetch('/api/files');
+const files = await response.json();
 ```
 
 ---
@@ -278,18 +303,21 @@ const files = await response.json()
 **Description:** Attempting to parse JSON output that includes human-readable log lines.
 
 **Root Cause:**
+
 - Tools output both logs and JSON to stdout
 - Attempting to parse entire output as JSON
 - Not using `--json` flags when available
 - Mixing structured and unstructured output
 
 **Impact:**
+
 - JSON parsing failures
 - Confusing error messages
 - Tools appear broken
 - Difficult to debug
 
 **Prevention Strategy:**
+
 - Use `--json` flags for structured output
 - Separate log output from JSON output
 - Parse only JSON portions of output
@@ -297,24 +325,27 @@ const files = await response.json()
 - Provide helpful error messages with file paths
 
 **Fix Examples:**
+
 ```javascript
 // ❌ Before: Parsing mixed output
-const output = execSync('node stack-detector.js')
-const result = JSON.parse(output)  // Fails if logs included
+const output = execSync('node stack-detector.js');
+const result = JSON.parse(output); // Fails if logs included
 
 // ✅ After: Use JSON flag
-const output = execSync('node stack-detector.js --json')
-const result = JSON.parse(output)
+const output = execSync('node stack-detector.js --json');
+const result = JSON.parse(output);
 
 // ✅ Better: Handle errors gracefully
 try {
-  const output = execSync('node stack-detector.js --json', { encoding: 'utf8' })
-  const result = JSON.parse(output)
+  const output = execSync('node stack-detector.js --json', {
+    encoding: 'utf8',
+  });
+  const result = JSON.parse(output);
 } catch (error) {
   if (error instanceof SyntaxError) {
-    throw new Error(`Invalid JSON from stack-detector: ${error.message}`)
+    throw new Error(`Invalid JSON from stack-detector: ${error.message}`);
   }
-  throw error
+  throw error;
 }
 ```
 
@@ -327,18 +358,21 @@ try {
 **Description:** When DevEnvTemplate is embedded in `.devenv/`, tools analyze the template itself instead of the parent project.
 
 **Root Cause:**
+
 - Using `process.cwd()` which is `.devenv/` when run from there
 - Not detecting embedded mode
 - No project root resolution logic
 - Assumptions about directory structure
 
 **Impact:**
+
 - Tools analyze wrong project
 - Generated artifacts in wrong location (`.devenv/.devenv/`)
 - Confusing error messages
 - Wasted time debugging
 
 **Prevention Strategy:**
+
 - Auto-detect project root by walking up directory tree
 - Detect embedded mode (directory name is `.devenv`)
 - Support `--project-root` CLI flag
@@ -346,26 +380,29 @@ try {
 - Document embedded workflow
 
 **Fix Examples:**
+
 ```typescript
 // ✅ Project root resolution
 function resolveProjectRoot(): string {
-  let current = process.cwd()
-  
+  let current = process.cwd();
+
   // Check if we're in .devenv subdirectory
   if (path.basename(current) === '.devenv') {
-    return path.dirname(current)
+    return path.dirname(current);
   }
-  
+
   // Walk up to find project root (has package.json or pyproject.toml)
   while (current !== path.dirname(current)) {
-    if (fs.existsSync(path.join(current, 'package.json')) ||
-        fs.existsSync(path.join(current, 'pyproject.toml'))) {
-      return current
+    if (
+      fs.existsSync(path.join(current, 'package.json')) ||
+      fs.existsSync(path.join(current, 'pyproject.toml'))
+    ) {
+      return current;
     }
-    current = path.dirname(current)
+    current = path.dirname(current);
   }
-  
-  return process.cwd()
+
+  return process.cwd();
 }
 ```
 
@@ -378,18 +415,21 @@ function resolveProjectRoot(): string {
 **Description:** Using hardcoded values instead of environment variables for configuration.
 
 **Root Cause:**
+
 - Quick prototyping without considering configuration
 - Copy-paste from examples
 - Not understanding environment-based configuration
 - Missing `.env.example` files
 
 **Impact:**
+
 - Not portable across environments
 - Security issues (committed secrets)
 - Difficult to configure for different deployments
 - Violates 12-factor app principles
 
 **Prevention Strategy:**
+
 - Always use environment variables for configuration
 - Provide `.env.example` files
 - Document required environment variables
@@ -397,6 +437,7 @@ function resolveProjectRoot(): string {
 - Never commit `.env` files
 
 **Fix Examples:**
+
 ```python
 # ❌ Before: Hardcoded values
 CORS_ORIGINS = ["*"]
@@ -418,24 +459,28 @@ DEMO_MODE = os.getenv("DEMO_MODE", "false").lower() == "true"
 **Description:** Not following PEP 8 import ordering (standard library, third-party, local).
 
 **Root Cause:**
+
 - Not aware of style guidelines
 - Copy-paste from various sources
 - No automated formatting
 - Inconsistent team practices
 
 **Impact:**
+
 - Code style violations
 - Difficult to read
 - Inconsistent codebase
 - Fails linting checks
 
 **Prevention Strategy:**
+
 - Follow PEP 8 import ordering
 - Use `isort` or `ruff` for automatic organization
 - Configure linters to enforce ordering
 - Document import style in contributing guide
 
 **Fix Examples:**
+
 ```python
 # ❌ Before: Mixed imports
 from lunar_mining_sim import simulate
@@ -461,18 +506,21 @@ from lunar_mining_sim import simulate
 **Description:** Catching generic `Exception` without context or recovery hints.
 
 **Root Cause:**
+
 - Quick error suppression
 - Not understanding error types
 - Missing custom exception hierarchy
 - Lack of error context
 
 **Impact:**
+
 - Difficult to debug
 - Poor user experience
 - Lost error information
 - No recovery guidance
 
 **Prevention Strategy:**
+
 - Use specific exception types
 - Create custom exception hierarchy
 - Provide context in error messages
@@ -480,6 +528,7 @@ from lunar_mining_sim import simulate
 - Log errors with full context
 
 **Fix Examples:**
+
 ```python
 # ❌ Before: Generic exception
 try:
@@ -515,18 +564,21 @@ except Exception as e:
 **Description:** Commit message body lines exceed the maximum length limit enforced by commitlint (default 100 characters).
 
 **Root Cause:**
+
 - Not aware of commitlint body-max-line-length rule
 - Writing long descriptive lines without line breaks
 - Using `@commitlint/config-conventional` which enforces 100-character limit
 - Not wrapping commit message body lines
 
 **Impact:**
+
 - Commit fails with commitlint error
 - Developer frustration and wasted time
 - Need to rewrite commit message
 - Breaks CI/CD if commit hooks are enforced
 
 **Prevention Strategy:**
+
 - Keep commit message body lines under 100 characters
 - Use multiple `-m` flags for separate body lines
 - Wrap long lines manually
@@ -534,6 +586,7 @@ except Exception as e:
 - Use commit message templates or helpers
 
 **Fix Examples:**
+
 ```bash
 # ❌ Before: Body line too long (over 100 chars)
 git commit -m "docs: organize markdown files" \
@@ -562,18 +615,21 @@ git commit \
 **Description:** Flags passed to npm scripts using `--` separator don't reach the underlying command correctly.
 
 **Root Cause:**
+
 - npm script syntax: `npm run <script> -- --flag` requires double dash
 - Some scripts may not properly handle flag forwarding
 - Running scripts directly vs through npm can have different behavior
 - Missing or incorrect flag parsing in script entry points
 
 **Impact:**
+
 - Flags ignored, script runs with wrong options
 - Dry-run mode doesn't work when expected
 - Auto-fix flags don't apply changes
 - Confusing behavior where flags appear to be ignored
 
 **Prevention Strategy:**
+
 - Test flag passing through npm scripts
 - Use double dash `--` to separate npm flags from script flags
 - Run scripts directly if npm flag passing fails: `node dist/scripts/tool.js --flag`
@@ -581,6 +637,7 @@ git commit \
 - Consider using explicit flag parsing in CLI tools
 
 **Fix Examples:**
+
 ```bash
 # ❌ Before: Flag may not pass through correctly
 npm run organize-docs -- --auto-fix
@@ -606,21 +663,25 @@ node dist/scripts/tools/docs-organizer.js --auto-fix
 **Description:** Attempting to create or edit files that are in .gitignore or .cursorignore fails with blocking error.
 
 **Root Cause:**
+
 - Files like `.env.example` are often gitignored
 - Cursor/IDE globalignore prevents editing ignored files
 - Direct file editing tools fail on ignored files
 
 **Impact:**
+
 - Cannot create environment templates
 - Workflow interruption
 - Need for workarounds
 
 **Prevention Strategy:**
+
 - Check file ignore status before editing: `git check-ignore -v <file>`
 - Use programmatic file creation (Python/Node script)
 - Document workaround in project notes
 
 **Fix Examples:**
+
 ```powershell
 # Check why file is ignored
 git check-ignore -v .env.example
@@ -642,32 +703,36 @@ Set-Content -Path ".env.example" -Value "CONTENT"
 **Description:** API request types have different structure than validation schemas expect.
 
 **Root Cause:**
+
 - API uses flat structure (e.g., `depth_min`, `depth_max`)
 - Validation schema expects nested structure (e.g., `depth_range.min`, `depth_range.max`)
 - Schema created before verifying actual API types
 
 **Impact:**
+
 - Validation fails incorrectly
 - Need to adapt schemas to match API
 - Confusion about correct structure
 
 **Prevention Strategy:**
+
 - Always verify API request types before creating validation schemas
 - Test validation with actual API request objects
 - Document any structural differences
 - Keep validation schemas in sync with API types
 
 **Fix Examples:**
+
 ```typescript
 // ❌ Wrong: Schema doesn't match API
 const schema = z.object({
-  depth_range: z.object({ min: z.number(), max: z.number() })
+  depth_range: z.object({ min: z.number(), max: z.number() }),
 });
 
 // ✅ Correct: Schema matches API
 const schema = z.object({
   depth_min: z.number(),
-  depth_max: z.number()
+  depth_max: z.number(),
 });
 ```
 
@@ -678,21 +743,25 @@ const schema = z.object({
 **Description:** Writing tests before adding testing dependencies to package.json.
 
 **Root Cause:**
+
 - Tests written before infrastructure setup
 - Dependencies not added to package.json
 - Assumption that dependencies exist
 
 **Impact:**
+
 - Tests cannot run
 - Setup incomplete
 - Need to add dependencies retroactively
 
 **Prevention Strategy:**
+
 - Always add testing dependencies before writing tests
 - Follow testing infrastructure setup checklist
 - Verify dependencies installed before running tests
 
 **Fix Examples:**
+
 ```json
 // Add to package.json devDependencies first
 {
@@ -738,4 +807,3 @@ Before committing code, verify:
 ---
 
 **Last Updated:** 2025-01-21
-

@@ -117,14 +117,14 @@ If merge conflicts occur:
 
 These files are **always preserved** during sync:
 
-| File | Description |
-|------|-------------|
+| File                 | Description                   |
+| -------------------- | ----------------------------- |
 | `health-report.json` | Overall project health scores |
-| `gaps-report.md` | Detailed gap analysis report |
-| `stack-report.json` | Detected technology stack |
-| `health-before.json` | Previous health snapshot |
-| `health-after.json` | Health after fixes |
-| `input.txt` | Project-specific input files |
+| `gaps-report.md`     | Detailed gap analysis report  |
+| `stack-report.json`  | Detected technology stack     |
+| `health-before.json` | Previous health snapshot      |
+| `health-after.json`  | Health after fixes            |
+| `input.txt`          | Project-specific input files  |
 
 These files are **gitignored** in DevEnvTemplate, so they won't cause conflicts, but the sync script backs them up to be safe.
 
@@ -148,6 +148,7 @@ git remote -v
 ```
 
 You should see:
+
 ```
 origin    https://github.com/XylarDark/DevEnvTemplate.git (fetch)
 origin    https://github.com/XylarDark/DevEnvTemplate.git (push)
@@ -200,4 +201,3 @@ npm run build
 - [EMBEDDED-USAGE.md](EMBEDDED-USAGE.md) - Using DevEnvTemplate in embedded mode
 - [SETUP-GUIDE.md](SETUP-GUIDE.md) - Initial setup instructions
 - [LEARNINGS-FROM-EMBEDDED-USAGE.md](LEARNINGS-FROM-EMBEDDED-USAGE.md) - Insights from real-world usage
-

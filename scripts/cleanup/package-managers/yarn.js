@@ -53,4 +53,3 @@ class YarnManager extends BasePackageManager {
 }
 
 module.exports = { YarnManager };
-

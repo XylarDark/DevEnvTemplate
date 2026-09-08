@@ -8,14 +8,14 @@ Use [automation-standards.mdc](../../.cursor/rules/automation-standards.mdc) for
 
 ## How to add an entry
 
-| Field | Description |
-|-------|-------------|
-| **Date** | YYYY-MM-DD |
-| **Feature / area** | What we tried to automate |
-| **What is needed** | One sentence: required outcome |
-| **Why automation fails** | API gap, protected UI, vendor limit |
-| **Interim** | Human step, vendor ticket, or workaround |
-| **Suggested follow-up** | Tooling or API to close the gap |
+| Field                    | Description                              |
+| ------------------------ | ---------------------------------------- |
+| **Date**                 | YYYY-MM-DD                               |
+| **Feature / area**       | What we tried to automate                |
+| **What is needed**       | One sentence: required outcome           |
+| **Why automation fails** | API gap, protected UI, vendor limit      |
+| **Interim**              | Human step, vendor ticket, or workaround |
+| **Suggested follow-up**  | Tooling or API to close the gap          |
 
 ---
 

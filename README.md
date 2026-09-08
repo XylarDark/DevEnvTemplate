@@ -33,6 +33,7 @@ npm run doctor
 ```
 
 **Output:**
+
 ```
 🏥 DevEnvTemplate Health Check
 
@@ -65,6 +66,7 @@ npm run doctor:fix
 ```
 
 Auto-fixes:
+
 - ✅ Creates `.env.example`
 - ✅ Adds `.env` to `.gitignore`
 - ✅ Enables TypeScript strict mode
@@ -73,6 +75,7 @@ Auto-fixes:
 ## What You Get
 
 ### Instant Quality Stack
+
 - **Testing**: Node.js test runner (no heavy frameworks)
 - **CI/CD**: GitHub Actions (optimized for 2000 free min/month)
 - **Type Safety**: TypeScript support with smart defaults
@@ -80,13 +83,16 @@ Auto-fixes:
 - **Security**: Automated dependency scanning
 
 ### Works With Your Stack
+
 - **Node.js**: Express, Fastify, NestJS
 - **Frontend**: React, Vue, Svelte, vanilla JS
 - **Full-Stack**: Next.js, Remix, Astro
 - **Python**: Flask, Django, FastAPI (coming soon)
 
 ### Free-Tier Friendly
+
 All recommendations use free tiers:
+
 - GitHub Actions (2000 min/month)
 - Vercel / Railway / Fly.io deployments
 - GitHub security scanning
@@ -107,37 +113,48 @@ For game repositories with a **`.uproject`** file, this template ships **conditi
 DevEnvTemplate follows a medical diagnostic approach:
 
 ### 1. Diagnose (Stack Detection)
+
 Scans your project to understand your tech stack:
+
 ```bash
 node .github/tools/stack-detector.js
 ```
+
 - Detects frameworks (React, Next.js, Express, etc.)
 - Identifies tooling (TypeScript, ESLint, testing frameworks)
 - Finds configurations and quality setup
 
 ### 2. Prescribe (Gap Analysis)
+
 Identifies what's missing or misconfigured:
+
 ```bash
 node .github/tools/gap-analyzer.js
 ```
+
 - Security gaps (exposed secrets, vulnerable dependencies)
 - Quality gaps (missing tests, no linting, weak TypeScript)
 - CI/CD gaps (no pipeline, missing quality gates)
 - Documentation gaps (incomplete README, no contribution guide)
 
 ### 3. Cure (Auto-Fix + Cleanup)
+
 Applies fixes automatically:
+
 ```bash
 npm run doctor:fix      # Auto-fix simple issues
 npm run cleanup:apply   # Remove template boilerplate
 ```
+
 - Creates missing config files
 - Enables strict mode
 - Removes template-only code
 - Sets up CI/CD
 
 ### 4. Monitor (Continuous Health)
+
 On every push, CI runs health checks:
+
 - ✅ Tests run automatically
 - ✅ Code is linted for consistency
 - ✅ Security scan checks dependencies
@@ -148,6 +165,7 @@ On every push, CI runs health checks:
 ## Common Tasks
 
 ### Check Project Health
+
 ```bash
 npm run doctor           # Full health check
 npm run doctor:fix       # Apply auto-fixes
@@ -155,6 +173,7 @@ npm run doctor -- --json # JSON output
 ```
 
 ### Run Tests Locally
+
 ```bash
 npm test              # Run all tests
 npm run test:fast     # Run unit tests only (< 5sec)
@@ -162,15 +181,18 @@ npm run test:slow     # Run integration tests
 ```
 
 ### Check Code Quality
+
 ```bash
 npm run cleanup       # See what would be cleaned (dry run)
 npm run cleanup:apply # Apply cleanup rules
 ```
 
 ### View Reports
+
 After running doctor or pushing to GitHub:
+
 - `.devenv/health-report.json` - Overall health scores
-- `.devenv/stack-report.json` - Detected technologies  
+- `.devenv/stack-report.json` - Detected technologies
 - `.devenv/gaps-report.md` - Detailed gap analysis
 - `plans/hardening-plan.md` - Generated action plan
 
@@ -199,6 +221,7 @@ After running doctor or pushing to GitHub:
 ## Advanced Features
 
 For power users, DevEnvTemplate includes:
+
 - **Parallel file processing** (2-5x speedup on large codebases)
 - **Performance tracking** (identify slow build steps)
 - **Cursor Plan Mode integration** (AI-guided development workflow)

@@ -30,7 +30,7 @@ describe('Cleanup Engine Parallel Processing', () => {
       dryRun: false,
       parallel: true,
       concurrency: 4,
-      performance: true
+      performance: true,
     });
 
     await engine.loadConfig();
@@ -59,7 +59,7 @@ describe('Cleanup Engine Parallel Processing', () => {
     // Create a file that will cause an error
     const badFilePath = path.join(tempDir, 'src', 'bad-file.js');
     await fs.writeFile(badFilePath, 'invalid content with no markers', 'utf8');
-    
+
     // Make it read-only to cause an error on write
     await fs.chmod(badFilePath, 0o444);
 
@@ -68,7 +68,7 @@ describe('Cleanup Engine Parallel Processing', () => {
       workingDir: tempDir,
       dryRun: false,
       parallel: true,
-      concurrency: 4
+      concurrency: 4,
     });
 
     await engine.loadConfig();
@@ -76,7 +76,7 @@ describe('Cleanup Engine Parallel Processing', () => {
 
     // Should still process other files despite error
     assert.ok(report.actions.length > 0, 'Should have processed other files');
-    
+
     // Restore permissions for cleanup
     try {
       await fs.chmod(badFilePath, 0o644);
@@ -92,7 +92,7 @@ describe('Cleanup Engine Parallel Processing', () => {
       dryRun: true,
       parallel: true,
       concurrency: 2,
-      performance: true
+      performance: true,
     });
 
     await engine.loadConfig();
@@ -108,7 +108,7 @@ describe('Cleanup Engine Parallel Processing', () => {
       workingDir: tempDir,
       dryRun: true,
       parallel: true,
-      concurrency: 1
+      concurrency: 1,
     });
 
     await engine.loadConfig();
@@ -122,4 +122,3 @@ describe('Cleanup Engine Parallel Processing', () => {
     // Skipped: Requires large-project fixture config (removed in Phase 4)
   });
 });
-

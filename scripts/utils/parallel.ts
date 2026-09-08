@@ -16,7 +16,7 @@ export interface ParallelResult<R> {
 
 /**
  * Execute async operations in parallel with concurrency control
- * 
+ *
  * @param items - Array of items to process
  * @param worker - Async function to process each item
  * @param options - Parallel execution options
@@ -30,7 +30,7 @@ export async function parallel<T, R>(
   const { concurrency, onProgress } = options;
   const results: R[] = [];
   const errors: Array<{ item: T; error: Error }> = [];
-  
+
   if (items.length === 0) {
     return { results, errors };
   }
@@ -52,7 +52,9 @@ export async function parallel<T, R>(
           const result = await worker(item);
           results[currentIndex] = result;
         } catch (error) {
-          logger.warn(`Worker failed for item at index ${currentIndex}`, { error: (error as Error).message });
+          logger.warn(`Worker failed for item at index ${currentIndex}`, {
+            error: (error as Error).message,
+          });
           errors.push({ item, error: error as Error });
           // Store undefined for failed items to maintain index alignment
           results[currentIndex] = undefined as any;
@@ -76,7 +78,7 @@ export async function parallel<T, R>(
 /**
  * Execute async operations in batches with concurrency control
  * Alternative approach that processes in explicit batches
- * 
+ *
  * @param items - Array of items to process
  * @param worker - Async function to process each item
  * @param options - Parallel execution options
@@ -95,7 +97,9 @@ export async function parallelBatch<T, R>(
     return { results, errors };
   }
 
-  logger.debug(`Starting batch parallel execution: ${items.length} items, batch size ${concurrency}`);
+  logger.debug(
+    `Starting batch parallel execution: ${items.length} items, batch size ${concurrency}`
+  );
 
   let completed = 0;
 
@@ -108,8 +112,14 @@ export async function parallelBatch<T, R>(
         const result = await worker(item);
         return { index: globalIndex, result, error: null };
       } catch (error) {
-        logger.warn(`Batch worker failed for item at index ${globalIndex}`, { error: (error as Error).message });
-        return { index: globalIndex, result: undefined as any, error: { item, error: error as Error } };
+        logger.warn(`Batch worker failed for item at index ${globalIndex}`, {
+          error: (error as Error).message,
+        });
+        return {
+          index: globalIndex,
+          result: undefined as any,
+          error: { item, error: error as Error },
+        };
       }
     });
 
@@ -128,14 +138,16 @@ export async function parallelBatch<T, R>(
     }
   }
 
-  logger.debug(`Batch parallel execution completed: ${results.length} results, ${errors.length} errors`);
+  logger.debug(
+    `Batch parallel execution completed: ${results.length} results, ${errors.length} errors`
+  );
 
   return { results, errors };
 }
 
 /**
  * Calculate optimal concurrency based on system resources and workload
- * 
+ *
  * @param itemCount - Number of items to process
  * @param cpuCount - Number of CPU cores available
  * @param ioIntensive - Whether the workload is I/O intensive (true) or CPU intensive (false)
@@ -147,12 +159,11 @@ export function calculateOptimalConcurrency(
   ioIntensive: boolean = true
 ): number {
   if (itemCount === 0) return 1;
-  
+
   // For I/O intensive tasks, use more concurrency (2x CPU count)
   // For CPU intensive tasks, use CPU count
   const baseConcurrency = ioIntensive ? cpuCount * 2 : cpuCount;
-  
+
   // Don't exceed item count
   return Math.min(baseConcurrency, itemCount);
 }
-

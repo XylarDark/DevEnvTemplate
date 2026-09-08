@@ -43,4 +43,3 @@ class PoetryManager extends BasePackageManager {
 }
 
 module.exports = { PoetryManager };
-

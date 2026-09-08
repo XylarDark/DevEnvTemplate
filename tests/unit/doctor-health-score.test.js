@@ -13,7 +13,7 @@ const assert = require('node:assert');
 const {
   buildDoctorReport,
   calculateHealthScore,
-  DEFAULT_HEALTH_SCORE_CONFIG
+  DEFAULT_HEALTH_SCORE_CONFIG,
 } = require('../../dist/scripts/doctor/cli');
 
 /**
@@ -32,7 +32,7 @@ function makeGap(overrides = {}) {
     recommendation: 'Add a test runner',
     effort: 'medium',
     files: ['package.json'],
-    ...overrides
+    ...overrides,
   };
 }
 
@@ -50,7 +50,7 @@ function makeGapReport(gaps) {
     mediumPriority: gaps.filter(gap => gap.severity === 'medium').length,
     lowPriority: gaps.filter(gap => gap.severity === 'low').length,
     gaps,
-    categories: {}
+    categories: {},
   };
 }
 
@@ -82,7 +82,7 @@ describe('Doctor health score', () => {
         makeGapReport([
           makeGap({ severity: 'high', category: 'testing', title: 'high gap' }),
           makeGap({ severity: 'medium', category: 'linting', title: 'medium gap' }),
-          makeGap({ severity: 'low', category: 'architecture', title: 'low gap' })
+          makeGap({ severity: 'low', category: 'architecture', title: 'low gap' }),
         ]),
         DEFAULT_HEALTH_SCORE_CONFIG
       );
@@ -107,7 +107,7 @@ describe('Doctor health score', () => {
         makeGap({ category: 'dependencies', severity: 'medium', effort: 'low' }),
         makeGap({ category: 'architecture', severity: 'low', effort: 'low' }),
         makeGap({ category: 'quality', severity: 'low', effort: 'low' }),
-        makeGap({ category: 'observability', severity: 'low' })
+        makeGap({ category: 'observability', severity: 'low' }),
       ];
 
       const report = buildDoctorReport(makeGapReport(gaps), DEFAULT_HEALTH_SCORE_CONFIG);
@@ -143,8 +143,8 @@ describe('Doctor health score', () => {
           makeGap({
             category: 'security',
             severity: 'high',
-            title: 'Secrets missing from eslint, tsconfig strict, and the CI workflow'
-          })
+            title: 'Secrets missing from eslint, tsconfig strict, and the CI workflow',
+          }),
         ],
         DEFAULT_HEALTH_SCORE_CONFIG
       );
@@ -207,7 +207,7 @@ describe('Doctor health score', () => {
       const config = {
         penalties: { high: 50, medium: 25, low: 0 },
         weights: { testing: 1 },
-        categoryMap: { testing: 'testing' }
+        categoryMap: { testing: 'testing' },
       };
 
       const score = calculateHealthScore(
@@ -225,7 +225,7 @@ describe('Doctor health score', () => {
       const report = buildDoctorReport(
         makeGapReport([
           makeGap({ title: 'cheap fix', effort: 'low' }),
-          makeGap({ title: 'expensive fix', effort: 'high' })
+          makeGap({ title: 'expensive fix', effort: 'high' }),
         ]),
         DEFAULT_HEALTH_SCORE_CONFIG
       );
@@ -238,7 +238,7 @@ describe('Doctor health score', () => {
       // The old keyword list matched on text, so this counted as a quick win.
       const report = buildDoctorReport(
         makeGapReport([
-          makeGap({ title: 'Rewrite the eslint and prettier setup', effort: 'high' })
+          makeGap({ title: 'Rewrite the eslint and prettier setup', effort: 'high' }),
         ]),
         DEFAULT_HEALTH_SCORE_CONFIG
       );

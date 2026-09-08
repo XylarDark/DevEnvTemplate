@@ -12,7 +12,7 @@ This is the **doctor** template for development environments: diagnose, prescrib
 
 ## Stack
 
-- TypeScript (strict, ES2020, CommonJS), Node.js 20+ LTS
+- TypeScript (strict, ES2020, CommonJS), Node.js 24+ (Active LTS)
 - Node.js test runner (`npm test` builds then runs `tests/**/*.test.js`)
 - Commands: `npm run doctor`, `npm run doctor:fix`, `npm run build`, `npm test`
 

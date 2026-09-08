@@ -33,13 +33,13 @@ export async function GET() {
 'use client'
 export function MyComponent() {
   const [files, setFiles] = useState<string[]>([])
-  
+
   useEffect(() => {
     fetch('/api/files')
       .then(res => res.json())
       .then(setFiles)
   }, [])
-  
+
   return <div>{files.join(', ')}</div>
 }
 ```
@@ -65,7 +65,7 @@ export function MyComponent() {
 // ❌ WRONG - References source files
 {
   "scripts": {
-    "doctor": "node scripts/doctor/cli.ts"  // TypeScript not compiled
+    "doctor": "node scripts/doctor/cli.ts" // TypeScript not compiled
   }
 }
 ```
@@ -91,15 +91,15 @@ export function MyComponent() {
 ```typescript
 // ❌ WRONG - Using any
 function processData(data: any) {
-  return data.value
+  return data.value;
 }
 
 // ✅ CORRECT - Proper types
 interface Data {
-  value: number
+  value: number;
 }
 function processData(data: Data): number {
-  return data.value
+  return data.value;
 }
 ```
 
@@ -109,10 +109,10 @@ function processData(data: Data): number {
 
 ```typescript
 // ✅ CORRECT - Client-side environment variable
-const apiUrl = process.env.NEXT_PUBLIC_API_URL
+const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
 // ❌ WRONG - Server-only variable in client component
-const apiKey = process.env.API_KEY  // undefined in client
+const apiKey = process.env.API_KEY; // undefined in client
 ```
 
 ### Provide .env.local.example
@@ -129,15 +129,15 @@ NEXT_PUBLIC_API_KEY=demo-api-key
 
 ```typescript
 // lib/api-client.ts
-import axios from 'axios'
-import { SimulationRequest, SimulationResponse } from '@/types/api'
+import axios from 'axios';
+import { SimulationRequest, SimulationResponse } from '@/types/api';
 
 const apiClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
-})
+});
 
 export async function simulate(
   request: SimulationRequest
@@ -145,8 +145,8 @@ export async function simulate(
   const response = await apiClient.post<SimulationResponse>(
     '/api/v1/simulate',
     request
-  )
-  return response.data
+  );
+  return response.data;
 }
 ```
 
@@ -193,7 +193,7 @@ export class ErrorBoundary extends React.Component<
 
 ```typescript
 // lib/react-query.ts
-import { QueryClient } from '@tanstack/react-query'
+import { QueryClient } from '@tanstack/react-query';
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -204,21 +204,21 @@ export const queryClient = new QueryClient({
       refetchOnWindowFocus: false,
     },
   },
-})
+});
 ```
 
 ### Use Custom Hooks
 
 ```typescript
 // lib/hooks/use-simulation.ts
-import { useMutation } from '@tanstack/react-query'
-import { simulate } from '../api-endpoints'
-import { SimulationRequest, SimulationResponse } from '@/types/api'
+import { useMutation } from '@tanstack/react-query';
+import { simulate } from '../api-endpoints';
+import { SimulationRequest, SimulationResponse } from '@/types/api';
 
 export function useSimulation() {
   return useMutation<SimulationResponse, Error, SimulationRequest>({
     mutationFn: simulate,
-  })
+  });
 }
 ```
 
@@ -266,4 +266,3 @@ Before committing Next.js/TypeScript code:
 - [ ] React Query configured
 - [ ] Images optimized
 - [ ] Dynamic imports for heavy components
-

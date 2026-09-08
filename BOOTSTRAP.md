@@ -12,11 +12,13 @@
 ## How to Use This File
 
 **For LLM Sessions:**
+
 1. **Start with `AGENTS.md`** — short always-true facts. Cursor loads it automatically.
 2. **Use `.cursor/rules/*.mdc`** — always-on core plus glob/intelligent stack rules.
 3. **Open this file only** when you need setup, copy, or migration steps.
 
 **For Human Developers:**
+
 - See [README.md](README.md) for human-readable overview
 - See [AGENTS.md](AGENTS.md) for what agents should assume about this repo
 
@@ -41,10 +43,11 @@
 ### Safe Path Navigation Patterns
 
 **✅ Always Check Before Navigating:**
+
 ```powershell
 # Correct: Check path exists before Set-Location
-if (Test-Path "project_name") { 
-    Set-Location "project_name" 
+if (Test-Path "project_name") {
+    Set-Location "project_name"
 } else {
     Write-Error "Path does not exist: project_name"
 }
@@ -60,6 +63,7 @@ Pop-Location
 ```
 
 **❌ Common Anti-Patterns to Avoid:**
+
 ```powershell
 # Wrong: Direct navigation without checking
 cd project_name  # Fails if path doesn't exist or wrong working directory
@@ -106,6 +110,7 @@ if (Test-Path $workspaceRoot) {
 ```
 
 **Key Rules:**
+
 1. **Always use `Test-Path` before `Set-Location`** - Prevents "Cannot find path" errors
 2. **Use `Join-Path` for path construction** - Handles path separators correctly
 3. **Use `Push-Location`/`Pop-Location`** - For temporary directory changes
@@ -117,7 +122,9 @@ if (Test-Path $workspaceRoot) {
 **Problem**: Some files (e.g., `.env.example`) may be blocked from editing by globalignore settings.
 
 **Solution Patterns**:
+
 1. **Temporary Unignore** (if file exists):
+
    ```powershell
    git update-index --no-assume-unchanged .env.example
    # Make edits
@@ -125,6 +132,7 @@ if (Test-Path $workspaceRoot) {
    ```
 
 2. **Programmatic Creation** (preferred):
+
    ```powershell
    # Use script to create file
    python -c "from pathlib import Path; Path('.env.example').write_text('content')"
@@ -140,12 +148,14 @@ if (Test-Path $workspaceRoot) {
 ### Environment File Template Patterns
 
 **Next.js Projects:**
+
 - Create `.env.local.example` (not just `.env.example`)
 - Document `NEXT_PUBLIC_*` variables (exposed to browser)
 - Include API URL, optional API key, feature flags
 - Never put secrets in `NEXT_PUBLIC_*` variables
 
 **Python Projects:**
+
 - Create `.env.example` at project root
 - Document all required environment variables
 - Include safe default values where appropriate
@@ -153,6 +163,7 @@ if (Test-Path $workspaceRoot) {
 ### Validation Schema Alignment
 
 **When Creating API Validation:**
+
 - Verify API request types match validation schema structure
 - If API uses flat structure but schema expects nested, adapt schema to match API
 - Test validation with actual API request objects
@@ -161,6 +172,7 @@ if (Test-Path $workspaceRoot) {
 ### Testing Infrastructure Setup
 
 **When Adding Testing to a Project:**
+
 1. Add all testing dependencies to package.json first
 2. Create configuration files
 3. Add test scripts
@@ -214,44 +226,45 @@ npm run format --prefix .devenv
 
 ### DevEnvTemplate Tools (npm scripts)
 
-| Command | Purpose | Usage |
-|---------|---------|-------|
-| `npm run doctor` | Health check and gap analysis | `npm run doctor --prefix .devenv` |
-| `npm run doctor:fix` | Auto-fix detected issues | `npm run doctor:fix --prefix .devenv` |
-| `npm run agent:init` | Interactive project setup | `npm run agent:init --prefix .devenv` |
-| `npm run cleanup` | Remove template boilerplate (dry-run) | `npm run cleanup --prefix .devenv` |
-| `npm run cleanup:apply` | Apply cleanup changes | `npm run cleanup:apply --prefix .devenv` |
-| `devenv organize-docs` | Organize markdown files | `devenv organize-docs --auto-fix` |
-| `npm run build` | Compile TypeScript | `npm run build --prefix .devenv` |
-| `npm run test` | Run all tests | `npm run test --prefix .devenv` |
-| `npm run test:fast` | Run unit tests only | `npm run test:fast --prefix .devenv` |
-| `npm run format` | Format code with Prettier | `npm run format --prefix .devenv` |
-| `npm run format:check` | Check code formatting | `npm run format:check --prefix .devenv` |
+| Command                 | Purpose                               | Usage                                    |
+| ----------------------- | ------------------------------------- | ---------------------------------------- |
+| `npm run doctor`        | Health check and gap analysis         | `npm run doctor --prefix .devenv`        |
+| `npm run doctor:fix`    | Auto-fix detected issues              | `npm run doctor:fix --prefix .devenv`    |
+| `npm run agent:init`    | Interactive project setup             | `npm run agent:init --prefix .devenv`    |
+| `npm run cleanup`       | Remove template boilerplate (dry-run) | `npm run cleanup --prefix .devenv`       |
+| `npm run cleanup:apply` | Apply cleanup changes                 | `npm run cleanup:apply --prefix .devenv` |
+| `devenv organize-docs`  | Organize markdown files               | `devenv organize-docs --auto-fix`        |
+| `npm run build`         | Compile TypeScript                    | `npm run build --prefix .devenv`         |
+| `npm run test`          | Run all tests                         | `npm run test --prefix .devenv`          |
+| `npm run test:fast`     | Run unit tests only                   | `npm run test:fast --prefix .devenv`     |
+| `npm run format`        | Format code with Prettier             | `npm run format --prefix .devenv`        |
+| `npm run format:check`  | Check code formatting                 | `npm run format:check --prefix .devenv`  |
 
 ### Maintenance Tools (Embedded Usage)
 
-| Command | Purpose | Usage |
-|---------|---------|-------|
-| `./scripts/sync-from-template.sh` | Sync with template updates (Bash) | `cd .devenv && ./scripts/sync-from-template.sh` |
+| Command                            | Purpose                                 | Usage                                            |
+| ---------------------------------- | --------------------------------------- | ------------------------------------------------ |
+| `./scripts/sync-from-template.sh`  | Sync with template updates (Bash)       | `cd .devenv && ./scripts/sync-from-template.sh`  |
 | `.\scripts\sync-from-template.ps1` | Sync with template updates (PowerShell) | `cd .devenv && .\scripts\sync-from-template.ps1` |
 
 **Note:** Sync scripts preserve project-specific files (health reports, gap analysis, etc.) while pulling template updates. See [SYNC.md](docs/SYNC.md) for detailed documentation.
 
 ### Doctor Command Flags
 
-| Flag | Purpose | Example |
-|------|---------|---------|
-| `--fix` | Apply automatic fixes | `npm run doctor --prefix .devenv -- --fix` |
-| `--no-install` | Skip dependency installation | `npm run doctor --prefix .devenv -- --fix --no-install` |
-| `--preset <type>` | Override framework detection | `npm run doctor --prefix .devenv -- --preset nextjs` |
-| `--dry-run` | Preview changes without applying | `npm run doctor --prefix .devenv -- --fix --dry-run` |
-| `--strict` | Exit with code 1 on warnings (CI) | `npm run doctor --prefix .devenv -- --strict` |
-| `--json` | Output results in JSON format | `npm run doctor --prefix .devenv -- --json` |
-| `--debug` | Enable verbose logging | `npm run doctor --prefix .devenv -- --debug` |
-| `--fast` | Fast mode (skips docs, accessibility, Docker) | `npm run doctor --prefix .devenv -- --fast` |
-| `--full` | Full mode (default, all checks) | `npm run doctor --prefix .devenv -- --full` |
+| Flag              | Purpose                                       | Example                                                 |
+| ----------------- | --------------------------------------------- | ------------------------------------------------------- |
+| `--fix`           | Apply automatic fixes                         | `npm run doctor --prefix .devenv -- --fix`              |
+| `--no-install`    | Skip dependency installation                  | `npm run doctor --prefix .devenv -- --fix --no-install` |
+| `--preset <type>` | Override framework detection                  | `npm run doctor --prefix .devenv -- --preset nextjs`    |
+| `--dry-run`       | Preview changes without applying              | `npm run doctor --prefix .devenv -- --fix --dry-run`    |
+| `--strict`        | Exit with code 1 on warnings (CI)             | `npm run doctor --prefix .devenv -- --strict`           |
+| `--json`          | Output results in JSON format                 | `npm run doctor --prefix .devenv -- --json`             |
+| `--debug`         | Enable verbose logging                        | `npm run doctor --prefix .devenv -- --debug`            |
+| `--fast`          | Fast mode (skips docs, accessibility, Docker) | `npm run doctor --prefix .devenv -- --fast`             |
+| `--full`          | Full mode (default, all checks)               | `npm run doctor --prefix .devenv -- --full`             |
 
 **Performance Notes:**
+
 - `--fast` mode: ~200ms runtime, skips documentation/accessibility/Docker checks
 - Default mode: Full analysis, use before releases/merges
 - See [PERF-BASELINE.md](docs/PERF-BASELINE.md) for performance details
@@ -263,45 +276,50 @@ npm run format --prefix .devenv
 ### Essential Documentation Files
 
 #### LLM-Specific Documentation
-| File | Purpose | When to Use |
-|------|---------|-------------|
-| `docs/LLM-CONTEXT-GUIDE.md` | Complete DevEnvTemplate command reference | Need detailed command documentation |
-| `docs/LLM-REFERENCE.md` | Technology-agnostic template for project extensions | Creating project-specific LLM reference |
-| `docs/LLM-FILE-INDEX.md` | Navigation checklist for LLMs | Starting new AI session, need file list |
+
+| File                        | Purpose                                             | When to Use                             |
+| --------------------------- | --------------------------------------------------- | --------------------------------------- |
+| `docs/LLM-CONTEXT-GUIDE.md` | Complete DevEnvTemplate command reference           | Need detailed command documentation     |
+| `docs/LLM-REFERENCE.md`     | Technology-agnostic template for project extensions | Creating project-specific LLM reference |
+| `docs/LLM-FILE-INDEX.md`    | Navigation checklist for LLMs                       | Starting new AI session, need file list |
 
 #### Core Usage & Setup
-| File | Purpose | When to Use |
-|------|---------|-------------|
-| `docs/USAGE.md` | Day-to-day workflows | Daily operations |
-| `docs/SETUP-GUIDE.md` | Initial embedding instructions | First-time setup |
-| `docs/EMBEDDED-USAGE.md` | Ongoing embedded usage | Using DevEnvTemplate after setup |
-| `docs/SYNC.md` | Syncing with template updates | Maintaining sync with DevEnvTemplate |
-| `docs/TROUBLESHOOTING.md` | Problem-solution guide | Encountering issues |
+
+| File                      | Purpose                        | When to Use                          |
+| ------------------------- | ------------------------------ | ------------------------------------ |
+| `docs/USAGE.md`           | Day-to-day workflows           | Daily operations                     |
+| `docs/SETUP-GUIDE.md`     | Initial embedding instructions | First-time setup                     |
+| `docs/EMBEDDED-USAGE.md`  | Ongoing embedded usage         | Using DevEnvTemplate after setup     |
+| `docs/SYNC.md`            | Syncing with template updates  | Maintaining sync with DevEnvTemplate |
+| `docs/TROUBLESHOOTING.md` | Problem-solution guide         | Encountering issues                  |
 
 #### Development Standards & Practices
-| File | Purpose | When to Use |
-|------|---------|-------------|
-| `docs/PROJECTRULES-UPDATE-v3.0.md` | Engineering rules and guidelines | Need coding standards, cross-platform compatibility |
-| `docs/BEST-PRACTICES.md` | Technology-agnostic best practices | General development patterns, encryption, error handling |
-| `docs/ARCHITECTURE.md` | Project structure and design | Understanding internals, tooling architecture |
-| `docs/TOOLING-ARCHITECTURE.md` | Tooling design principles | Understanding why Node/TypeScript, contributor guidelines |
-| `docs/PERF-BASELINE.md` | Performance benchmarks | Understanding fast mode, optimization targets |
+
+| File                               | Purpose                            | When to Use                                               |
+| ---------------------------------- | ---------------------------------- | --------------------------------------------------------- |
+| `docs/PROJECTRULES-UPDATE-v3.0.md` | Engineering rules and guidelines   | Need coding standards, cross-platform compatibility       |
+| `docs/BEST-PRACTICES.md`           | Technology-agnostic best practices | General development patterns, encryption, error handling  |
+| `docs/ARCHITECTURE.md`             | Project structure and design       | Understanding internals, tooling architecture             |
+| `docs/TOOLING-ARCHITECTURE.md`     | Tooling design principles          | Understanding why Node/TypeScript, contributor guidelines |
+| `docs/PERF-BASELINE.md`            | Performance benchmarks             | Understanding fast mode, optimization targets             |
 
 #### Integration & Guides
-| File | Purpose | When to Use |
-|------|---------|-------------|
-| `docs/guides/docs-organization.md` | Documentation organization guide | Organizing markdown files |
-| `docs/guides/cursor-plan-integration.md` | Cursor IDE integration | Using with Cursor IDE |
-| `docs/guides/python-best-practices.md` | Python-specific patterns | Working with Python projects |
-| `docs/guides/troubleshooting.md` | Extended troubleshooting | Deep-dive problem solving |
+
+| File                                     | Purpose                          | When to Use                  |
+| ---------------------------------------- | -------------------------------- | ---------------------------- |
+| `docs/guides/docs-organization.md`       | Documentation organization guide | Organizing markdown files    |
+| `docs/guides/cursor-plan-integration.md` | Cursor IDE integration           | Using with Cursor IDE        |
+| `docs/guides/python-best-practices.md`   | Python-specific patterns         | Working with Python projects |
+| `docs/guides/troubleshooting.md`         | Extended troubleshooting         | Deep-dive problem solving    |
 
 #### Additional Development Resources
-| File | Purpose | When to Use |
-|------|---------|-------------|
-| `docs/CONTRIBUTING.md` | Contribution guidelines | Contributing to DevEnvTemplate |
-| `docs/REPOSITORY_STRUCTURE.md` | Repository organization | Understanding file layout |
-| `docs/STRUCTURE.md` | Project structure details | Detailed structure reference |
-| `docs/TOOL-RECOMMENDATIONS.md` | Recommended tooling | Choosing development tools |
+
+| File                           | Purpose                   | When to Use                    |
+| ------------------------------ | ------------------------- | ------------------------------ |
+| `docs/CONTRIBUTING.md`         | Contribution guidelines   | Contributing to DevEnvTemplate |
+| `docs/REPOSITORY_STRUCTURE.md` | Repository organization   | Understanding file layout      |
+| `docs/STRUCTURE.md`            | Project structure details | Detailed structure reference   |
+| `docs/TOOL-RECOMMENDATIONS.md` | Recommended tooling       | Choosing development tools     |
 
 ### Documentation Organization
 
@@ -415,6 +433,7 @@ cd .devenv
 ```
 
 The sync script will:
+
 - Preserve project-specific files (health reports, gap analysis, etc.)
 - Pull updates from the template repository
 - Rebuild the project after syncing
@@ -426,6 +445,7 @@ See [SYNC.md](docs/SYNC.md) for detailed sync documentation and troubleshooting.
 ## Development Workflow Patterns
 
 ### Fast Feedback Loops
+
 ```bash
 # Quick health check (fast mode)
 npm run doctor --prefix .devenv -- --fast
@@ -435,6 +455,7 @@ npm run doctor --prefix .devenv -- --fix --no-install --fast
 ```
 
 ### Production Readiness Checks
+
 ```bash
 # Full quality gate
 npm run doctor --prefix .devenv -- --strict --full
@@ -446,11 +467,13 @@ npm run build --prefix .devenv
 ### Stack-Specific Workflows
 
 **Node.js Projects:**
+
 - Doctor detects: `package.json`, `node_modules/`
 - Quick wins: Vitest setup, ESLint flat config, Playwright, lockfile checks
 - See [USAGE.md](docs/USAGE.md) for Node-specific patterns
 
 **Python Projects:**
+
 - Doctor detects: `pyproject.toml`, `requirements.txt`, virtual environments
 - Quick wins: Pytest config, Ruff linting, Black formatting, Mypy type checking
 - Prefers: `pre-commit` hooks over Husky, experiment budgets for ML/simulation repos
@@ -461,11 +484,13 @@ npm run build --prefix .devenv
 **Windows PowerShell:**
 
 **Command Chaining:**
+
 - Use `;` instead of `&&` for command chaining
 - Never use emoji in commit messages (causes parse errors)
 - Use `Write-Output` or plain `echo` without `-e` flag
 
 **Path Navigation (Critical for LLMs):**
+
 - **Always check paths before navigating**: Use `Test-Path` before `Set-Location` to prevent "Cannot find path" errors
 - **Use `Join-Path` for path construction**: Handles path separators correctly across platforms
 - **Avoid nested `cd` commands**: Use `Join-Path` to construct full paths instead of chaining `cd` commands
@@ -476,8 +501,8 @@ npm run build --prefix .devenv
 
 ```powershell
 # ✅ Correct: Check before navigating
-if (Test-Path "project_name") { 
-    Set-Location "project_name" 
+if (Test-Path "project_name") {
+    Set-Location "project_name"
 } else {
     Write-Error "Path does not exist: project_name"
 }
@@ -509,6 +534,7 @@ cd project_name; cd .devenv  # May fail if first cd fails
 ```
 
 **Error Handling:**
+
 ```powershell
 # ✅ Correct: Silent error handling for directory creation
 New-Item -ItemType Directory -Path "docs\deployment" -Force -ErrorAction SilentlyContinue
@@ -527,6 +553,7 @@ if (Test-Path $filePath) {
 ```
 
 **File Operations:**
+
 ```powershell
 # ✅ Correct: Check file exists before reading
 if (Test-Path ".github\workflows\ci.yml") {
@@ -543,6 +570,7 @@ if (Test-Path $filePath) {
 **See [PROJECTRULES-UPDATE-v3.0.md](docs/PROJECTRULES-UPDATE-v3.0.md) section 3 for more details**
 
 **Unix/Linux/macOS:**
+
 - Standard bash patterns work as expected
 - Can use `&&` for command chaining
 - Standard shell utilities available
@@ -551,12 +579,14 @@ if (Test-Path $filePath) {
 ### Performance Optimization
 
 **Fast Mode Usage:**
+
 - Use `--fast` during active development for quick feedback (~200ms)
 - Use default/full mode before commits, merges, and releases
 - Fast mode skips: documentation checks, accessibility, Docker, git-hook validation
 - See [PERF-BASELINE.md](docs/PERF-BASELINE.md) for benchmarks
 
 **Tooling Architecture:**
+
 - All DevEnvTemplate tooling runs on Node.js/TypeScript for cross-platform consistency
 - Projects can keep native scripts (e.g., `scripts/check_env.py`) but shared tooling is TypeScript
 - See [TOOLING-ARCHITECTURE.md](docs/TOOLING-ARCHITECTURE.md) for design rationale
@@ -577,6 +607,7 @@ if (Test-Path $filePath) {
 ### Generated Files
 
 When running doctor, these files are created in the parent project's `.devenv/` directory:
+
 - `.devenv/stack-report.json` - Detected technologies and stack profile
 - `.devenv/gaps-report.md` - Detailed gap analysis
 - `.devenv/health-report.json` - Overall health scores
@@ -936,6 +967,7 @@ fi
 ```
 
 **LLM Action**: Locate the DevEnvTemplate `.cursor/rules/` directory. Check common locations:
+
 1. `.devenv/.cursor/rules/` (if DevEnvTemplate is embedded as `.devenv`)
 2. `../DevEnvTemplate/.cursor/rules/` (if sibling directory)
 3. Any other known location where DevEnvTemplate exists
@@ -965,7 +997,8 @@ for file in "${CORE_FILES[@]}"; do
 done
 ```
 
-**LLM Action**: 
+**LLM Action**:
+
 1. Compare file counts between source and destination
 2. Check for missing core rule files (00-08 series)
 3. Identify any new rule files in source that don't exist in destination
@@ -974,11 +1007,13 @@ done
 #### Step 4: Copy Files
 
 **For New Directory:**
+
 - Copy entire `.cursor/rules/` directory from DevEnvTemplate to project root
 - Ensure all `.mdc` files are copied
 - Preserve directory structure
 
 **For Existing Directory:**
+
 - Copy only missing files (don't overwrite existing files)
 - Update core files (00-08 series) if they've changed
 - Preserve project-specific rule files (custom rules, project-specific modifications)
@@ -1012,7 +1047,8 @@ if [ -f "$DEVENV_TEMPLATE_PATH/README.md" ]; then
 fi
 ```
 
-**LLM Action**: 
+**LLM Action**:
+
 1. Create `.cursor/rules/` directory if it doesn't exist
 2. Copy all `.mdc` files from DevEnvTemplate source
 3. For existing directories: preserve project-specific files, update core files (00-08 series)
@@ -1049,7 +1085,8 @@ When copying, preserve any project-specific customizations:
 - **Modified core files**: If project has modified core files, consider merging changes
 - **Additional files**: Preserve any additional files in `.cursor/rules/` (e.g., custom README sections)
 
-**LLM Action**: 
+**LLM Action**:
+
 1. Before copying, identify project-specific files in `.cursor/rules/`
 2. Preserve these files during copy
 3. If core files have project-specific modifications, consider creating a separate project-specific rule file instead of modifying core files
@@ -1111,12 +1148,12 @@ code_style:
   - Code duplication: Use base classes and inheritance to eliminate duplicate code.
   - Union Type Exhaustiveness: Ensure TypeScript union types include all runtime values; add new values when code uses them.
   - Type-Driven Development: Let compile errors guide missing type definitions rather than runtime failures.
-  - "Cohesion: High cohesion within modules; related functionality grouped together; each module has a clear, single purpose; functions in a class work together toward a common goal."
-  - "Coupling: Low coupling between modules; minimize dependencies between modules; use interfaces to reduce coupling; avoid tight coupling that makes changes difficult."
-  - "Naming: Clear, descriptive names that reveal intent; avoid abbreviations and acronyms; use domain terminology; function names should be verbs; class names should be nouns."
-  - "Function Size: Functions should do one thing and do it well; prefer small functions (10-20 lines); extract complex logic into separate functions; functions should fit on one screen."
-  - "Class Size: Classes should have a single, well-defined responsibility; prefer smaller classes; if a class exceeds 200-300 lines, consider splitting; each class should have a clear purpose."
-  - "File Organization: Related code should be grouped together; one class per file (or closely related classes); organize files by feature or layer; maintain consistent directory structure."
+  - 'Cohesion: High cohesion within modules; related functionality grouped together; each module has a clear, single purpose; functions in a class work together toward a common goal.'
+  - 'Coupling: Low coupling between modules; minimize dependencies between modules; use interfaces to reduce coupling; avoid tight coupling that makes changes difficult.'
+  - 'Naming: Clear, descriptive names that reveal intent; avoid abbreviations and acronyms; use domain terminology; function names should be verbs; class names should be nouns.'
+  - 'Function Size: Functions should do one thing and do it well; prefer small functions (10-20 lines); extract complex logic into separate functions; functions should fit on one screen.'
+  - 'Class Size: Classes should have a single, well-defined responsibility; prefer smaller classes; if a class exceeds 200-300 lines, consider splitting; each class should have a clear purpose.'
+  - 'File Organization: Related code should be grouped together; one class per file (or closely related classes); organize files by feature or layer; maintain consistent directory structure.'
 
 files:
   - Core governance: .projectrules, docs/rules-changelog.md - never modify without review.
@@ -1144,42 +1181,42 @@ patterns:
   - Parallel Processing: Use Promise.all batching with concurrency control for I/O-bound operations; default to CPU count for concurrency.
   - Concurrency Control: Implement worker pools with max concurrency limits; track batch execution in performance metrics.
   - Memory Efficiency: Process items in chunks, not all at once; validate memory usage with 1000+ item tests.
-  - "Test-Driven Deletions: Before removing features: 1) Identify all references (grep), 2) Update/remove tests, 3) Verify tests pass/skip, 4) Delete feature code, 5) Remove dependencies, 6) Update docs."
-  - "Fixture Management: Before deleting fixtures: 1) Search all test files for fixture name, 2) Update or skip affected tests, 3) Verify tests pass, 4) Delete fixture directory, 5) Re-run full test suite."
+  - 'Test-Driven Deletions: Before removing features: 1) Identify all references (grep), 2) Update/remove tests, 3) Verify tests pass/skip, 4) Delete feature code, 5) Remove dependencies, 6) Update docs.'
+  - 'Fixture Management: Before deleting fixtures: 1) Search all test files for fixture name, 2) Update or skip affected tests, 3) Verify tests pass, 4) Delete fixture directory, 5) Re-run full test suite.'
   - Fixture References: Use constants for fixture paths; grep for fixture directory name before deletion; prefer smaller fixtures over large generated ones.
-  - "Creational Patterns: Factory for object creation abstraction; Builder for complex object construction; Singleton only when truly needed (prefer dependency injection); Dependency Injection for loose coupling."
-  - "Structural Patterns: Adapter for incompatible interfaces; Decorator for adding behavior without modification; Facade for simplifying complex subsystems; Strategy for interchangeable algorithms."
-  - "Behavioral Patterns: Observer for event-driven communication; Command for encapsulating requests; Strategy for algorithm selection; Template Method for defining algorithm skeleton."
-  - "Architectural Patterns: Repository for data access abstraction; Service Layer for business logic organization; MVC/MVP/MVVM for UI separation (if applicable)."
+  - 'Creational Patterns: Factory for object creation abstraction; Builder for complex object construction; Singleton only when truly needed (prefer dependency injection); Dependency Injection for loose coupling.'
+  - 'Structural Patterns: Adapter for incompatible interfaces; Decorator for adding behavior without modification; Facade for simplifying complex subsystems; Strategy for interchangeable algorithms.'
+  - 'Behavioral Patterns: Observer for event-driven communication; Command for encapsulating requests; Strategy for algorithm selection; Template Method for defining algorithm skeleton.'
+  - 'Architectural Patterns: Repository for data access abstraction; Service Layer for business logic organization; MVC/MVP/MVVM for UI separation (if applicable).'
 
 solid_principles:
-  - "Single Responsibility Principle (SRP): Each class/function should have one reason to change; if a class has multiple responsibilities, split it into separate classes; functions should do one thing and do it well."
-  - "Open/Closed Principle (OCP): Open for extension, closed for modification; use inheritance, composition, or interfaces to extend behavior; avoid modifying existing code when adding features."
-  - "Liskov Substitution Principle (LSP): Subtypes must be substitutable for their base types; derived classes should not violate base class contracts; maintain behavioral compatibility in inheritance hierarchies."
+  - 'Single Responsibility Principle (SRP): Each class/function should have one reason to change; if a class has multiple responsibilities, split it into separate classes; functions should do one thing and do it well.'
+  - 'Open/Closed Principle (OCP): Open for extension, closed for modification; use inheritance, composition, or interfaces to extend behavior; avoid modifying existing code when adding features.'
+  - 'Liskov Substitution Principle (LSP): Subtypes must be substitutable for their base types; derived classes should not violate base class contracts; maintain behavioral compatibility in inheritance hierarchies.'
   - "Interface Segregation Principle (ISP): Clients shouldn't depend on interfaces they don't use; create focused, specific interfaces rather than fat interfaces; prefer many small interfaces over few large ones."
-  - "Dependency Inversion Principle (DIP): Depend on abstractions (interfaces/types), not concrete implementations; high-level modules should not depend on low-level modules; both should depend on abstractions."
+  - 'Dependency Inversion Principle (DIP): Depend on abstractions (interfaces/types), not concrete implementations; high-level modules should not depend on low-level modules; both should depend on abstractions.'
 
 clean_code_principles:
   - "DRY (Don't Repeat Yourself): Eliminate code duplication; extract common logic into reusable functions/classes; use constants for repeated values; refactor when duplication exceeds 3 instances."
-  - "KISS (Keep It Simple, Stupid): Prefer simple, straightforward solutions over clever ones; avoid premature optimization; choose the simplest solution that works; complexity should be justified."
+  - 'KISS (Keep It Simple, Stupid): Prefer simple, straightforward solutions over clever ones; avoid premature optimization; choose the simplest solution that works; complexity should be justified.'
   - "YAGNI (You Aren't Gonna Need It): Don't add functionality until it's actually needed; avoid speculative generality; build only what's required now; refactor when requirements change."
-  - "Separation of Concerns: Each module/class should address a separate concern; business logic separate from presentation; data access separate from business logic; clear boundaries between layers."
-  - "Principle of Least Surprise: Code should behave as expected; follow established conventions; use clear, descriptive names; avoid hidden side effects; make behavior predictable."
-  - "Composition over Inheritance: Prefer composition when possible; use composition for has-a relationships; use inheritance only for is-a relationships; favor object composition over class inheritance."
+  - 'Separation of Concerns: Each module/class should address a separate concern; business logic separate from presentation; data access separate from business logic; clear boundaries between layers.'
+  - 'Principle of Least Surprise: Code should behave as expected; follow established conventions; use clear, descriptive names; avoid hidden side effects; make behavior predictable.'
+  - 'Composition over Inheritance: Prefer composition when possible; use composition for has-a relationships; use inheritance only for is-a relationships; favor object composition over class inheritance.'
 
 architecture_principles:
-  - "Layered Architecture: Separate concerns across layers (presentation, business logic, data access); dependencies flow downward; each layer only depends on layers below it."
-  - "Dependency Direction: Dependencies should point inward toward core business logic; infrastructure depends on domain, not vice versa; core should have no external dependencies."
-  - "Module Boundaries: Clear boundaries between modules/packages; minimize dependencies between modules; use interfaces for cross-module communication; enforce boundaries with access modifiers."
-  - "Interface Design: Design interfaces for consumers, not implementations; interfaces should be focused and cohesive; prefer small, specific interfaces over large, general ones."
+  - 'Layered Architecture: Separate concerns across layers (presentation, business logic, data access); dependencies flow downward; each layer only depends on layers below it.'
+  - 'Dependency Direction: Dependencies should point inward toward core business logic; infrastructure depends on domain, not vice versa; core should have no external dependencies.'
+  - 'Module Boundaries: Clear boundaries between modules/packages; minimize dependencies between modules; use interfaces for cross-module communication; enforce boundaries with access modifiers.'
+  - 'Interface Design: Design interfaces for consumers, not implementations; interfaces should be focused and cohesive; prefer small, specific interfaces over large, general ones.'
   - "Abstraction Levels: Maintain consistent abstraction levels within functions/classes; don't mix high-level and low-level operations; extract details into separate functions; one level of abstraction per function."
 
 dependency_management:
-  - "Dependency Injection: Inject dependencies rather than creating them; pass dependencies through constructors or methods; enables testing and flexibility; avoid global state and singletons."
-  - "Inversion of Control: Framework or container controls flow, not application code; reduces coupling; improves testability; enables plugin architectures."
-  - "Dependency Direction: Dependencies flow inward (core → infrastructure); domain layer has no dependencies; infrastructure depends on domain; avoid circular dependencies."
-  - "Interface Segregation: Create focused interfaces, not fat interfaces; clients depend only on methods they use; reduces coupling; improves maintainability."
-  - "Abstraction Dependency: Depend on abstractions (interfaces/types), not concrete implementations; enables swapping implementations; improves testability; reduces coupling."
+  - 'Dependency Injection: Inject dependencies rather than creating them; pass dependencies through constructors or methods; enables testing and flexibility; avoid global state and singletons.'
+  - 'Inversion of Control: Framework or container controls flow, not application code; reduces coupling; improves testability; enables plugin architectures.'
+  - 'Dependency Direction: Dependencies flow inward (core → infrastructure); domain layer has no dependencies; infrastructure depends on domain; avoid circular dependencies.'
+  - 'Interface Segregation: Create focused interfaces, not fat interfaces; clients depend only on methods they use; reduces coupling; improves maintainability.'
+  - 'Abstraction Dependency: Depend on abstractions (interfaces/types), not concrete implementations; enables swapping implementations; improves testability; reduces coupling.'
 
 development_environment:
   - CI Node version: Standardize on Node 20.x LTS for all workflows (if applicable).
@@ -1189,13 +1226,13 @@ development_environment:
   - Command separation: Use individual terminal commands instead of chained commands.
   - Windows/PowerShell conventions: Use `;` not `&&` for command chaining; prefer `Get-ChildItem -Force` over `ls -la`; use `$env:VAR='value'` for environment variables; NEVER use emoji in commit messages (causes parse errors); escape special characters in strings.
   - "PowerShell path navigation: Always use Test-Path before Set-Location; check path exists before navigating to avoid 'Cannot find path' errors; use absolute paths or Join-Path for workspace-relative navigation; use Push-Location/Pop-Location for temporary directory changes."
-  - "PowerShell safe navigation patterns: if (Test-Path \"target\") { Set-Location \"target\" } else { Write-Error \"Path does not exist\" }; use Join-Path for path construction; avoid nested cd commands that create incorrect path concatenation."
-  - "PowerShell error handling: Use -ErrorAction SilentlyContinue for directory creation; validate paths before file operations; check workspace root before operations; use explicit error checking with if (-not (Test-Path $path))."
+  - 'PowerShell safe navigation patterns: if (Test-Path "target") { Set-Location "target" } else { Write-Error "Path does not exist" }; use Join-Path for path construction; avoid nested cd commands that create incorrect path concatenation.'
+  - 'PowerShell error handling: Use -ErrorAction SilentlyContinue for directory creation; validate paths before file operations; check workspace root before operations; use explicit error checking with if (-not (Test-Path $path)).'
   - Commit message safety: Avoid emoji, special characters, and complex formatting in commit messages; use plain ASCII for cross-platform compatibility; PowerShell parsing errors with UTF-8 emojis.
   - Git transport: Prefer HTTPS by default for push operations; SSH optional with explicit host key configuration.
   - Repo-root preflight: Before first commit, run `git rev-parse --show-toplevel` and ensure it equals the project directory; fix before committing if not.
-  - "Rules evolution: Update rules after each Plan→Agent cycle with new patterns and best practices."
-  - "Session review: After each cycle, complete checklist: summarize changes, log errors/workarounds, document rule deltas, bump version, update changelog, link in PR."
+  - 'Rules evolution: Update rules after each Plan→Agent cycle with new patterns and best practices.'
+  - 'Session review: After each cycle, complete checklist: summarize changes, log errors/workarounds, document rule deltas, bump version, update changelog, link in PR.'
   - Build toolchain: npm run build compiles TypeScript; npm run build:watch for development.
   - Type checking: npm run prebuild validates types before building.
   - Log configuration: LOG_LEVEL and LOG_JSON environment variables for structured logging.
@@ -1265,7 +1302,7 @@ testing:
   - Async test patterns: Use async/await in tests for time-based validations.
   - Parallel testing: Test concurrency limits, error handling, progress callbacks, and memory efficiency.
   - Large fixtures: Create 100+ file fixtures for performance testing; verify 2-3x speedup with parallel mode.
-  - "Test timeouts: All tests must have explicit timeouts; unit tests default 5s, integration 60s; use { timeout: ms } option."
+  - 'Test timeouts: All tests must have explicit timeouts; unit tests default 5s, integration 60s; use { timeout: ms } option.'
   - Timeout enforcement: Remove or fix tests that consistently exceed timeouts; never increase timeouts to mask slow tests.
   - Test isolation: Each test should be independently runnable; avoid shared state that causes cascading failures.
   - Slow test remediation: Profile slow tests, cache expensive operations (schema compilation, fixture setup), or split into faster units.
@@ -1280,17 +1317,17 @@ review:
 
 contribution:
   - Branch naming: feat/, fix/, refactor/, perf/, docs/, test/, chore/ prefixes.
-  - "Commit messages: Conventional commits with scope (e.g., feat(auth): add login, fix(ui): resolve button focus)."
+  - 'Commit messages: Conventional commits with scope (e.g., feat(auth): add login, fix(ui): resolve button focus).'
   - PR requirements: Description, testing notes, screenshots for UI changes (if applicable).
   - Breaking changes: Document in commit message with migration notes.
   - Open source friendly: Clear descriptions, helpful for future contributors.
 
 commits:
-  - "Format: type(scope): description"
+  - 'Format: type(scope): description'
   - Types: feat, fix, refactor, perf, docs, test, chore
-  - "Scope: feature area (e.g., ui/button, api/auth, docs/readme)"
-  - "Breaking changes: Add \"BREAKING CHANGE:\" footer with migration notes"
-  - "Examples: \"feat(auth): add login validation\", \"fix(ui): resolve button focus trap\""
+  - 'Scope: feature area (e.g., ui/button, api/auth, docs/readme)'
+  - 'Breaking changes: Add "BREAKING CHANGE:" footer with migration notes'
+  - 'Examples: "feat(auth): add login validation", "fix(ui): resolve button focus trap"'
 
 policies:
   - Testing Standard: Unit tests for new features; integration tests optional; keep tests fast (< 5s unit, < 60s integration).
@@ -1336,7 +1373,7 @@ optimization_workflow:
   - Incremental validation: Build and test after every major change (10-20 files or key feature).
 
 cycle_closeout:
-  - "Quick Review: Before merging, verify checklist items: Changes work as expected, Tests pass, Docs updated (if user-facing change), No secrets committed, Build/deploy still works"
+  - 'Quick Review: Before merging, verify checklist items: Changes work as expected, Tests pass, Docs updated (if user-facing change), No secrets committed, Build/deploy still works'
   - "That's it! Keep it simple."
 ```
 
@@ -1382,20 +1419,20 @@ def copy_cursor_rules(project_root: str, devenv_template_path: str) -> dict:
     """Copy .cursor/rules/ directory from DevEnvTemplate to project root."""
     source_dir = Path(devenv_template_path) / ".cursor" / "rules"
     dest_dir = Path(project_root) / ".cursor" / "rules"
-    
+
     if not source_dir.exists():
         return {"success": False, "error": "Source .cursor/rules/ not found"}
-    
+
     # Create destination directory
     dest_dir.parent.mkdir(parents=True, exist_ok=True)
-    
+
     # Copy files, preserving existing project-specific files
     copied = []
     skipped = []
-    
+
     for source_file in source_dir.glob("*.mdc"):
         dest_file = dest_dir / source_file.name
-        
+
         # Always copy core files (00-08 series)
         if source_file.name.startswith(("00-", "01-", "02-", "03-", "04-", "05-", "06-", "07-", "08-")):
             shutil.copy2(source_file, dest_file)
@@ -1406,13 +1443,13 @@ def copy_cursor_rules(project_root: str, devenv_template_path: str) -> dict:
             copied.append(source_file.name)
         else:
             skipped.append(source_file.name)
-    
+
     # Copy README if it exists
     readme_source = source_dir / "README.md"
     if readme_source.exists():
         shutil.copy2(readme_source, dest_dir / "README.md")
         copied.append("README.md")
-    
+
     return {
         "success": True,
         "copied": copied,
@@ -1429,10 +1466,10 @@ from pathlib import Path
 def check_cursor_rules_status(project_root: str) -> dict:
     """Check if .cursor/rules/ exists and has required core files."""
     rules_dir = Path(project_root) / ".cursor" / "rules"
-    
+
     if not rules_dir.exists():
         return {"exists": False, "status": "missing"}
-    
+
     # Required core files
     core_files = [
         "00-core-principles.mdc",
@@ -1445,10 +1482,10 @@ def check_cursor_rules_status(project_root: str) -> dict:
         "07-ai-agent-behavior.mdc",
         "08-project-context.mdc"
     ]
-    
+
     existing_files = [f.name for f in rules_dir.glob("*.mdc")]
     missing_files = [f for f in core_files if f not in existing_files]
-    
+
     return {
         "exists": True,
         "status": "complete" if not missing_files else "incomplete",
@@ -1519,14 +1556,15 @@ if (Test-Path "$SourceDir\README.md") {
 Write-Host "Copied .cursor/rules/ to project root"
 Get-ChildItem $DestDir
 ```
-        
+
         if not comparison["match"]:
             if result["action"] == "skip":
                 result["action"] = "update"
             result["changes"].append(section)
             result["reason"] = f"Mismatches in: {', '.join(result['changes'])}"
-    
+
     return result
+
 ```
 
 ---
@@ -1705,3 +1743,4 @@ Get-ChildItem $DestDir
 
 **For LLM Sessions:** This file now contains comprehensive references to all development-relevant documentation. Use the Quick Development Reference section above to quickly locate resources by task type or development concern.
 
+```

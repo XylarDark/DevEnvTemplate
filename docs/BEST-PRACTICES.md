@@ -30,7 +30,8 @@ import * as crypto from 'crypto';
 const keyBytes = crypto.randomBytes(32);
 
 // Encode to base64 URL-safe with proper padding
-const keyB64 = keyBytes.toString('base64')
+const keyB64 = keyBytes
+  .toString('base64')
   .replace(/\+/g, '-')
   .replace(/\//g, '_')
   .replace(/=+$/, ''); // Remove padding temporarily
@@ -62,7 +63,10 @@ print(f"Key length: {len(key_b64)} characters")
 DevEnvTemplate provides utilities to prevent these mistakes:
 
 ```typescript
-import { generateEncryptionKey, validateBase64Key } from './scripts/utils/crypto-helpers';
+import {
+  generateEncryptionKey,
+  validateBase64Key,
+} from './scripts/utils/crypto-helpers';
 
 // Generate a key
 const key = generateEncryptionKey(32); // 32 bytes for AES-256
@@ -98,12 +102,14 @@ if (verifyKeyFormat(key, 32)) {
 ### Common Mistakes to Avoid
 
 **❌ Wrong - Using `secrets.token_urlsafe()` directly**:
+
 ```python
 # This may not produce proper padding
 key = secrets.token_urlsafe(32)  # May be 43 characters, missing padding
 ```
 
 **❌ Wrong - Manual base64 encoding without padding**:
+
 ```python
 # Missing proper encoding
 key = base64.b64encode(secrets.token_bytes(32)).decode()  # May have wrong padding
@@ -121,11 +127,14 @@ key = base64.b64encode(secrets.token_bytes(32)).decode()  # May have wrong paddi
 ### Using DevEnvTemplate Utilities
 
 ```typescript
-import { requireEnvVar, requireEncryptionKey } from './scripts/utils/env-validator';
+import {
+  requireEnvVar,
+  requireEncryptionKey,
+} from './scripts/utils/env-validator';
 
 // Simple check
 const apiKey = requireEnvVar('API_KEY', {
-  hint: 'Set API_KEY in your .env file'
+  hint: 'Set API_KEY in your .env file',
 });
 
 // With validation
@@ -171,7 +180,7 @@ import { requireEnvVar } from './scripts/utils/env-validator';
 try {
   const key = requireEnvVar('ENCRYPTION_KEY', {
     hint: 'Generate a key using: node dist/scripts/tools/generate-key.js',
-    docs: 'docs/BEST-PRACTICES.md#encryption-key-generation'
+    docs: 'docs/BEST-PRACTICES.md#encryption-key-generation',
   });
 } catch (error) {
   // Error message includes hint and documentation link
@@ -191,20 +200,21 @@ try {
 ### Using DevEnvTemplate Utilities
 
 ```typescript
-import { createActionableError, formatError, wrapError } from './scripts/utils/error-helpers';
+import {
+  createActionableError,
+  formatError,
+  wrapError,
+} from './scripts/utils/error-helpers';
 
 // Create actionable error
-throw createActionableError(
-  'Invalid encryption key format',
-  {
-    hints: [
-      'Key must be 44 characters for a 32-byte key',
-      'Key must be base64 URL-safe encoded',
-      'Generate a new key using: node dist/scripts/tools/generate-key.js'
-    ],
-    docs: 'docs/BEST-PRACTICES.md#encryption-key-generation'
-  }
-);
+throw createActionableError('Invalid encryption key format', {
+  hints: [
+    'Key must be 44 characters for a 32-byte key',
+    'Key must be base64 URL-safe encoded',
+    'Generate a new key using: node dist/scripts/tools/generate-key.js',
+  ],
+  docs: 'docs/BEST-PRACTICES.md#encryption-key-generation',
+});
 
 // Format existing error with context
 try {
@@ -213,7 +223,7 @@ try {
   throw wrapError(error as Error, {
     file: 'package.json',
     hint: 'Check JSON syntax using a JSON validator',
-    docs: 'docs/TROUBLESHOOTING.md#json-parsing-errors'
+    docs: 'docs/TROUBLESHOOTING.md#json-parsing-errors',
   });
 }
 ```
@@ -262,7 +272,10 @@ Before deploying, verify:
 ### Using DevEnvTemplate Utilities
 
 ```typescript
-import { verifyPreCommit, verifyPreDeployment } from './scripts/utils/verification';
+import {
+  verifyPreCommit,
+  verifyPreDeployment,
+} from './scripts/utils/verification';
 
 // Pre-commit checks
 const preCommitResult = await verifyPreCommit(projectRoot);
@@ -291,7 +304,11 @@ Different shells use different command separators:
 ### Using DevEnvTemplate Utilities
 
 ```typescript
-import { runCommand, chainCommands, detectShell } from './scripts/utils/shell-helper';
+import {
+  runCommand,
+  chainCommands,
+  detectShell,
+} from './scripts/utils/shell-helper';
 
 // Auto-detect shell and execute command
 const shell = detectShell();
@@ -312,17 +329,21 @@ if (detectShell() === 'powershell') {
 
 Always provide examples for both shells:
 
-```markdown
+````markdown
 **Bash/Linux:**
+
 ```bash
 cd /path && npm run build
 ```
+````
 
 **PowerShell:**
+
 ```powershell
 Set-Location C:\path; npm run build
 ```
-```
+
+````
 
 ### PowerShell Output Limiting Anti-Pattern
 
@@ -335,23 +356,26 @@ PowerShell pipeline operations with `Select-Object -First N` can interfere with 
 ```powershell
 # ❌ AVOID: Causes VPN connection issues
 python -m pytest --collect-only -q 2>&1 | Select-Object -First 30
-```
+````
 
 **Safe Alternatives:**
 
 1. **Use direct command without limiting:**
+
    ```powershell
    # ✅ SAFE: Accept full output
    python -m pytest --collect-only -q
    ```
 
 2. **Use command's built-in limiting flags:**
+
    ```powershell
    # ✅ SAFE: Use command-specific flags
    python -m pytest --collect-only -q --maxfail=1
    ```
 
 3. **Redirect to file if limiting is absolutely necessary:**
+
    ```powershell
    # ✅ SAFE: File-based filtering
    python -m pytest --collect-only -q > output.txt
@@ -365,6 +389,7 @@ python -m pytest --collect-only -q 2>&1 | Select-Object -First 30
    ```
 
 **Key Principles:**
+
 - Modern terminals handle large output well - accept full output when possible
 - Use command-specific flags for output control when available
 - If limiting is needed, redirect to file first, then read with limits
@@ -384,6 +409,7 @@ const projectRoot = resolveProjectRoot();
 ```
 
 **Root markers** (checked in order):
+
 - `package.json` (Node.js projects)
 - `pyproject.toml` (Python projects)
 - `.git` (Git repositories)
@@ -497,7 +523,7 @@ def get_data_dir() -> Path:
     return data_dir
 ```
 
-**Never hardcode paths relative to __file__**:
+**Never hardcode paths relative to **file\*\*\*\*:
 
 ```python
 # ❌ Wrong - hardcoded path
@@ -560,13 +586,14 @@ pip install -e .
 
 **Document virtual environment setup**:
 
-```markdown
+````markdown
 ## Development Setup
 
 1. Create virtual environment:
    ```bash
    python -m venv venv
    ```
+````
 
 2. Activate virtual environment:
    - Windows PowerShell: `.\venv\Scripts\Activate.ps1`
@@ -576,7 +603,8 @@ pip install -e .
    ```bash
    pip install -e .
    ```
-```
+
+````
 
 ### Testing Patterns
 
@@ -589,7 +617,7 @@ sys.path.insert(0, '../')
 
 # ✅ Correct - package should be installed
 from my_package.core import config
-```
+````
 
 **Use pytest for better features**:
 
@@ -631,22 +659,26 @@ if __name__ == "__main__":
 ### Common Mistakes to Avoid
 
 **❌ Wrong - sys.path hacks**:
+
 ```python
 sys.path.insert(0, str(Path(__file__).parent.parent))
 ```
 
 **❌ Wrong - hardcoded paths**:
+
 ```python
 data_file = '../data/results.json'
 ```
 
 **❌ Wrong - os.path instead of pathlib**:
+
 ```python
 import os
 path = os.path.join(base, 'data', 'file.json')
 ```
 
 **✅ Correct - proper patterns**:
+
 ```python
 from pathlib import Path
 from my_package.utils.path_resolver import get_data_dir
@@ -729,14 +761,14 @@ def get_project_root() -> Path:
             return package_path
     except ImportError:
         pass
-    
+
     # Fallback: search from current file
     current = Path(__file__).resolve()
     while current != current.parent:
         if (current / 'pyproject.toml').exists():
             return current
         current = current.parent
-    
+
     # Last resort: current working directory
     return Path.cwd()
 
@@ -795,6 +827,7 @@ devenv organize-docs --auto-fix
 ```
 
 The tool uses configurable rules in `config/docs-organization.yaml`:
+
 - **Root exceptions**: Files that should stay in root (README.md, CHANGELOG.md, etc.)
 - **Directory rules**: Pattern-based organization (e.g., `*_DEPLOYMENT.md` → `docs/deployment/`)
 - **Default target**: Fallback directory for unmatched files
@@ -819,6 +852,7 @@ chmod +x .git/hooks/pre-commit
 ```
 
 The hook will:
+
 - Check for new markdown files in root
 - Warn if files should be organized
 - Optionally auto-organize (set `DEVENV_AUTO_ORGANIZE_DOCS=true`)
@@ -826,6 +860,7 @@ The hook will:
 ### Common Mistakes to Avoid
 
 **❌ Wrong - All docs in root:**
+
 ```
 project-root/
 ├── README.md
@@ -836,6 +871,7 @@ project-root/
 ```
 
 **✅ Correct - Organized structure:**
+
 ```
 project-root/
 ├── README.md
@@ -856,6 +892,7 @@ npm run doctor
 ```
 
 Fix automatically:
+
 ```bash
 npm run doctor --fix
 # Automatically organizes misplaced docs
@@ -868,17 +905,20 @@ See [`docs/guides/docs-organization.md`](guides/docs-organization.md) for comple
 ### Line Length Requirements
 
 DevEnvTemplate uses `@commitlint/config-conventional` which enforces:
+
 - **Header max length**: 72 characters
 - **Body max line length**: 100 characters (default from conventional config)
 
 **Common Mistake:** Writing long commit message body lines that exceed 100 characters.
 
 **Prevention:**
+
 - Break long lines into multiple `-m` flags
 - Keep each body line under 100 characters
 - Use line continuation with proper indentation
 
 **Examples:**
+
 ```bash
 # ❌ Wrong: Body line exceeds 100 characters
 git commit -m "docs: organize markdown files" \
@@ -896,6 +936,7 @@ git commit \
 ### Commit Message Format
 
 Follow conventional commits format:
+
 - **Type**: `feat`, `fix`, `docs`, `chore`, `refactor`, `test`, etc.
 - **Scope** (optional): Affected area
 - **Subject**: Lowercase, no period, imperative mood
@@ -915,11 +956,13 @@ npm run organize-docs -- --auto-fix
 **Problem:** Some scripts may not properly forward flags, causing flags to be ignored.
 
 **Solution:**
+
 1. **Test flag passing**: Verify `npm run script -- --flag` works
 2. **If it fails**: Run the compiled script directly
 3. **Ensure build is current**: Run `npm run build` first
 
 **Examples:**
+
 ```bash
 # ✅ Method 1: Through npm (if it works)
 npm run organize-docs -- --auto-fix
@@ -934,6 +977,7 @@ node dist/scripts/tools/docs-organizer.js --auto-fix
 ```
 
 **Best Practice:**
+
 - Document flag passing behavior in script README
 - Test both npm and direct execution methods
 - Provide both options in documentation
@@ -953,8 +997,8 @@ These best practices help prevent common mistakes and improve developer experien
 8. **npm scripts**: Test flag passing, use direct script execution if npm forwarding fails
 
 For more information, see:
+
 - [Troubleshooting Guide](TROUBLESHOOTING.md)
 - [Usage Guide](USAGE.md)
 - [LLM Context Guide](LLM-CONTEXT-GUIDE.md)
 - [Python Best Practices Guide](guides/python-best-practices.md)
-

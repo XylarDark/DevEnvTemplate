@@ -2,7 +2,7 @@
 
 /**
  * Documentation Organizer - JavaScript wrapper for TypeScript implementation
- * 
+ *
  * This wrapper provides backward compatibility by importing the compiled TypeScript version.
  */
 
@@ -11,11 +11,10 @@ const main = docsOrganizerModule.main || docsOrganizerModule.default || docsOrga
 
 // Run the organizer if called directly
 if (require.main === module) {
-  main().catch((error) => {
+  main().catch(error => {
     console.error('Fatal error:', error);
     process.exit(1);
   });
 }
 
 module.exports = docsOrganizerModule;
-

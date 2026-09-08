@@ -22,46 +22,55 @@ Last updated: 2025-11-18
 ### 1. Go CLI re-implementation
 
 **Pros**
+
 - Single static binary, tiny runtime footprint.
 - Easy cross-compilation and Homebrew scoop/chocolatey packaging.
 - Strong standard library for filesystem + YAML/JSON parsing.
 
 **Cons**
+
 - We would need to re-implement every rule (stack detector, gap analyzer, plan generator) in Go.
 - Higher risk of drift versus the TypeScript source; would require a shared schema/tests harness.
 - Harder to let template users tweak heuristics (today they can edit TypeScript and rebuild locally).
 
 **Integration model**
-- Treat Go CLI as a *wrapper* that shells out to the existing Node tools when `.devenv/` is present.
+
+- Treat Go CLI as a _wrapper_ that shells out to the existing Node tools when `.devenv/` is present.
 - For global scans, ship a read-only `.devenv` bundle inside the binary (zip) extracted to a cache dir before running.
 
 ### 2. Rust CLI with WASM core
 
 **Pros**
-- Rust can compile to native binaries *and* WebAssembly if we ever want a browser-based doctor.
+
+- Rust can compile to native binaries _and_ WebAssembly if we ever want a browser-based doctor.
 - Strong crate ecosystem for parsing configs similar to Go.
 - Could embed the existing TypeScript logic by compiling it to WASM via swc/deno (experimental).
 
 **Cons**
+
 - Build pipeline more complex (cargo + wasm-bindgen).
 - Same re-implementation burden unless we embed the existing JS via V8/QuickJS.
 - Tooling knowledge barrier for contributors compared to Node.
 
 **Integration model**
+
 - Rust binary orchestrates runs, but executes the proven TypeScript gap/stack logic through QuickJS (bundling the compiled dist). Rust handles UX, caching, telemetry.
 
 ### 3. Keep Node runtime, ship via pkg/ncc
 
 **Pros**
+
 - No rewrite: use `esbuild`/`ncc`/`pkg` to bundle Node + dist scripts into a single executable per platform.
 - Contributors keep editing TypeScript; tests stay the same.
 - Easiest path to parity and upgrades.
 
 **Cons**
+
 - Bundled executable is larger than Go/Rust output (~20-30 MB).
 - Still depends on V8 and Node start-up (slower cold start vs Go/Rust).
 
 **Integration model**
+
 - Provide `doctor` binary downloads from GitHub Releases that simply wrap the current `dist/scripts/doctor/cli.js`.
 - Continue shipping `.devenv/` for embedded usage; binary option is for global scans or CI containers.
 
@@ -76,4 +85,3 @@ Last updated: 2025-11-18
 1. Spike a `doctor` binary using `ncc` or `pkg` to measure size/startup.
 2. Document how the binary discovers project roots and where it caches `.devenv`.
 3. If successful, publish release instructions in `docs/RELEASE.md` and add automated builds to CI.
-

@@ -9,6 +9,7 @@ This guide covers **ongoing usage** after DevEnvTemplate is already embedded. Fo
 ## Overview
 
 When DevEnvTemplate is embedded as `.devenv/` in your project, you can use it to:
+
 - Analyze and improve your project's health
 - Run doctor commands from project root or `.devenv/` directory
 - Maintain project-specific configurations
@@ -85,6 +86,7 @@ DevEnvTemplate automatically detects the project root when:
 ### Auto-Detection Logic
 
 The doctor command checks:
+
 - If current directory is `.devenv`, walk up to parent
 - If `package.json` name is `devenv-template`, walk up to parent
 - Look for project root markers: `package.json`, `pyproject.toml`, `.git`, etc.
@@ -123,6 +125,7 @@ your-project/
 **Symptom**: Reports show DevEnvTemplate's stack instead of your project.
 
 **Solution**:
+
 ```bash
 # Run from project root with explicit path
 npm run doctor --prefix .devenv -- --project-root ..
@@ -136,6 +139,7 @@ DEVENV_PROJECT_ROOT=.. npm run doctor --prefix .devenv
 **Symptom**: `The token '&&' is not a valid statement separator`
 
 **Solution**: Use `;` instead of `&&`:
+
 ```powershell
 # ❌ Wrong
 cd .devenv && npm run doctor
@@ -149,6 +153,7 @@ Set-Location .devenv; npm run doctor
 **Symptom**: `Cannot find module '...scripts/doctor/cli.js'`
 
 **Solution**: Build TypeScript first:
+
 ```bash
 cd .devenv
 npm run build
@@ -160,6 +165,7 @@ npm run doctor
 **Symptom**: `Expected ',' or ']' after array element in JSON`
 
 **Solution**: Use `--json` flag for clean JSON output:
+
 ```bash
 npm run doctor --prefix .devenv -- --json
 ```
@@ -209,6 +215,7 @@ cd .devenv
 ```
 
 The sync scripts will:
+
 - Preserve project-specific files (health reports, gap analysis, etc.)
 - Pull updates from the template repository
 - Rebuild the project after syncing
@@ -232,4 +239,3 @@ These customizations are preserved during sync operations.
 - **[USAGE.md](USAGE.md)** - General DevEnvTemplate usage and day-to-day workflows
 - **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - Common issues and solutions (includes embedded usage issues)
 - **[BEST-PRACTICES.md](BEST-PRACTICES.md)** - Development best practices
-

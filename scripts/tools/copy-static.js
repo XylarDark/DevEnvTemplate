@@ -16,7 +16,9 @@ async function main() {
     try {
       await fs.mkdir(path.dirname(file.dest), { recursive: true });
       await fs.copyFile(file.src, file.dest);
-      console.log(`Copied ${path.relative(repoRoot, file.src)} → ${path.relative(repoRoot, file.dest)}`);
+      console.log(
+        `Copied ${path.relative(repoRoot, file.src)} → ${path.relative(repoRoot, file.dest)}`
+      );
     } catch (error) {
       console.error(`Failed to copy ${file.src} → ${file.dest}: ${error.message}`);
       process.exitCode = 1;
@@ -25,4 +27,3 @@ async function main() {
 }
 
 main();
-

@@ -19,7 +19,7 @@ class QuestionnaireGenerator {
       critical: [],
       high: [],
       medium: [],
-      low: []
+      low: [],
     };
   }
 
@@ -46,7 +46,6 @@ class QuestionnaireGenerator {
       if (options.interactive) {
         await this.runInteractiveMode(contextContract, options.output || options.ctx);
       }
-
     } catch (error) {
       console.error('❌ Questionnaire generation failed:', error.message);
       process.exit(1);
@@ -79,7 +78,7 @@ class QuestionnaireGenerator {
         category: 'problem',
         question: 'What specific problem are you trying to solve?',
         field: 'problem.statement',
-        help: 'Describe the current situation and why it needs to change'
+        help: 'Describe the current situation and why it needs to change',
       });
     } else {
       if (!contract.problem.context) {
@@ -88,7 +87,7 @@ class QuestionnaireGenerator {
           category: 'problem',
           question: 'What is the broader context or background for this problem?',
           field: 'problem.context',
-          help: 'Explain the history or circumstances that led to this problem'
+          help: 'Explain the history or circumstances that led to this problem',
         });
       }
 
@@ -98,7 +97,7 @@ class QuestionnaireGenerator {
           category: 'problem',
           question: 'What is the impact of not solving this problem?',
           field: 'problem.impact',
-          help: 'Describe the business/user impact and consequences of inaction'
+          help: 'Describe the business/user impact and consequences of inaction',
         });
       }
 
@@ -108,7 +107,7 @@ class QuestionnaireGenerator {
           category: 'problem',
           question: 'How does the current system/process work?',
           field: 'problem.currentState',
-          help: 'Document the existing workflow or implementation'
+          help: 'Document the existing workflow or implementation',
         });
       }
 
@@ -118,7 +117,7 @@ class QuestionnaireGenerator {
           category: 'problem',
           question: 'How should the system/process work after implementation?',
           field: 'problem.desiredState',
-          help: 'Describe the target state and desired behavior'
+          help: 'Describe the target state and desired behavior',
         });
       }
     }
@@ -131,7 +130,7 @@ class QuestionnaireGenerator {
         category: 'goals',
         question: 'What are the specific goals or outcomes you want to achieve?',
         field: 'goals',
-        help: 'List measurable objectives and success criteria'
+        help: 'List measurable objectives and success criteria',
       });
     } else {
       for (const goal of contract.goals) {
@@ -141,7 +140,7 @@ class QuestionnaireGenerator {
             category: 'goals',
             question: `How will you measure success for: "${goal.description}"?`,
             field: `goals.${contract.goals.indexOf(goal)}.criteria`,
-            help: 'Define specific, measurable success criteria'
+            help: 'Define specific, measurable success criteria',
           });
         }
       }
@@ -153,7 +152,7 @@ class QuestionnaireGenerator {
         category: 'scope',
         question: 'What is explicitly OUT OF SCOPE for this work?',
         field: 'nonGoals',
-        help: 'Clearly define boundaries to prevent scope creep'
+        help: 'Clearly define boundaries to prevent scope creep',
       });
     }
   }
@@ -165,18 +164,21 @@ class QuestionnaireGenerator {
         category: 'constraints',
         question: 'What technical, business, or operational constraints apply?',
         field: 'constraints',
-        help: 'List limitations, requirements, or restrictions'
+        help: 'List limitations, requirements, or restrictions',
       });
     }
 
-    if (!contract.dependencies || !contract.dependencies.external ||
-        contract.dependencies.external.length === 0) {
+    if (
+      !contract.dependencies ||
+      !contract.dependencies.external ||
+      contract.dependencies.external.length === 0
+    ) {
       this.addQuestion({
         priority: 'medium',
         category: 'dependencies',
         question: 'What external systems, APIs, or services does this depend on?',
         field: 'dependencies.external',
-        help: 'Identify dependencies that could affect implementation timeline'
+        help: 'Identify dependencies that could affect implementation timeline',
       });
     }
   }
@@ -188,7 +190,7 @@ class QuestionnaireGenerator {
         category: 'assumptions',
         question: 'What assumptions are you making that could affect implementation?',
         field: 'assumptions',
-        help: 'Document uncertainties that should be validated before starting'
+        help: 'Document uncertainties that should be validated before starting',
       });
     }
 
@@ -198,7 +200,7 @@ class QuestionnaireGenerator {
         category: 'risks',
         question: 'What are the potential risks or failure modes?',
         field: 'risks',
-        help: 'Identify what could go wrong and mitigation strategies'
+        help: 'Identify what could go wrong and mitigation strategies',
       });
     }
 
@@ -208,7 +210,7 @@ class QuestionnaireGenerator {
         category: 'unknowns',
         question: 'What questions or unknowns need to be investigated?',
         field: 'unknowns',
-        help: 'List things you need to learn or validate before finalizing plans'
+        help: 'List things you need to learn or validate before finalizing plans',
       });
     }
   }
@@ -220,7 +222,7 @@ class QuestionnaireGenerator {
         category: 'acceptance',
         question: 'How will you verify that the implementation meets requirements?',
         field: 'acceptanceTests',
-        help: 'Define specific tests or criteria that must pass'
+        help: 'Define specific tests or criteria that must pass',
       });
     } else {
       for (const test of contract.acceptanceTests) {
@@ -230,7 +232,7 @@ class QuestionnaireGenerator {
             category: 'acceptance',
             question: `How will you verify: "${test.description}"?`,
             field: `acceptanceTests.${contract.acceptanceTests.indexOf(test)}.verification`,
-            help: 'Specify concrete verification methods or criteria'
+            help: 'Specify concrete verification methods or criteria',
           });
         }
       }
@@ -244,7 +246,7 @@ class QuestionnaireGenerator {
         category: 'stakeholders',
         question: 'Who are the stakeholders and what is their level of involvement?',
         field: 'stakeholders',
-        help: 'Identify people who need to be informed or approve this work'
+        help: 'Identify people who need to be informed or approve this work',
       });
     }
 
@@ -254,7 +256,7 @@ class QuestionnaireGenerator {
         category: 'metrics',
         question: 'How will you measure the success or impact of this change?',
         field: 'metrics',
-        help: 'Define success metrics and baseline measurements'
+        help: 'Define success metrics and baseline measurements',
       });
     }
   }
@@ -262,7 +264,7 @@ class QuestionnaireGenerator {
   addQuestion(question) {
     this.questions.push({
       id: `q${this.questions.length + 1}`,
-      ...question
+      ...question,
     });
   }
 
@@ -302,7 +304,7 @@ class QuestionnaireGenerator {
     const readline = require('readline');
     const rl = readline.createInterface({
       input: process.stdin,
-      output: process.stdout
+      output: process.stdout,
     });
 
     console.log('🤖 INTERACTIVE MODE\n');
@@ -326,8 +328,8 @@ class QuestionnaireGenerator {
   }
 
   askQuestion(rl, question) {
-    return new Promise((resolve) => {
-      rl.question(`${question.question}\n> `, (answer) => {
+    return new Promise(resolve => {
+      rl.question(`${question.question}\n> `, answer => {
         resolve(answer.trim());
       });
     });

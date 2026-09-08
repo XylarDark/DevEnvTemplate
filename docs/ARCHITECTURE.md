@@ -123,6 +123,7 @@ tests/
 **Purpose**: Project initialization and setup
 
 **Key Features**:
+
 - Interactive project questionnaire
 - Manifest generation (`project.manifest.json`)
 - Multiple implementation variants:
@@ -131,6 +132,7 @@ tests/
   - `cli.js`: Wrapper for backward compatibility
 
 **Entry Points**:
+
 - `npm run agent:init`
 - `npm run agent:init-simple`
 
@@ -139,6 +141,7 @@ tests/
 **Purpose**: Project health analysis and automated fixes
 
 **Key Features**:
+
 - Health scoring across 5 categories (Testing, CI/CD, Type Safety, Environment, Linting)
 - Framework-aware configuration generation (Next.js, Vite, Express)
 - Quick-win registry for common issues
@@ -146,6 +149,7 @@ tests/
 - Dry-run mode for previewing changes
 
 **Entry Points**:
+
 - `npm run doctor` - Health check
 - `npm run doctor -- --fix` - Auto-fix issues
 - `npm run doctor -- --json` - JSON output
@@ -155,12 +159,14 @@ tests/
 **Purpose**: Remove template-specific files and setup new projects
 
 **Key Features**:
+
 - Multi-package-manager support (npm, pnpm, yarn)
 - Template file removal
 - Dependency cleanup
 - Git history cleanup
 
 **Entry Points**:
+
 - `npm run cleanup`
 
 ### Tools Module (`scripts/tools/`)
@@ -168,6 +174,7 @@ tests/
 **Purpose**: Analysis and planning utilities
 
 **Key Features**:
+
 - Stack detection (frameworks, languages, tooling)
 - Gap analysis (identify missing best practices)
 - Improvement plan generation
@@ -179,6 +186,7 @@ tests/
 **Purpose**: Shared utilities across all modules
 
 **Key Features**:
+
 - Caching for performance
 - Structured logging
 - Parallel execution helpers
@@ -306,21 +314,25 @@ User runs: npm run agent:init
 ### When to Add New Files
 
 **Create new module** (`scripts/[module]/`) if:
+
 - Functionality is standalone (can run independently)
 - Has its own CLI entry point
 - Significant codebase (>500 lines)
 
 **Add to existing module** if:
+
 - Extends existing functionality
 - Shares types/utilities
 - Part of same workflow
 
 **Add to utils** if:
+
 - Used by 3+ modules
 - Pure utility function
 - No business logic
 
 **Add to types** if:
+
 - Shared TypeScript types
 - Used across modules
 - Part of public API
@@ -362,11 +374,13 @@ npm run lint
 ### CI/CD
 
 GitHub Actions workflow (`.github/workflows/indie-ci.yml`):
+
 1. **Quick Checks**: Lint + Type check (parallel)
 2. **Tests**: Unit + Integration tests
 3. **Doctor**: Health report (non-blocking)
 
 **Optimizations**:
+
 - Caches: node_modules, npm cache, TypeScript builds
 - Target: <2.5 minutes total runtime
 - Free-tier compatible
@@ -376,20 +390,24 @@ GitHub Actions workflow (`.github/workflows/indie-ci.yml`):
 ### Recent Restructuring (v3.x)
 
 **Phase 1: Documentation Consolidation**
+
 - Moved USAGE.md, TROUBLESHOOTING.md to `docs/`
 - Created `docs/archive/` for historical docs
 - Consolidated duplicate issue templates
 
 **Phase 2: Source Organization**
+
 - Eliminated JS/TS duplicates in `scripts/utils/`
 - Moved `.github/tools/` to `scripts/tools/`
 - Merged `.github/types/` into `scripts/types/`
 
 **Phase 3: Configuration Consolidation**
+
 - Moved `schemas/` into `config/schemas/`
 - Single configuration directory
 
 **Phase 4: Build Artifacts**
+
 - Updated .gitignore to exclude `dist/`, `*.tsbuildinfo`
 - Removed build artifacts from version control
 
@@ -409,4 +427,3 @@ When contributing to this project:
 - [Usage Guide](USAGE.md) - Detailed command reference
 - [LLM Context Guide](LLM-CONTEXT-GUIDE.md) - For AI assistants
 - [Troubleshooting](TROUBLESHOOTING.md) - Common issues
-

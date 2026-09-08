@@ -1,6 +1,6 @@
 /**
  * Quick Wins Registry
- * 
+ *
  * Maps detected gaps to actionable fixes that can be completed in < 10 minutes.
  * Used by doctor mode to suggest and auto-apply improvements.
  */
@@ -49,18 +49,21 @@ export const QUICK_WINS: QuickWin[] = [
     estimatedTime: '2 min',
     autoFixable: true,
     category: 'env-hygiene',
-    detectCondition: async (ctx) => {
-      return !(await ctx.hasFile('.env.example')) && (await ctx.hasFile('.env') || await ctx.hasFile('.env.local'));
+    detectCondition: async ctx => {
+      return (
+        !(await ctx.hasFile('.env.example')) &&
+        ((await ctx.hasFile('.env')) || (await ctx.hasFile('.env.local')))
+      );
     },
-    fixAction: async (ctx) => {
+    fixAction: async ctx => {
       const content = getEnvExampleTemplate(ctx.stack.frameworks?.type);
       await ctx.writeFile('.env.example', content);
       return {
         success: true,
         message: 'Created .env.example',
-        filesCreated: ['.env.example']
+        filesCreated: ['.env.example'],
       };
-    }
+    },
   },
   {
     id: 'add-env-to-gitignore',
@@ -69,21 +72,21 @@ export const QUICK_WINS: QuickWin[] = [
     estimatedTime: '1 min',
     autoFixable: true,
     category: 'env-hygiene',
-    detectCondition: async (ctx) => {
+    detectCondition: async ctx => {
       if (!(await ctx.hasFile('.gitignore'))) return false;
       const gitignore = await ctx.readFile('.gitignore');
       return !gitignore.includes('.env') && (await ctx.hasFile('.env'));
     },
-    fixAction: async (ctx) => {
+    fixAction: async ctx => {
       const gitignore = await ctx.readFile('.gitignore');
       const updated = gitignore + '\n# Environment variables\n.env\n.env.local\n.env.*.local\n';
       await ctx.writeFile('.gitignore', updated);
       return {
         success: true,
         message: 'Added .env patterns to .gitignore',
-        filesModified: ['.gitignore']
+        filesModified: ['.gitignore'],
       };
-    }
+    },
   },
 
   // ========================================
@@ -96,13 +99,13 @@ export const QUICK_WINS: QuickWin[] = [
     estimatedTime: '1 min',
     autoFixable: true,
     category: 'type-safety',
-    detectCondition: async (ctx) => {
+    detectCondition: async ctx => {
       if (!(await ctx.hasFile('tsconfig.json'))) return false;
       const tsconfig = JSON.parse(await ctx.readFile('tsconfig.json'));
       return tsconfig.compilerOptions && !tsconfig.compilerOptions.strict;
     },
-    fixAction: async (ctx) => {
-      await ctx.updateJson('tsconfig.json', (config) => {
+    fixAction: async ctx => {
+      await ctx.updateJson('tsconfig.json', config => {
         if (!config.compilerOptions) config.compilerOptions = {};
         config.compilerOptions.strict = true;
         return config;
@@ -110,9 +113,9 @@ export const QUICK_WINS: QuickWin[] = [
       return {
         success: true,
         message: 'Enabled TypeScript strict mode',
-        filesModified: ['tsconfig.json']
+        filesModified: ['tsconfig.json'],
       };
-    }
+    },
   },
   {
     id: 'add-types-node',
@@ -121,12 +124,14 @@ export const QUICK_WINS: QuickWin[] = [
     estimatedTime: '30 sec',
     autoFixable: true,
     category: 'type-safety',
-    detectCondition: async (ctx) => {
-      return ctx.packageJson && 
-             ctx.packageJson.devDependencies?.typescript &&
-             !ctx.packageJson.devDependencies?.['@types/node'] &&
-             !ctx.packageJson.dependencies?.['@types/node'];
-    }
+    detectCondition: async ctx => {
+      return (
+        ctx.packageJson &&
+        ctx.packageJson.devDependencies?.typescript &&
+        !ctx.packageJson.devDependencies?.['@types/node'] &&
+        !ctx.packageJson.dependencies?.['@types/node']
+      );
+    },
   },
 
   // ========================================
@@ -140,18 +145,13 @@ export const QUICK_WINS: QuickWin[] = [
     autoFixable: true,
     category: 'lint-format',
     frameworks: ['nextjs', 'vite', 'express', 'vanilla'],
-    detectCondition: async (ctx) => {
-      const eslintConfigs = [
-        'eslint.config.js',
-        '.eslintrc.js',
-        '.eslintrc.json',
-        '.eslintrc.yml'
-      ];
+    detectCondition: async ctx => {
+      const eslintConfigs = ['eslint.config.js', '.eslintrc.js', '.eslintrc.json', '.eslintrc.yml'];
       for (const config of eslintConfigs) {
         if (await ctx.hasFile(config)) return false;
       }
       return ctx.packageJson?.devDependencies?.eslint || false;
-    }
+    },
   },
   {
     id: 'add-prettier-config',
@@ -160,18 +160,18 @@ export const QUICK_WINS: QuickWin[] = [
     estimatedTime: '2 min',
     autoFixable: true,
     category: 'lint-format',
-    detectCondition: async (ctx) => {
+    detectCondition: async ctx => {
       const prettierConfigs = [
         '.prettierrc',
         '.prettierrc.json',
         '.prettierrc.js',
-        'prettier.config.js'
+        'prettier.config.js',
       ];
       for (const config of prettierConfigs) {
         if (await ctx.hasFile(config)) return false;
       }
       return ctx.packageJson?.devDependencies?.prettier || false;
-    }
+    },
   },
   {
     id: 'add-lint-script',
@@ -180,11 +180,11 @@ export const QUICK_WINS: QuickWin[] = [
     estimatedTime: '30 sec',
     autoFixable: true,
     category: 'lint-format',
-    detectCondition: async (ctx) => {
+    detectCondition: async ctx => {
       return ctx.packageJson?.devDependencies?.eslint && !ctx.packageJson?.scripts?.lint;
     },
-    fixAction: async (ctx) => {
-      await ctx.updateJson('package.json', (pkg) => {
+    fixAction: async ctx => {
+      await ctx.updateJson('package.json', pkg => {
         if (!pkg.scripts) pkg.scripts = {};
         pkg.scripts.lint = 'eslint .';
         return pkg;
@@ -192,9 +192,9 @@ export const QUICK_WINS: QuickWin[] = [
       return {
         success: true,
         message: 'Added lint script to package.json',
-        filesModified: ['package.json']
+        filesModified: ['package.json'],
       };
-    }
+    },
   },
   {
     id: 'add-format-script',
@@ -203,11 +203,11 @@ export const QUICK_WINS: QuickWin[] = [
     estimatedTime: '30 sec',
     autoFixable: true,
     category: 'lint-format',
-    detectCondition: async (ctx) => {
+    detectCondition: async ctx => {
       return ctx.packageJson?.devDependencies?.prettier && !ctx.packageJson?.scripts?.format;
     },
-    fixAction: async (ctx) => {
-      await ctx.updateJson('package.json', (pkg) => {
+    fixAction: async ctx => {
+      await ctx.updateJson('package.json', pkg => {
         if (!pkg.scripts) pkg.scripts = {};
         pkg.scripts.format = 'prettier --write .';
         return pkg;
@@ -215,9 +215,9 @@ export const QUICK_WINS: QuickWin[] = [
       return {
         success: true,
         message: 'Added format script to package.json',
-        filesModified: ['package.json']
+        filesModified: ['package.json'],
       };
-    }
+    },
   },
 
   // ========================================
@@ -230,14 +230,15 @@ export const QUICK_WINS: QuickWin[] = [
     estimatedTime: '30 sec',
     autoFixable: true,
     category: 'testing',
-    detectCondition: async (ctx) => {
-      const hasTestFramework = ctx.packageJson?.devDependencies?.jest ||
-                              ctx.packageJson?.devDependencies?.vitest ||
-                              ctx.packageJson?.devDependencies?.['@playwright/test'];
+    detectCondition: async ctx => {
+      const hasTestFramework =
+        ctx.packageJson?.devDependencies?.jest ||
+        ctx.packageJson?.devDependencies?.vitest ||
+        ctx.packageJson?.devDependencies?.['@playwright/test'];
       return hasTestFramework && !ctx.packageJson?.scripts?.test;
     },
-    fixAction: async (ctx) => {
-      await ctx.updateJson('package.json', (pkg) => {
+    fixAction: async ctx => {
+      await ctx.updateJson('package.json', pkg => {
         if (!pkg.scripts) pkg.scripts = {};
         // Detect which test framework to use
         if (pkg.devDependencies?.vitest) {
@@ -254,9 +255,9 @@ export const QUICK_WINS: QuickWin[] = [
       return {
         success: true,
         message: 'Added test script to package.json',
-        filesModified: ['package.json']
+        filesModified: ['package.json'],
       };
-    }
+    },
   },
   {
     id: 'add-typecheck-script',
@@ -265,13 +266,15 @@ export const QUICK_WINS: QuickWin[] = [
     estimatedTime: '30 sec',
     autoFixable: true,
     category: 'type-safety',
-    detectCondition: async (ctx) => {
-      return ctx.packageJson?.devDependencies?.typescript && 
-             !ctx.packageJson?.scripts?.typecheck &&
-             await ctx.hasFile('tsconfig.json');
+    detectCondition: async ctx => {
+      return (
+        ctx.packageJson?.devDependencies?.typescript &&
+        !ctx.packageJson?.scripts?.typecheck &&
+        (await ctx.hasFile('tsconfig.json'))
+      );
     },
-    fixAction: async (ctx) => {
-      await ctx.updateJson('package.json', (pkg) => {
+    fixAction: async ctx => {
+      await ctx.updateJson('package.json', pkg => {
         if (!pkg.scripts) pkg.scripts = {};
         pkg.scripts.typecheck = 'tsc --noEmit';
         return pkg;
@@ -279,9 +282,9 @@ export const QUICK_WINS: QuickWin[] = [
       return {
         success: true,
         message: 'Added typecheck script to package.json',
-        filesModified: ['package.json']
+        filesModified: ['package.json'],
       };
-    }
+    },
   },
 
   // ========================================
@@ -294,7 +297,7 @@ export const QUICK_WINS: QuickWin[] = [
     estimatedTime: '2 min',
     autoFixable: true,
     category: 'env-hygiene',
-    detectCondition: async (ctx) => {
+    detectCondition: async ctx => {
       try {
         const { detectMisplacedDocs } = await import('../utils/docs-organizer');
         const misplaced = await detectMisplacedDocs(ctx.rootDir);
@@ -303,33 +306,33 @@ export const QUICK_WINS: QuickWin[] = [
         return false;
       }
     },
-    fixAction: async (ctx) => {
+    fixAction: async ctx => {
       try {
         const { organizeDocumentation } = await import('../utils/docs-organizer');
         const result = await organizeDocumentation(ctx.rootDir, false);
-        
+
         if (result.errors.length > 0) {
           return {
             success: false,
             message: `Failed to organize docs: ${result.errors.join(', ')}`,
-            error: result.errors.join('; ')
+            error: result.errors.join('; '),
           };
         }
-        
+
         const filesMoved = result.filesToMove.map((m: { source: string }) => m.source);
         return {
           success: result.success,
           message: `Organized ${result.filesToMove.length} documentation file(s)`,
-          filesModified: filesMoved
+          filesModified: filesMoved,
         };
       } catch (error: any) {
         return {
           success: false,
           message: `Failed to organize docs: ${error.message}`,
-          error: error.message
+          error: error.message,
         };
       }
-    }
+    },
   },
 
   // ========================================
@@ -342,10 +345,12 @@ export const QUICK_WINS: QuickWin[] = [
     estimatedTime: '8 min',
     autoFixable: true,
     category: 'ci',
-    detectCondition: async (ctx) => {
-      return !(await ctx.hasFile('.github/workflows/ci.yml')) &&
-             !(await ctx.hasFile('.github/workflows/indie-ci.yml'));
-    }
+    detectCondition: async ctx => {
+      return (
+        !(await ctx.hasFile('.github/workflows/ci.yml')) &&
+        !(await ctx.hasFile('.github/workflows/indie-ci.yml'))
+      );
+    },
   },
 
   // ========================================
@@ -358,41 +363,41 @@ export const QUICK_WINS: QuickWin[] = [
     estimatedTime: '2 min',
     autoFixable: true,
     category: 'env-hygiene',
-    detectCondition: async (ctx) => {
+    detectCondition: async ctx => {
       const cursorRulesDir = '.cursor/rules';
       const hasRules = await ctx.hasFile(cursorRulesDir);
-      
+
       if (!hasRules) {
         return true; // No rules at all - needs setup
       }
-      
+
       // Check if core rules are missing
       const coreFiles = [
         '00-core-principles.mdc',
         '01-code-quality.mdc',
         '02-security.mdc',
-        '03-testing.mdc'
+        '03-testing.mdc',
       ];
-      
+
       for (const coreFile of coreFiles) {
         if (!(await ctx.hasFile(`${cursorRulesDir}/${coreFile}`))) {
           return true; // Missing core files - needs integration
         }
       }
-      
+
       return false; // Has rules and core files present
     },
-    fixAction: async (ctx) => {
+    fixAction: async ctx => {
       try {
         const { integrateCursorRules } = await import('../tools/cursor-rules-integration');
         const path = await import('path');
         const { existsSync } = await import('fs');
-        
+
         // Find .cursor/rules path within .devenv (self-contained)
         let templateRulesPath: string | null = null;
         const possiblePaths = [
           path.join(ctx.rootDir, '.devenv', '.cursor', 'rules'),
-          path.join(__dirname, '../../../.cursor/rules')
+          path.join(__dirname, '../../../.cursor/rules'),
         ];
 
         for (const possiblePath of possiblePaths) {
@@ -406,7 +411,7 @@ export const QUICK_WINS: QuickWin[] = [
           return {
             success: false,
             message: '.devenv/.cursor/rules/ not found',
-            error: 'Cannot locate cursor rules directory in .devenv'
+            error: 'Cannot locate cursor rules directory in .devenv',
           };
         }
 
@@ -415,23 +420,23 @@ export const QUICK_WINS: QuickWin[] = [
           templateRulesPath,
           stackReport: ctx.stack,
           overwriteCore: false,
-          dryRun: false
+          dryRun: false,
         });
 
         const filesCreated = [...result.copied, ...result.updated];
         return {
           success: true,
           message: `Integrated ${filesCreated.length} cursor rule file(s)`,
-          filesCreated
+          filesCreated,
         };
       } catch (error: any) {
         return {
           success: false,
           message: `Failed to integrate cursor rules: ${error.message}`,
-          error: error.message
+          error: error.message,
         };
       }
-    }
+    },
   },
 ];
 
@@ -448,7 +453,9 @@ PORT=3000
 `;
 
   const templates: Record<string, string> = {
-    nextjs: base + `
+    nextjs:
+      base +
+      `
 # Next.js
 # NEXT_PUBLIC_API_URL=
 
@@ -462,7 +469,9 @@ PORT=3000
 # API Keys
 # API_KEY=
 `,
-    express: base + `
+    express:
+      base +
+      `
 # Database
 # DATABASE_URL=
 
@@ -475,7 +484,9 @@ PORT=3000
 # Redis (if using)
 # REDIS_URL=
 `,
-    vite: base + `
+    vite:
+      base +
+      `
 # API URL
 # VITE_API_URL=http://localhost:3000
 
@@ -493,9 +504,7 @@ PORT=3000
 /**
  * Filter quick wins by framework and current state
  */
-export async function getApplicableQuickWins(
-  context: QuickWinContext
-): Promise<QuickWin[]> {
+export async function getApplicableQuickWins(context: QuickWinContext): Promise<QuickWin[]> {
   const applicable: QuickWin[] = [];
 
   for (const quickWin of QUICK_WINS) {
@@ -520,4 +529,3 @@ export async function getApplicableQuickWins(
 
   return applicable;
 }
-

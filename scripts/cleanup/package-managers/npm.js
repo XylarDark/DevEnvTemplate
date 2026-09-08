@@ -53,4 +53,3 @@ class NpmManager extends BasePackageManager {
 }
 
 module.exports = { NpmManager };
-

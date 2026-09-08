@@ -1,6 +1,6 @@
 /**
  * Structured Logging Utility
- * 
+ *
  * Provides consistent logging across the application with:
  * - Log levels (DEBUG, INFO, WARN, ERROR, SILENT)
  * - Contextual logging with hierarchical context
@@ -13,7 +13,7 @@ export const LOG_LEVELS = {
   INFO: 1,
   WARN: 2,
   ERROR: 3,
-  SILENT: 4
+  SILENT: 4,
 } as const;
 
 export type LogLevel = keyof typeof LOG_LEVELS;
@@ -38,10 +38,10 @@ export class Logger {
     const envLevel = process.env.LOG_LEVEL;
     const levelOption = options.level || envLevel || 'INFO';
     this.level = LOG_LEVELS[levelOption.toUpperCase() as LogLevel] ?? LOG_LEVELS.INFO;
-    
+
     // Context for this logger instance
     this.context = options.context || 'app';
-    
+
     // JSON output mode (useful for CI/log aggregation)
     const envJson = process.env.LOG_JSON;
     this.jsonOutput = options.json || (envJson && envJson.toLowerCase() === 'true') || false;
@@ -58,16 +58,18 @@ export class Logger {
     }
 
     const timestamp = new Date().toISOString();
-    
+
     if (this.jsonOutput) {
       // JSON format for machine parsing
-      console.log(JSON.stringify({
-        timestamp,
-        level,
-        context: this.context,
-        message,
-        ...meta
-      }));
+      console.log(
+        JSON.stringify({
+          timestamp,
+          level,
+          context: this.context,
+          message,
+          ...meta,
+        })
+      );
     } else {
       // Human-readable format
       const prefix = `[${timestamp}] [${level}] [${this.context}]`;
@@ -111,7 +113,7 @@ export class Logger {
     return new Logger({
       level: Object.keys(LOG_LEVELS).find(k => LOG_LEVELS[k as LogLevel] === this.level),
       context: `${this.context}:${childContext}`,
-      json: this.jsonOutput
+      json: this.jsonOutput,
     });
   }
 }
@@ -122,4 +124,3 @@ export class Logger {
 export function createLogger(options: LoggerOptions = {}): Logger {
   return new Logger(options);
 }
-

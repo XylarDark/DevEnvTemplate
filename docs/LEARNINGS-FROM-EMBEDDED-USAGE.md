@@ -26,11 +26,13 @@ The embedded `.devenv` implementation reveals several patterns and needs that th
 **Finding:** The `.devenv` implementation includes sync scripts (`sync-from-template.ps1` and `sync-from-template.sh`) that are not part of the template.
 
 **What DevEnvTemplate Should Learn:**
+
 - Provide sync scripts as part of the template
 - Support both PowerShell (Windows) and Bash (Linux/macOS)
 - Automate the process of pulling template updates while preserving project-specific files
 
 **Recommendation:**
+
 - Add `scripts/sync-from-template.ps1` and `scripts/sync-from-template.sh` to the template
 - Document the sync workflow in `docs/SYNC.md`
 - Include sync scripts in the initial setup process
@@ -38,6 +40,7 @@ The embedded `.devenv` implementation reveals several patterns and needs that th
 ### 2. Project-Specific Files Need Explicit Management
 
 **Finding:** The sync scripts maintain a list of project-specific files that should be preserved:
+
 - `health-report.json`
 - `gaps-report.md`
 - `stack-report.json`
@@ -45,11 +48,13 @@ The embedded `.devenv` implementation reveals several patterns and needs that th
 - `input.txt`
 
 **What DevEnvTemplate Should Learn:**
+
 - Maintain a canonical list of project-specific files in `.gitignore`
 - Document which files are project-specific vs. template files
 - Provide a configuration mechanism for additional project-specific files
 
 **Recommendation:**
+
 - Create `config/project-specific-files.json` or similar to define preserved files
 - Update `.gitignore` to clearly mark project-specific files
 - Add documentation explaining the difference between template and project files
@@ -57,17 +62,20 @@ The embedded `.devenv` implementation reveals several patterns and needs that th
 ### 3. Sync Documentation Is Critical
 
 **Finding:** The `.devenv` includes `SYNC.md` and `ALIGNMENT-SUMMARY.md` that document:
+
 - How to sync with the template
 - What files are preserved
 - How to handle merge conflicts
 - Best practices for maintaining sync
 
 **What DevEnvTemplate Should Learn:**
+
 - Users need clear documentation on maintaining sync
 - Troubleshooting guides for common sync issues
 - Best practices for when to sync vs. when to customize
 
 **Recommendation:**
+
 - Add `docs/SYNC.md` to the template with comprehensive sync documentation
 - Include sync workflow in `BOOTSTRAP.md` and `SETUP-GUIDE.md`
 - Add sync troubleshooting to `TROUBLESHOOTING.md`
@@ -75,6 +83,7 @@ The embedded `.devenv` implementation reveals several patterns and needs that th
 ### 4. Project-Specific Customizations Are Common
 
 **Finding:** The `.devenv` includes several project-specific additions:
+
 - `docs/MISTAKE_PATTERNS.md` - Project-specific mistake patterns
 - `docs/REPOSITORY_STRUCTURE.md` - Project repository structure docs
 - `docs/STRUCTURE.md` - Structure alignment documentation
@@ -83,12 +92,14 @@ The embedded `.devenv` implementation reveals several patterns and needs that th
 - `config/shell-aliases.ps1` and `config/shell-aliases.sh` - Platform-specific aliases
 
 **What DevEnvTemplate Should Learn:**
+
 - Projects will add project-specific documentation
 - Technology-specific best practices are common
 - Platform-specific configurations (Windows vs. Linux/macOS) are needed
 - Projects need a clear place for customizations that won't conflict with template updates
 
 **Recommendation:**
+
 - Document recommended locations for project-specific files
 - Create a `best-practices/` directory structure in the template (even if empty)
 - Provide examples of project-specific customizations
@@ -99,11 +110,13 @@ The embedded `.devenv` implementation reveals several patterns and needs that th
 **Finding:** The sync scripts provide both PowerShell and Bash versions, recognizing that users work on different platforms.
 
 **What DevEnvTemplate Should Learn:**
+
 - All scripts should have both PowerShell and Bash versions
 - Documentation should include examples for both platforms
 - CI/CD workflows should test on multiple platforms
 
 **Recommendation:**
+
 - Ensure all utility scripts have both `.ps1` and `.sh` versions
 - Update documentation with platform-specific examples
 - Add cross-platform testing to CI workflows
@@ -113,11 +126,13 @@ The embedded `.devenv` implementation reveals several patterns and needs that th
 **Finding:** The sync scripts automatically configure a `template` remote pointing to the DevEnvTemplate repository, separate from the `origin` remote.
 
 **What DevEnvTemplate Should Learn:**
+
 - Users need guidance on git remote configuration
 - The template should document the recommended remote setup
 - Sync scripts should handle remote configuration automatically
 
 **Recommendation:**
+
 - Document git remote configuration in `SETUP-GUIDE.md`
 - Include remote setup in sync scripts
 - Add validation to ensure remotes are configured correctly
@@ -125,15 +140,18 @@ The embedded `.devenv` implementation reveals several patterns and needs that th
 ### 7. Project-Specific Configuration Files
 
 **Finding:** The `.devenv` includes project-specific configuration files:
+
 - `config/python-best-practices.json` - Python-specific quality configuration
 - `config/shell-aliases.ps1` and `config/shell-aliases.sh` - Shell aliases
 
 **What DevEnvTemplate Should Learn:**
+
 - Projects need a way to extend configuration without modifying template files
 - Technology-specific configurations should be supported
 - Configuration should be mergeable with template updates
 
 **Recommendation:**
+
 - Create a `config/project/` directory for project-specific configs
 - Document how to extend configuration files
 - Ensure sync scripts preserve project-specific configs
@@ -143,11 +161,13 @@ The embedded `.devenv` implementation reveals several patterns and needs that th
 **Finding:** Generated reports (`health-report.json`, `gaps-report.md`, `stack-report.json`) are stored in `.devenv/` and are project-specific.
 
 **What DevEnvTemplate Should Learn:**
+
 - Generated files should be clearly identified as project-specific
 - Reports should be gitignored in the template but preserved during sync
 - Users need to understand where reports are stored
 
 **Recommendation:**
+
 - Update `.gitignore` to clearly mark generated reports
 - Document report file locations in `EMBEDDED-USAGE.md`
 - Ensure sync scripts preserve all report files
@@ -246,15 +266,8 @@ DevEnvTemplate/
     "health-after.json",
     "input.txt"
   ],
-  "directories": [
-    "best-practices/",
-    "config/project/",
-    "docs/archive/"
-  ],
-  "patterns": [
-    "*-report.json",
-    "*-report.md"
-  ]
+  "directories": ["best-practices/", "config/project/", "docs/archive/"],
+  "patterns": ["*-report.json", "*-report.md"]
 }
 ```
 
@@ -349,5 +362,4 @@ By incorporating these learnings, DevEnvTemplate can better serve as a template 
 
 ---
 
-*This document should be updated as more embedded usage patterns are discovered.*
-
+_This document should be updated as more embedded usage patterns are discovered._

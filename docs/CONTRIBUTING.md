@@ -30,4 +30,3 @@ Why this flow?
 - When debugging stack detection against a real project, run `node dist/scripts/tools/stack-detector.js --json` from inside that project’s `.devenv/` directory. The CLI auto-detects the parent repo.
 
 That’s it—stay in TypeScript, keep `dist/` fresh, and the embedded doctor will behave exactly like your local build.
-

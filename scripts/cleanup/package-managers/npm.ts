@@ -38,7 +38,7 @@ export class NpmManager extends BasePackageManager {
 
     // Remove regular dependencies
     if (rule.remove_deps && packageJson.dependencies) {
-      rule.remove_deps.forEach((dep) => {
+      rule.remove_deps.forEach(dep => {
         if (packageJson.dependencies![dep]) {
           delete packageJson.dependencies![dep];
           modified = true;
@@ -49,7 +49,7 @@ export class NpmManager extends BasePackageManager {
 
     // Remove dev dependencies
     if (rule.remove_dev_deps && packageJson.devDependencies) {
-      rule.remove_dev_deps.forEach((dep) => {
+      rule.remove_dev_deps.forEach(dep => {
         if (packageJson.devDependencies![dep]) {
           delete packageJson.devDependencies![dep];
           modified = true;
@@ -61,4 +61,3 @@ export class NpmManager extends BasePackageManager {
     return { modified, removedDeps };
   }
 }
-

@@ -115,14 +115,14 @@ def simulate(
 ) -> float:
     """
     Run a simulation.
-    
+
     Args:
         scenario: Scenario name
         depth: Excavation depth in meters
         angle: Excavation angle in degrees
         speed: Tool speed in m/s
         verbose: Print progress
-        
+
     Returns:
         Energy consumption in Joules
     """
@@ -275,20 +275,20 @@ def simulate(
 ) -> float:
     """
     Run a simulation.
-    
+
     Args:
         scenario: Scenario name
         depth: Excavation depth in meters (0.1 to 1.0)
         angle: Excavation angle in degrees (0 to 90)
         speed: Tool speed in m/s (0.5 to 2.0)
-        
+
     Returns:
         Energy consumption in Joules
-        
+
     Raises:
         ValidationError: If parameters are invalid
         SimulationError: If simulation fails
-        
+
     Example:
         >>> energy = simulate("lunar_flat_standard", 0.5, 45.0, 1.0)
         >>> print(f"Energy: {energy:.2f} J")
@@ -334,4 +334,3 @@ Before committing Python code:
 - [ ] Code formatted with ruff
 - [ ] No dead code (vulture clean)
 - [ ] Environment variables for config
-

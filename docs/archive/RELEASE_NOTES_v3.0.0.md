@@ -31,20 +31,21 @@ git push                  # CI runs health checks
 
 ## 📊 By The Numbers
 
-| Metric | v2.0.0 | v3.0.0 | Change |
-|--------|--------|--------|--------|
-| Lines of Code | ~33,500 | ~7,269 | **-78%** |
-| Files | ~210 | ~83 | **-49%** |
-| NPM Packages | 634 | 135 | **-79%** |
-| CI Workflows | 9 | 1 | **-89%** |
-| Documentation Files | 40+ | 3 | **-93%** |
-| Tests | 111 | 134 | **+21%** |
+| Metric              | v2.0.0  | v3.0.0 | Change   |
+| ------------------- | ------- | ------ | -------- |
+| Lines of Code       | ~33,500 | ~7,269 | **-78%** |
+| Files               | ~210    | ~83    | **-49%** |
+| NPM Packages        | 634     | 135    | **-79%** |
+| CI Workflows        | 9       | 1      | **-89%** |
+| Documentation Files | 40+     | 3      | **-93%** |
+| Tests               | 111     | 134    | **+21%** |
 
 ---
 
 ## ✨ New Features
 
 ### Doctor Mode (NEW!)
+
 - `npm run doctor` - Full health check with scoring
 - `npm run doctor:fix` - Auto-fix common issues
 - Health scores across 5 categories (Security, Quality, Testing, CI, Docs)
@@ -52,12 +53,14 @@ git push                  # CI runs health checks
 - JSON output for CI integration
 
 ### Simplified Setup
+
 - `npx devenv-init` - One command to start
 - 5-question interactive setup (down from complex workflows)
 - Auto-detection of existing stack
 - Smart defaults for indie developers
 
 ### Focused Ecosystem
+
 - **Node.js first** (npm, pnpm, yarn)
 - **Python support** (pip, poetry) for future expansion
 - Removed: Go, Gradle, Maven, NuGet (not indie dev focus)
@@ -67,6 +70,7 @@ git push                  # CI runs health checks
 ## 🚨 Breaking Changes
 
 ### Removed Features
+
 1. **Complex Agent Workflows** - Removed 13 enterprise agent commands
 2. **Performance Benchmarking** - Removed benchmark suite (kept basic parallel/cache)
 3. **Enterprise Documentation** - Removed 29 doc files (ADRs, RFCs, threat models)
@@ -77,7 +81,9 @@ git push                  # CI runs health checks
 ### Migration Guide
 
 #### If you were using agent commands:
+
 **Before (v2.0.0):**
+
 ```bash
 npm run agent:context
 npm run agent:plan
@@ -85,6 +91,7 @@ npm run agent:apply
 ```
 
 **After (v3.0.0):**
+
 ```bash
 npm run doctor              # Diagnose issues
 npm run doctor:fix          # Auto-fix
@@ -92,11 +99,13 @@ npm run cleanup:apply       # Remove template code
 ```
 
 #### If you were using performance features:
+
 - Basic `--parallel` and `--cache` flags still work
 - Removed: Detailed benchmarking and progress bars
 - Tests for parallel processing still validate functionality
 
 #### If you were using enterprise docs:
+
 - Keep: README.md, USAGE.md, TROUBLESHOOTING.md
 - Removed: ADRs, RFCs, engineering handbook, etc.
 - Simpler, clearer documentation for indie developers
@@ -106,6 +115,7 @@ npm run cleanup:apply       # Remove template code
 ## 📦 What's Included
 
 ### Core Commands
+
 ```bash
 # Setup
 npx devenv-init              # One-command setup
@@ -126,11 +136,13 @@ npm run build                # Build TypeScript
 ```
 
 ### Documentation (3 files)
+
 - **README.md** - Quick start, doctor workflow, value prop
 - **USAGE.md** - Commands, common scenarios, workflows
 - **TROUBLESHOOTING.md** - Quick solutions to common issues
 
 ### Tools
+
 - **Stack Detector** - Identifies technologies in your project
 - **Gap Analyzer** - Finds missing best practices
 - **Plan Generator** - Creates actionable improvement plans
@@ -142,18 +154,22 @@ npm run build                # Build TypeScript
 ## 🎁 Benefits for Indie Developers
 
 ### Faster Setup
+
 - **Before:** 5+ minutes of configuration
 - **After:** 2 minutes with `npx devenv-init`
 
 ### Simpler Mental Model
+
 - **Before:** 20+ commands to learn
 - **After:** 5 core commands (doctor, init, cleanup, test, format)
 
 ### Clearer Value
+
 - **Before:** "Quality tooling setup"
 - **After:** "Doctor for your dev environment"
 
 ### Free-Tier Optimized
+
 - GitHub Actions workflow uses < 2000 min/month (free tier)
 - No paid services required
 - Works with Vercel, Railway, Fly.io free tiers
@@ -163,6 +179,7 @@ npm run build                # Build TypeScript
 ## 🔧 Installation
 
 ### New Project
+
 ```bash
 mkdir my-project && cd my-project
 npm init -y
@@ -171,6 +188,7 @@ npm run doctor
 ```
 
 ### Existing Project
+
 ```bash
 cd your-project
 npx devenv-init
@@ -183,6 +201,7 @@ npm run doctor:fix
 ## 🧪 Testing
 
 All tests passing:
+
 - **134/134 tests** ✅
 - **Unit tests:** < 5 seconds
 - **Integration tests:** < 10 seconds
@@ -232,6 +251,7 @@ None! All tests passing, zero vulnerabilities.
 ## 📝 Changelog
 
 See commit history for detailed changes:
+
 - **Phase 1:** Remove enterprise bloat (-83 files, -17,362 lines)
 - **Phase 2:** Add doctor mode (+453 lines, new feature)
 - **Phase 3:** Simplify documentation (-1 file, clearer)
@@ -252,4 +272,3 @@ See commit history for detailed changes:
 **DevEnvTemplate v3.0.0** - Your development environment's doctor. 🏥
 
 Built with ❤️ for indie developers building with AI assistants.
-

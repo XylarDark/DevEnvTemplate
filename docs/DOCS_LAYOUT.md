@@ -8,15 +8,15 @@
 
 ## Root (`docs/`) — entry points and indexes
 
-| File | Purpose |
-|------|--------|
-| [README.md](README.md) | Docs index (if present). |
-| **DOCS_LAYOUT.md** | This file — canonical structure. |
-| [BEST-PRACTICES.md](BEST-PRACTICES.md) | Cross-cutting practices. |
-| [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Common failures and fixes. |
-| [KNOWN_ERRORS.md](KNOWN_ERRORS.md) | Recurring errors and fixes (append-only log). |
-| [SETUP-GUIDE.md](SETUP-GUIDE.md) | Getting started for this template. |
-| [SYNC.md](SYNC.md) | Syncing from template (if used). |
+| File                                                         | Purpose                                              |
+| ------------------------------------------------------------ | ---------------------------------------------------- |
+| [README.md](README.md)                                       | Docs index (if present).                             |
+| **DOCS_LAYOUT.md**                                           | This file — canonical structure.                     |
+| [BEST-PRACTICES.md](BEST-PRACTICES.md)                       | Cross-cutting practices.                             |
+| [TROUBLESHOOTING.md](TROUBLESHOOTING.md)                     | Common failures and fixes.                           |
+| [KNOWN_ERRORS.md](KNOWN_ERRORS.md)                           | Recurring errors and fixes (append-only log).        |
+| [SETUP-GUIDE.md](SETUP-GUIDE.md)                             | Getting started for this template.                   |
+| [SYNC.md](SYNC.md)                                           | Syncing from template (if used).                     |
 | [DevEnvTemplate_RULES_SYNC.md](DevEnvTemplate_RULES_SYNC.md) | Append-only log of template rule changes (optional). |
 
 Adjust names to match your fork; keep **DOCS_LAYOUT** updated when you add or rename entry files.
@@ -25,18 +25,18 @@ Adjust names to match your fork; keep **DOCS_LAYOUT** updated when you add or re
 
 ## Topic subdirectories (recommended)
 
-| Directory | Purpose | Examples |
-|-----------|---------|----------|
-| **guides/** | How-to and long-form guides | `docs-organization.md`, tutorials |
-| **architecture/** | System design, diagrams, ADR supplements | diagrams, service boundaries |
-| **adr/** | Architecture Decision Records | `001-use-postgres.md` |
-| **runbooks/** | Operational procedures, on-call steps | deploy, rollback, incident response |
-| **setup/** | Environment, tools, editor config | MCP, CI runner, local secrets policy |
-| **security/** | Threat modeling notes, security checklists | OWASP mapping, dependency policy |
-| **operational/** | Automation gaps, maintenance | [`automation-gaps.md`](operational/automation-gaps.md), recurring chores |
-| **templates/** | Fork-specific stubs (optional) | [`templates/unreal/`](templates/unreal/README.md), [`templates/unity/`](templates/unity/README.md) |
-| **deployment/** | Release and infra docs | `*_DEPLOYMENT.md` (also matched by organizer) |
-| **api/** | API design and references | `*_API.md` |
+| Directory         | Purpose                                    | Examples                                                                                           |
+| ----------------- | ------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| **guides/**       | How-to and long-form guides                | `docs-organization.md`, tutorials                                                                  |
+| **architecture/** | System design, diagrams, ADR supplements   | diagrams, service boundaries                                                                       |
+| **adr/**          | Architecture Decision Records              | `001-use-postgres.md`                                                                              |
+| **runbooks/**     | Operational procedures, on-call steps      | deploy, rollback, incident response                                                                |
+| **setup/**        | Environment, tools, editor config          | MCP, CI runner, local secrets policy                                                               |
+| **security/**     | Threat modeling notes, security checklists | OWASP mapping, dependency policy                                                                   |
+| **operational/**  | Automation gaps, maintenance               | [`automation-gaps.md`](operational/automation-gaps.md), recurring chores                           |
+| **templates/**    | Fork-specific stubs (optional)             | [`templates/unreal/`](templates/unreal/README.md), [`templates/unity/`](templates/unity/README.md) |
+| **deployment/**   | Release and infra docs                     | `*_DEPLOYMENT.md` (also matched by organizer)                                                      |
+| **api/**          | API design and references                  | `*_API.md`                                                                                         |
 
 Create a subdirectory only when you have at least one document to place there, then add a row here.
 

@@ -17,7 +17,7 @@ import type {
   ToolingFramework,
   EnvTemplateInfo,
   EnvLoaderInfo,
-  DependencyAuditInfo
+  DependencyAuditInfo,
 } from '../types/gaps';
 import { STANDARD_CONDITIONAL_FILES, STANDARD_CORE_FILES } from './cursor-rules-adapter';
 
@@ -66,7 +66,7 @@ const DEFAULT_IGNORED_DIRS = [
   'logs',
   'obj',
   'usersettings',
-  'memorycaptures'
+  'memorycaptures',
 ];
 
 const FAST_ONLY_IGNORED_DIRS = [
@@ -77,7 +77,7 @@ const FAST_ONLY_IGNORED_DIRS = [
   'tmp',
   'temp',
   'data',
-  'datasets'
+  'datasets',
 ];
 
 const WORKFLOW_SCAN_LIMIT = 50;
@@ -114,7 +114,7 @@ const TECHNOLOGY_ALIASES: Record<string, string> = {
   mypy: 'Mypy',
   fastapi: 'FastAPI',
   django: 'Django',
-  flask: 'Flask'
+  flask: 'Flask',
 };
 
 class StackDetector {
@@ -137,15 +137,11 @@ class StackDetector {
     this.mode = options.mode || detectorMode;
     this.debugMode = !!options.debug;
     this.fileCache = new Map();
-    this.ignoredDirectories = new Set(
-      DEFAULT_IGNORED_DIRS.map(dir => dir.toLowerCase())
-    );
+    this.ignoredDirectories = new Set(DEFAULT_IGNORED_DIRS.map(dir => dir.toLowerCase()));
     if (this.mode === 'fast') {
       FAST_ONLY_IGNORED_DIRS.forEach(dir => this.ignoredDirectories.add(dir.toLowerCase()));
     }
-    this.workflowScanLimit = this.mode === 'fast'
-      ? FAST_WORKFLOW_SCAN_LIMIT
-      : WORKFLOW_SCAN_LIMIT;
+    this.workflowScanLimit = this.mode === 'fast' ? FAST_WORKFLOW_SCAN_LIMIT : WORKFLOW_SCAN_LIMIT;
     this.projectManifest = null;
     this.pyprojectContent = null;
     this.requirementsContent = null;
@@ -156,36 +152,36 @@ class StackDetector {
       frameworks: {
         type: 'vanilla',
         version: null,
-        dirs: []
+        dirs: [],
       },
       tooling: {
         testing: { present: false, frameworks: [] },
         linting: { present: false, configs: [] },
-        formatting: { present: false, configs: [] }
+        formatting: { present: false, configs: [] },
       },
       scripts: {
         detected: [],
-        missing: []
+        missing: [],
       },
       files: {
         configs: [],
-        key_patterns: []
+        key_patterns: [],
       },
       quality: {
         linting: false,
         testing: false,
         typescript: false,
         security: false,
-        formatting: false
+        formatting: false,
       },
       ci: {
-        present: false
+        present: false,
       },
       secrets: {
         envTemplate: { present: false, files: [] },
         envIgnored: false,
         envLoader: { present: false, tools: [] },
-        dependencyAudit: { present: false, tools: [] }
+        dependencyAudit: { present: false, tools: [] },
       },
       profiles: [],
       primaryProfile: null,
@@ -197,13 +193,13 @@ class StackDetector {
         coreFiles: [],
         conditionalFiles: [],
         projectSpecificFiles: [],
-        needsIntegration: false
-      }
+        needsIntegration: false,
+      },
     } as StackReport;
 
     this.logDebug('StackDetector initialized', {
       rootDir: this.rootDir,
-      mode: this.mode
+      mode: this.mode,
     });
   }
 
@@ -217,7 +213,10 @@ class StackDetector {
     }
   }
 
-  private async readFileCached(filePath: string, options: CachedFileOptions = {}): Promise<string | null> {
+  private async readFileCached(
+    filePath: string,
+    options: CachedFileOptions = {}
+  ): Promise<string | null> {
     const allowMissing = options.allowMissing !== false;
     const absPath = path.isAbsolute(filePath) ? filePath : path.join(this.rootDir, filePath);
     if (this.fileCache.has(absPath)) {
@@ -303,7 +302,7 @@ class StackDetector {
       );
       this.addTechnology('Unreal Engine', {
         source: 'stack-detector',
-        detector: 'uproject-root'
+        detector: 'uproject-root',
       });
     } catch (error: any) {
       if (error.code !== 'ENOENT') {
@@ -317,9 +316,7 @@ class StackDetector {
    */
   private async detectUnityProject(): Promise<void> {
     try {
-      const versionRelPaths: string[] = [
-        path.join('ProjectSettings', 'ProjectVersion.txt'),
-      ];
+      const versionRelPaths: string[] = [path.join('ProjectSettings', 'ProjectVersion.txt')];
       const entries = await fs.readdir(this.rootDir, { withFileTypes: true });
       for (const entry of entries) {
         if (!entry.isDirectory()) {
@@ -354,7 +351,7 @@ class StackDetector {
       );
       this.addTechnology('Unity', {
         source: 'stack-detector',
-        detector: 'project-version'
+        detector: 'project-version',
       });
     } catch (error: any) {
       if (error.code !== 'ENOENT') {
@@ -389,14 +386,14 @@ class StackDetector {
           name: 'Node.js',
           version: packageJson.engines.node,
           confidence: 'high',
-          source: 'engines'
+          source: 'engines',
         });
       } else {
         this.stack.technologies.push({
           name: 'Node.js',
           version: 'detected',
           confidence: 'medium',
-          source: 'presence'
+          source: 'presence',
         });
       }
 
@@ -405,7 +402,7 @@ class StackDetector {
       this.packageJsonDeps = deps;
       this.logDebug('Parsed package.json', {
         dependencies: Object.keys(packageJson.dependencies || {}).length,
-        devDependencies: Object.keys(packageJson.devDependencies || {}).length
+        devDependencies: Object.keys(packageJson.devDependencies || {}).length,
       });
 
       // React
@@ -414,7 +411,7 @@ class StackDetector {
           name: 'React',
           version: deps.react,
           confidence: 'high',
-          source: 'dependency'
+          source: 'dependency',
         });
       }
 
@@ -424,7 +421,7 @@ class StackDetector {
           name: 'Next.js',
           version: deps.next,
           confidence: 'high',
-          source: 'dependency'
+          source: 'dependency',
         });
       }
 
@@ -434,7 +431,7 @@ class StackDetector {
           name: 'Vite',
           version: deps.vite,
           confidence: 'high',
-          source: 'dependency'
+          source: 'dependency',
         });
       }
 
@@ -444,7 +441,7 @@ class StackDetector {
           name: 'Express',
           version: deps.express,
           confidence: 'high',
-          source: 'dependency'
+          source: 'dependency',
         });
       }
 
@@ -454,7 +451,7 @@ class StackDetector {
           name: 'Prisma',
           version: deps.prisma || deps['@prisma/client'],
           confidence: 'high',
-          source: 'dependency'
+          source: 'dependency',
         });
       }
 
@@ -464,7 +461,7 @@ class StackDetector {
           name: 'Tailwind CSS',
           version: deps.tailwindcss,
           confidence: 'high',
-          source: 'dependency'
+          source: 'dependency',
         });
       }
 
@@ -474,7 +471,7 @@ class StackDetector {
           name: 'Vitest',
           version: deps.vitest,
           confidence: 'high',
-          source: 'dependency'
+          source: 'dependency',
         });
       }
 
@@ -484,7 +481,7 @@ class StackDetector {
           name: 'Prettier',
           version: deps.prettier,
           confidence: 'high',
-          source: 'dependency'
+          source: 'dependency',
         });
       }
 
@@ -494,7 +491,7 @@ class StackDetector {
           name: 'Playwright',
           version: deps['@playwright/test'],
           confidence: 'high',
-          source: 'dependency'
+          source: 'dependency',
         });
       }
 
@@ -504,7 +501,7 @@ class StackDetector {
           name: 'Jest',
           version: deps.jest,
           confidence: 'high',
-          source: 'dependency'
+          source: 'dependency',
         });
       }
 
@@ -514,7 +511,7 @@ class StackDetector {
           name: 'ESLint',
           version: deps.eslint,
           confidence: 'high',
-          source: 'dependency'
+          source: 'dependency',
         });
       }
 
@@ -524,7 +521,7 @@ class StackDetector {
           name: 'TypeScript',
           version: deps.typescript,
           confidence: 'high',
-          source: 'dependency'
+          source: 'dependency',
         });
       }
 
@@ -534,10 +531,9 @@ class StackDetector {
           name: 'Python Integration',
           version: deps['@types/python-shell'] || deps['python-shell'],
           confidence: 'medium',
-          source: 'dependency'
+          source: 'dependency',
         });
       }
-
     } catch (error: any) {
       if (error.code !== 'ENOENT') {
         throw error;
@@ -566,7 +562,7 @@ class StackDetector {
       this.stack.configurations.push({
         type: 'typescript',
         strict: config.compilerOptions?.strict || false,
-        target: config.compilerOptions?.target || 'unknown'
+        target: config.compilerOptions?.target || 'unknown',
       });
     } catch (error: any) {
       if (error.code !== 'ENOENT') {
@@ -585,29 +581,28 @@ class StackDetector {
       this.addTechnology('Python', {
         version: tomlData.tool?.poetry?.version || 'detected',
         confidence: 'high',
-        source: 'pyproject.toml'
+        source: 'pyproject.toml',
       });
       if (tomlData.tool?.poetry?.python) {
         this.addTechnology('Python Runtime', {
           version: tomlData.tool.poetry.python,
           confidence: 'high',
-          source: 'pyproject.toml'
+          source: 'pyproject.toml',
         });
       }
 
       const deps = tomlData.tool?.poetry?.dependencies as Record<string, any> | undefined;
       this.logDebug('Detected pyproject.toml', {
         hasDependencies: Boolean(deps),
-        pythonVersion: tomlData.tool?.poetry?.python
+        pythonVersion: tomlData.tool?.poetry?.python,
       });
       if (deps) {
-
         if (deps.fastapi) {
           this.stack.technologies.push({
             name: 'FastAPI',
             version: deps.fastapi,
             confidence: 'high',
-            source: 'pyproject.toml'
+            source: 'pyproject.toml',
           });
         }
 
@@ -616,7 +611,7 @@ class StackDetector {
             name: 'Django',
             version: deps.django,
             confidence: 'high',
-            source: 'pyproject.toml'
+            source: 'pyproject.toml',
           });
         }
 
@@ -625,7 +620,7 @@ class StackDetector {
             name: 'Flask',
             version: deps.flask,
             confidence: 'high',
-            source: 'pyproject.toml'
+            source: 'pyproject.toml',
           });
         }
 
@@ -633,7 +628,7 @@ class StackDetector {
           this.addTechnology('Pytest', {
             version: deps.pytest,
             confidence: 'high',
-            source: 'pyproject.toml'
+            source: 'pyproject.toml',
           });
         }
 
@@ -641,7 +636,7 @@ class StackDetector {
           this.addTechnology('Black', {
             version: deps.black,
             confidence: 'high',
-            source: 'pyproject.toml'
+            source: 'pyproject.toml',
           });
         }
 
@@ -649,7 +644,7 @@ class StackDetector {
           this.addTechnology('Ruff', {
             version: deps.ruff,
             confidence: 'high',
-            source: 'pyproject.toml'
+            source: 'pyproject.toml',
           });
         }
 
@@ -657,7 +652,7 @@ class StackDetector {
           this.addTechnology('Mypy', {
             version: deps.mypy,
             confidence: 'high',
-            source: 'pyproject.toml'
+            source: 'pyproject.toml',
           });
         }
       }
@@ -666,7 +661,7 @@ class StackDetector {
         this.addTechnology('Mypy', {
           version: 'detected',
           confidence: 'medium',
-          source: 'pyproject.toml'
+          source: 'pyproject.toml',
         });
       }
     } else {
@@ -677,7 +672,7 @@ class StackDetector {
         this.addTechnology('Python', {
           version: 'detected',
           confidence: 'medium',
-          source: 'requirements.txt'
+          source: 'requirements.txt',
         });
         this.logDebug('Detected requirements.txt for Python signals');
 
@@ -685,7 +680,7 @@ class StackDetector {
           this.addTechnology('FastAPI', {
             version: 'detected',
             confidence: 'medium',
-            source: 'requirements.txt'
+            source: 'requirements.txt',
           });
         }
 
@@ -693,7 +688,7 @@ class StackDetector {
           this.addTechnology('Django', {
             version: 'detected',
             confidence: 'medium',
-            source: 'requirements.txt'
+            source: 'requirements.txt',
           });
         }
 
@@ -701,7 +696,7 @@ class StackDetector {
           this.addTechnology('Flask', {
             version: 'detected',
             confidence: 'medium',
-            source: 'requirements.txt'
+            source: 'requirements.txt',
           });
         }
 
@@ -709,7 +704,7 @@ class StackDetector {
           this.addTechnology('Pytest', {
             version: 'detected',
             confidence: 'medium',
-            source: 'requirements.txt'
+            source: 'requirements.txt',
           });
         }
 
@@ -717,7 +712,7 @@ class StackDetector {
           this.addTechnology('Black', {
             version: 'detected',
             confidence: 'medium',
-            source: 'requirements.txt'
+            source: 'requirements.txt',
           });
         }
 
@@ -725,7 +720,7 @@ class StackDetector {
           this.addTechnology('Ruff', {
             version: 'detected',
             confidence: 'medium',
-            source: 'requirements.txt'
+            source: 'requirements.txt',
           });
         }
 
@@ -733,7 +728,7 @@ class StackDetector {
           this.addTechnology('Mypy', {
             version: 'detected',
             confidence: 'medium',
-            source: 'requirements.txt'
+            source: 'requirements.txt',
           });
         }
       } else {
@@ -756,12 +751,14 @@ class StackDetector {
           name: 'Go',
           version: goLine ? goLine.replace('go ', '').trim() : 'detected',
           confidence: 'high',
-          source: 'go.mod'
+          source: 'go.mod',
         });
       }
 
       // Check for common Go frameworks
-      const requireLines = lines.filter(line => line.includes('require') || line.trim().startsWith('\t'));
+      const requireLines = lines.filter(
+        line => line.includes('require') || line.trim().startsWith('\t')
+      );
       const deps = requireLines.join('\n');
 
       if (deps.includes('gin-gonic/gin')) {
@@ -769,7 +766,7 @@ class StackDetector {
           name: 'Gin',
           version: 'detected',
           confidence: 'high',
-          source: 'go.mod'
+          source: 'go.mod',
         });
       }
 
@@ -778,7 +775,7 @@ class StackDetector {
           name: 'Gorilla Mux',
           version: 'detected',
           confidence: 'high',
-          source: 'go.mod'
+          source: 'go.mod',
         });
       }
 
@@ -787,22 +784,20 @@ class StackDetector {
           name: 'Echo',
           version: 'detected',
           confidence: 'high',
-          source: 'go.mod'
+          source: 'go.mod',
         });
       }
-
     }
   }
 
   async detectJava(): Promise<void> {
     const pomXml = await this.readFileCached('pom.xml');
     if (pomXml) {
-
       this.stack.technologies.push({
         name: 'Java',
         version: 'detected',
         confidence: 'high',
-        source: 'pom.xml'
+        source: 'pom.xml',
       });
 
       // Extract Maven version and dependencies
@@ -812,7 +807,7 @@ class StackDetector {
           name: 'Java Compiler',
           version: mavenVersion,
           confidence: 'high',
-          source: 'pom.xml'
+          source: 'pom.xml',
         });
       }
 
@@ -822,7 +817,7 @@ class StackDetector {
           name: 'Spring Boot',
           version: 'detected',
           confidence: 'high',
-          source: 'pom.xml'
+          source: 'pom.xml',
         });
       }
 
@@ -831,7 +826,7 @@ class StackDetector {
           name: 'Quarkus',
           version: 'detected',
           confidence: 'high',
-          source: 'pom.xml'
+          source: 'pom.xml',
         });
       }
 
@@ -840,19 +835,17 @@ class StackDetector {
           name: 'Micronaut',
           version: 'detected',
           confidence: 'high',
-          source: 'pom.xml'
+          source: 'pom.xml',
         });
       }
-
     } else {
       const buildGradle = await this.readFileCached('build.gradle');
       if (buildGradle) {
-
         this.stack.technologies.push({
           name: 'Java',
           version: 'detected',
           confidence: 'high',
-          source: 'build.gradle'
+          source: 'build.gradle',
         });
 
         // Check for Gradle plugins/frameworks
@@ -861,7 +854,7 @@ class StackDetector {
             name: 'Spring Boot',
             version: 'detected',
             confidence: 'high',
-            source: 'build.gradle'
+            source: 'build.gradle',
           });
         }
 
@@ -870,7 +863,7 @@ class StackDetector {
             name: 'Quarkus',
             version: 'detected',
             confidence: 'high',
-            source: 'build.gradle'
+            source: 'build.gradle',
           });
         }
       }
@@ -893,7 +886,7 @@ class StackDetector {
           name: '.NET',
           version: 'detected',
           confidence: 'high',
-          source: '.csproj'
+          source: '.csproj',
         });
 
         // Extract .NET version
@@ -903,31 +896,36 @@ class StackDetector {
             name: '.NET Runtime',
             version: targetFramework,
             confidence: 'high',
-            source: '.csproj'
+            source: '.csproj',
           });
         }
 
         // Check for ASP.NET Core
-        if (csprojContent.includes('Microsoft.AspNetCore') || csprojContent.includes('AspNetCore')) {
+        if (
+          csprojContent.includes('Microsoft.AspNetCore') ||
+          csprojContent.includes('AspNetCore')
+        ) {
           this.stack.technologies.push({
             name: 'ASP.NET Core',
             version: 'detected',
             confidence: 'high',
-            source: '.csproj'
+            source: '.csproj',
           });
         }
 
         // Check for Entity Framework
-        if (csprojContent.includes('EntityFramework') || csprojContent.includes('Microsoft.EntityFrameworkCore')) {
+        if (
+          csprojContent.includes('EntityFramework') ||
+          csprojContent.includes('Microsoft.EntityFrameworkCore')
+        ) {
           this.stack.technologies.push({
             name: 'Entity Framework',
             version: 'detected',
             confidence: 'high',
-            source: '.csproj'
+            source: '.csproj',
           });
         }
       }
-
     } catch (error: any) {
       // No .NET project detected
     }
@@ -979,10 +977,10 @@ class StackDetector {
         await fs.access(path.join(this.rootDir, configFile));
         this.stack.configurations.push({
           type: 'nextjs',
-          configFile
+          configFile,
         });
         this.stack.files.configs.push(configFile);
-        
+
         // Detect Next.js type (app dir vs pages dir)
         const dirs: string[] = [];
         try {
@@ -995,12 +993,12 @@ class StackDetector {
           dirs.push('pages');
           this.stack.files.key_patterns.push('pages/ (Next.js pages directory)');
         } catch {}
-        
+
         const nextVersion = this.stack.technologies.find(t => t.name === 'Next.js')?.version;
         this.stack.frameworks = {
           type: 'nextjs',
           version: nextVersion || 'detected',
-          dirs
+          dirs,
         };
         this.logDebug('Detected Next.js framework', { dirs });
         break;
@@ -1016,15 +1014,15 @@ class StackDetector {
         await fs.access(path.join(this.rootDir, configFile));
         this.stack.configurations.push({
           type: 'vite',
-          configFile
+          configFile,
         });
         this.stack.files.configs.push(configFile);
-        
+
         const viteVersion = this.stack.technologies.find(t => t.name === 'Vite')?.version;
         this.stack.frameworks = {
           type: 'vite',
           version: viteVersion || 'detected',
-          dirs: ['src']
+          dirs: ['src'],
         };
         this.logDebug('Detected Vite framework');
         break;
@@ -1038,12 +1036,12 @@ class StackDetector {
     try {
       const packageJson = await this.readJsonFile('package.json');
       const scripts = packageJson.scripts || {};
-      
+
       // Essential scripts we look for
       const essentialScripts = ['dev', 'build', 'test', 'lint', 'format', 'typecheck'];
       const detected: Array<{ name: string; command: string }> = [];
       const missing: string[] = [];
-      
+
       for (const scriptName of essentialScripts) {
         if (scripts[scriptName]) {
           detected.push({ name: scriptName, command: scripts[scriptName] });
@@ -1051,11 +1049,11 @@ class StackDetector {
           missing.push(scriptName);
         }
       }
-      
+
       this.stack.scripts = { detected, missing };
       this.logDebug('Script detection complete', {
         detected: detected.map(script => script.name),
-        missing
+        missing,
       });
     } catch (error: any) {
       if (error.code !== 'ENOENT') {
@@ -1067,7 +1065,7 @@ class StackDetector {
   async detectExpress(): Promise<void> {
     // Check for Express patterns
     const expressFiles = ['server.js', 'server.ts', 'app.js', 'app.ts', 'index.js', 'index.ts'];
-    
+
     for (const file of expressFiles) {
       try {
         const filePath = path.join(this.rootDir, file);
@@ -1075,18 +1073,22 @@ class StackDetector {
         if (!content) {
           continue;
         }
-        
+
         // Look for express patterns
-        if (content.includes('express()') || content.includes('require(\'express\')') || content.includes('from \'express\'')) {
+        if (
+          content.includes('express()') ||
+          content.includes("require('express')") ||
+          content.includes("from 'express'")
+        ) {
           this.stack.files.key_patterns.push(`${file} (Express server)`);
-          
+
           // Only set framework if not already set to Next.js or Vite
           if (this.stack.frameworks.type === 'vanilla') {
             const expressVersion = this.stack.technologies.find(t => t.name === 'Express')?.version;
             this.stack.frameworks = {
               type: 'express',
               version: expressVersion || 'detected',
-              dirs: [path.dirname(file) || '.']
+              dirs: [path.dirname(file) || '.'],
             };
           }
           break;
@@ -1104,7 +1106,7 @@ class StackDetector {
       this.stack.files.key_patterns.push('prisma/schema.prisma (Prisma ORM)');
       this.stack.configurations.push({
         type: 'prisma',
-        configFile: 'prisma/schema.prisma'
+        configFile: 'prisma/schema.prisma',
       });
     } catch (error: any) {
       // Also check root level
@@ -1114,7 +1116,7 @@ class StackDetector {
         this.stack.files.key_patterns.push('schema.prisma (Prisma ORM)');
         this.stack.configurations.push({
           type: 'prisma',
-          configFile: 'schema.prisma'
+          configFile: 'schema.prisma',
         });
       } catch (error2: any) {
         // No Prisma schema
@@ -1123,8 +1125,13 @@ class StackDetector {
   }
 
   async detectTailwind(): Promise<void> {
-    const tailwindConfigs = ['tailwind.config.js', 'tailwind.config.ts', 'tailwind.config.cjs', 'tailwind.config.mjs'];
-    
+    const tailwindConfigs = [
+      'tailwind.config.js',
+      'tailwind.config.ts',
+      'tailwind.config.cjs',
+      'tailwind.config.mjs',
+    ];
+
     for (const configFile of tailwindConfigs) {
       try {
         await fs.access(path.join(this.rootDir, configFile));
@@ -1132,7 +1139,7 @@ class StackDetector {
         this.stack.files.key_patterns.push(`${configFile} (Tailwind CSS)`);
         this.stack.configurations.push({
           type: 'tailwind',
-          configFile
+          configFile,
         });
         break;
       } catch (error: any) {
@@ -1143,7 +1150,7 @@ class StackDetector {
 
   async detectTesting(): Promise<void> {
     const testingFrameworks: ToolingFramework[] = [];
-    
+
     // Check for test directories
     try {
       await fs.access(path.join(this.rootDir, 'tests'));
@@ -1175,7 +1182,7 @@ class StackDetector {
         await fs.access(path.join(this.rootDir, configFile));
         this.stack.configurations.push({
           type: 'jest',
-          configFile
+          configFile,
         });
         this.stack.files.configs.push(configFile);
         testingFrameworks.push({ name: 'Jest', config: configFile });
@@ -1192,7 +1199,7 @@ class StackDetector {
         await fs.access(path.join(this.rootDir, configFile));
         this.stack.configurations.push({
           type: 'vitest',
-          configFile
+          configFile,
         });
         this.stack.files.configs.push(configFile);
         testingFrameworks.push({ name: 'Vitest', config: configFile });
@@ -1209,7 +1216,7 @@ class StackDetector {
         await fs.access(path.join(this.rootDir, configFile));
         this.stack.configurations.push({
           type: 'playwright',
-          configFile
+          configFile,
         });
         this.stack.files.configs.push(configFile);
         testingFrameworks.push({ name: 'Playwright', config: configFile });
@@ -1221,7 +1228,7 @@ class StackDetector {
 
     this.stack.tooling.testing = {
       present: this.stack.quality.testing || testingFrameworks.length > 0,
-      frameworks: testingFrameworks
+      frameworks: testingFrameworks,
     };
 
     // Detect Pytest via config files or dependencies
@@ -1232,7 +1239,10 @@ class StackDetector {
     } catch (error: any) {
       if (this.pyprojectContent && this.pyprojectContent.toLowerCase().includes('pytest')) {
         pytestConfig = 'pyproject.toml';
-      } else if (this.requirementsContent && this.requirementsContent.toLowerCase().includes('pytest')) {
+      } else if (
+        this.requirementsContent &&
+        this.requirementsContent.toLowerCase().includes('pytest')
+      ) {
         pytestConfig = 'requirements.txt';
       }
     }
@@ -1248,17 +1258,17 @@ class StackDetector {
 
   async detectLinting(): Promise<void> {
     const lintConfigs: string[] = [];
-    
+
     // Check for ESLint config (various formats)
     const eslintFiles = [
       'eslint.config.js',
       'eslint.config.mjs',
       '.eslintrc.js',
-      '.eslintrc.cjs', 
+      '.eslintrc.cjs',
       '.eslintrc.json',
       '.eslintrc.ts',
       '.eslintrc.yml',
-      '.eslintrc.yaml'
+      '.eslintrc.yaml',
     ];
 
     for (const file of eslintFiles) {
@@ -1267,7 +1277,7 @@ class StackDetector {
         this.stack.quality.linting = true;
         this.stack.configurations.push({
           type: 'eslint',
-          configFile: file
+          configFile: file,
         });
         this.stack.files.configs.push(file);
         lintConfigs.push(file);
@@ -1284,7 +1294,7 @@ class StackDetector {
         this.stack.quality.linting = true;
         this.stack.configurations.push({
           type: 'eslint',
-          configFile: 'package.json'
+          configFile: 'package.json',
         });
         lintConfigs.push('package.json (eslintConfig)');
       }
@@ -1318,19 +1328,19 @@ class StackDetector {
       this.addTechnology('Ruff', {
         version: 'detected',
         confidence: 'medium',
-        source: 'ruff-config'
+        source: 'ruff-config',
       });
     }
 
     this.stack.tooling.linting = {
       present: this.stack.quality.linting,
-      configs: lintConfigs
+      configs: lintConfigs,
     };
   }
 
   async detectFormatting(): Promise<void> {
     const formatConfigs: string[] = [];
-    
+
     // Check for Prettier config
     const prettierFiles = [
       '.prettierrc',
@@ -1342,7 +1352,7 @@ class StackDetector {
       '.prettierrc.yaml',
       'prettier.config.js',
       'prettier.config.cjs',
-      'prettier.config.mjs'
+      'prettier.config.mjs',
     ];
 
     for (const file of prettierFiles) {
@@ -1351,7 +1361,7 @@ class StackDetector {
         this.stack.quality.formatting = true;
         this.stack.configurations.push({
           type: 'prettier',
-          configFile: file
+          configFile: file,
         });
         this.stack.files.configs.push(file);
         formatConfigs.push(file);
@@ -1368,7 +1378,7 @@ class StackDetector {
         this.stack.quality.formatting = true;
         this.stack.configurations.push({
           type: 'prettier',
-          configFile: 'package.json'
+          configFile: 'package.json',
         });
         formatConfigs.push('package.json (prettier)');
       }
@@ -1383,7 +1393,10 @@ class StackDetector {
     if (this.pyprojectContent && this.pyprojectContent.toLowerCase().includes('[tool.black')) {
       blackDetected = true;
       formatConfigs.push('pyproject.toml (black)');
-    } else if (this.requirementsContent && this.requirementsContent.toLowerCase().includes('black')) {
+    } else if (
+      this.requirementsContent &&
+      this.requirementsContent.toLowerCase().includes('black')
+    ) {
       blackDetected = true;
       formatConfigs.push('requirements.txt (black)');
     }
@@ -1393,13 +1406,13 @@ class StackDetector {
       this.addTechnology('Black', {
         version: 'detected',
         confidence: 'medium',
-        source: 'black-config'
+        source: 'black-config',
       });
     }
 
     this.stack.tooling.formatting = {
       present: this.stack.quality.formatting,
-      configs: formatConfigs
+      configs: formatConfigs,
     };
   }
 
@@ -1428,7 +1441,7 @@ class StackDetector {
     }
     this.logDebug('CI detection complete', {
       present: this.stack.ci.present,
-      type: this.stack.ci.type
+      type: this.stack.ci.type,
     });
   }
 
@@ -1449,12 +1462,15 @@ class StackDetector {
     // Check for CSP or security headers
     if (this.stack.configurations.some(c => c.type === 'nextjs')) {
       const nextConfig = await this.readFileCached('next.config.js');
-      if (nextConfig && (nextConfig.includes('Content-Security-Policy') || nextConfig.includes('headers'))) {
+      if (
+        nextConfig &&
+        (nextConfig.includes('Content-Security-Policy') || nextConfig.includes('headers'))
+      ) {
         this.stack.quality.security = true;
       }
     }
     this.logDebug('Security detection complete', {
-      securityFiles: this.stack.quality.security
+      securityFiles: this.stack.quality.security,
     });
   }
 
@@ -1463,7 +1479,7 @@ class StackDetector {
       envTemplate: { present: false, files: [] as string[] },
       envIgnored: false,
       envLoader: { present: false, tools: [] as string[] },
-      dependencyAudit: { present: false, tools: [] as string[] }
+      dependencyAudit: { present: false, tools: [] as string[] },
     };
 
     const templateCandidates = [
@@ -1472,7 +1488,7 @@ class StackDetector {
       '.env.template',
       'env.example',
       'env-example.txt',
-      'env-example.env'
+      'env-example.env',
     ];
 
     for (const candidate of templateCandidates) {
@@ -1503,7 +1519,12 @@ class StackDetector {
         }
       }
     }
-    const pythonLoaderPatterns = ['python-dotenv', 'pydantic-settings', 'django-environ', 'dynaconf'];
+    const pythonLoaderPatterns = [
+      'python-dotenv',
+      'pydantic-settings',
+      'django-environ',
+      'dynaconf',
+    ];
     if (this.pyprojectContent) {
       const lower = this.pyprojectContent.toLowerCase();
       for (const pattern of pythonLoaderPatterns) {
@@ -1527,7 +1548,7 @@ class StackDetector {
         'scripts/check_env.py',
         'scripts/check-env.py',
         'scripts/check_env.js',
-        'scripts/check-env.js'
+        'scripts/check-env.js',
       ];
       for (const helper of helperCandidates) {
         if (await this.fileExists(helper)) {
@@ -1549,7 +1570,7 @@ class StackDetector {
         { tool: 'safety', patterns: ['safety check', 'pip install safety'] },
         { tool: 'npm audit', patterns: ['npm audit'] },
         { tool: 'pnpm audit', patterns: ['pnpm audit'] },
-        { tool: 'yarn audit', patterns: ['yarn audit'] }
+        { tool: 'yarn audit', patterns: ['yarn audit'] },
       ];
 
       for (const workflowFile of workflowFiles) {
@@ -1583,7 +1604,7 @@ class StackDetector {
       template: secrets.envTemplate.present,
       ignored: secrets.envIgnored,
       loader: secrets.envLoader.present,
-      audit: secrets.dependencyAudit.present
+      audit: secrets.dependencyAudit.present,
     });
   }
 
@@ -1640,31 +1661,31 @@ class StackDetector {
 
   async detectCursorRules(): Promise<void> {
     const cursorRulesDir = path.join(this.rootDir, '.cursor', 'rules');
-    
+
     try {
       await fs.access(cursorRulesDir);
       this.stack.cursorRules!.present = true;
-      
+
       // Read all .mdc files
       const entries = await fs.readdir(cursorRulesDir, { withFileTypes: true });
       const mdcFiles: string[] = [];
-      
+
       for (const entry of entries) {
         if (entry.isFile() && entry.name.endsWith('.mdc')) {
           mdcFiles.push(entry.name);
         }
       }
-      
+
       this.stack.cursorRules!.existingFiles = mdcFiles.sort();
-      
+
       // Categorize files
       const coreFiles: string[] = [];
       const conditionalFiles: string[] = [];
       const projectSpecificFiles: string[] = [];
-      
+
       const standardCoreFiles = STANDARD_CORE_FILES;
       const standardConditionalFiles = STANDARD_CONDITIONAL_FILES;
-      
+
       for (const file of mdcFiles) {
         if (standardCoreFiles.includes(file)) {
           coreFiles.push(file);
@@ -1675,11 +1696,11 @@ class StackDetector {
           projectSpecificFiles.push(file);
         }
       }
-      
+
       this.stack.cursorRules!.coreFiles = coreFiles;
       this.stack.cursorRules!.conditionalFiles = conditionalFiles;
       this.stack.cursorRules!.projectSpecificFiles = projectSpecificFiles;
-      
+
       // Determine if integration is needed
       // Integration needed if:
       // 1. Missing core files
@@ -1687,16 +1708,16 @@ class StackDetector {
       // 3. Has conditional files that don't match detected stack
       const missingCoreFiles = standardCoreFiles.filter(f => !coreFiles.includes(f));
       const needsIntegration = missingCoreFiles.length > 0 || projectSpecificFiles.length > 0;
-      
+
       this.stack.cursorRules!.needsIntegration = needsIntegration;
-      
+
       this.logDebug('Cursor rules detection complete', {
         present: true,
         totalFiles: mdcFiles.length,
         coreFiles: coreFiles.length,
         conditionalFiles: conditionalFiles.length,
         projectSpecificFiles: projectSpecificFiles.length,
-        needsIntegration
+        needsIntegration,
       });
     } catch (error: any) {
       if (error.code === 'ENOENT') {
@@ -1722,8 +1743,33 @@ class StackDetector {
     const packageManager =
       typeof rawPackageManager === 'string' ? rawPackageManager.toLowerCase() : '';
 
-    const nodeSignals = ['node.js', 'node', 'react', 'next.js', 'nextjs', 'vite', 'express', 'typescript', 'javascript', 'svelte'];
-    const pythonSignals = ['python', 'fastapi', 'django', 'flask', 'pytest', 'black', 'ruff', 'mypy', 'pytorch', 'pychrono', 'numpy', 'scipy', 'pandas'];
+    const nodeSignals = [
+      'node.js',
+      'node',
+      'react',
+      'next.js',
+      'nextjs',
+      'vite',
+      'express',
+      'typescript',
+      'javascript',
+      'svelte',
+    ];
+    const pythonSignals = [
+      'python',
+      'fastapi',
+      'django',
+      'flask',
+      'pytest',
+      'black',
+      'ruff',
+      'mypy',
+      'pytorch',
+      'pychrono',
+      'numpy',
+      'scipy',
+      'pandas',
+    ];
 
     const nodePackageManagers = ['npm', 'pnpm', 'yarn', 'bun'];
     const pythonPackageManagers = ['pip', 'pipenv', 'poetry', 'uv'];
@@ -1770,28 +1816,25 @@ class StackDetector {
   addTechnology(name: string, meta: Record<string, any> = {}): void {
     const normalizedName = this.formatTechnologyName(name);
     const needle = normalizedName.toLowerCase();
-    const existingIndex = this.stack.technologies.findIndex(
-      t => t.name.toLowerCase() === needle
-    );
+    const existingIndex = this.stack.technologies.findIndex(t => t.name.toLowerCase() === needle);
 
     if (existingIndex !== -1) {
       const existing = this.stack.technologies[existingIndex];
       const isManifestPlaceholder = existing.source === 'project.manifest.json';
-      const isStrongerSource =
-        meta.source && meta.source !== existing.source;
+      const isStrongerSource = meta.source && meta.source !== existing.source;
 
       if (isManifestPlaceholder && isStrongerSource) {
         this.stack.technologies[existingIndex] = {
           ...existing,
           ...meta,
-          name: normalizedName
+          name: normalizedName,
         };
       }
       return;
     }
     this.stack.technologies.push({
       name: normalizedName,
-      ...meta
+      ...meta,
     });
   }
 
@@ -1813,7 +1856,7 @@ class StackDetector {
       this.addTechnology(formatted, {
         version: 'manifest',
         confidence: 'medium',
-        source: 'project.manifest.json'
+        source: 'project.manifest.json',
       });
     }
   }
@@ -1841,23 +1884,26 @@ class StackDetector {
 // Run the detector
 if (require.main === module) {
   const detector = new StackDetector({ quiet: quietMode, mode: detectorMode, debug: debugFlag });
-  detector.detect().then(async (result) => {
-    if (jsonOutput) {
-      process.stdout.write(JSON.stringify(result));
-    } else {
-      logger.info(JSON.stringify(result, null, 2));
-    }
-    await detector.saveReport(result);
-  }).catch(error => {
-    if (jsonOutput) {
-      process.stderr.write(
-        JSON.stringify({ error: 'Stack detection failed', message: error.message }) + '\n'
-      );
-    } else {
-      logger.error('Stack detection failed:', { error: error.message, stack: error.stack });
-    }
-    process.exit(1);
-  });
+  detector
+    .detect()
+    .then(async result => {
+      if (jsonOutput) {
+        process.stdout.write(JSON.stringify(result));
+      } else {
+        logger.info(JSON.stringify(result, null, 2));
+      }
+      await detector.saveReport(result);
+    })
+    .catch(error => {
+      if (jsonOutput) {
+        process.stderr.write(
+          JSON.stringify({ error: 'Stack detection failed', message: error.message }) + '\n'
+        );
+      } else {
+        logger.error('Stack detection failed:', { error: error.message, stack: error.stack });
+      }
+      process.exit(1);
+    });
 }
 
 export = StackDetector;

@@ -2,9 +2,9 @@
 
 /**
  * DevEnvTemplate Init - One-command setup for indie developers
- * 
+ *
  * Usage: npx devenv-init
- * 
+ *
  * This is a simplified entry point that:
  * 1. Welcomes the user
  * 2. Runs the agent CLI with simplified questions
@@ -33,10 +33,10 @@ Answer 5 quick questions and we'll configure everything automatically.
 const agentCli = path.join(__dirname, 'agent', 'cli-simple.js');
 const child = spawn('node', [agentCli], {
   stdio: 'inherit',
-  cwd: process.cwd()
+  cwd: process.cwd(),
 });
 
-child.on('exit', (code) => {
+child.on('exit', code => {
   if (code === 0) {
     console.log(`
 ╔═══════════════════════════════════════════════════════════════╗
@@ -64,8 +64,7 @@ child.on('exit', (code) => {
   }
 });
 
-child.on('error', (err) => {
+child.on('error', err => {
   console.error(`\n❌ Failed to start setup: ${err.message}`);
   process.exit(1);
 });
-

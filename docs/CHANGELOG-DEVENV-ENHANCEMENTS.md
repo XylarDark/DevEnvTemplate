@@ -23,6 +23,7 @@ This changelog documents enhancements made to DevEnvTemplate based on mistake pa
 - **CLI flag**: Supports `--project-root` flag for explicit override
 
 **Files Modified:**
+
 - `scripts/utils/path-resolver.ts` - Added `resolveProjectRoot()` function
 - `scripts/doctor/cli.ts` - Enhanced to use new path resolver
 
@@ -34,6 +35,7 @@ This changelog documents enhancements made to DevEnvTemplate based on mistake pa
 - **Path normalization**: Cross-platform path handling utilities
 
 **Files Created:**
+
 - `scripts/utils/shell-helper.ts` - Cross-platform shell utilities
 
 ### Improved Error Handling
@@ -43,6 +45,7 @@ This changelog documents enhancements made to DevEnvTemplate based on mistake pa
 - **Context-aware errors**: Errors include file paths and recovery suggestions
 
 **Files Modified:**
+
 - `scripts/doctor/cli.ts` - Enhanced error handling for stack detector output
 
 ## Documentation Updates
@@ -117,6 +120,7 @@ None. All changes are backward compatible.
 ### For Existing Projects
 
 No migration required. The enhancements are automatically available when you:
+
 1. Update DevEnvTemplate in `.devenv/`
 2. Run `npm install` and `npm run build` in `.devenv/`
 3. Run `npm run doctor` as usual
@@ -136,7 +140,7 @@ Follow the [Embedded Usage Guide](EMBEDDED-USAGE.md) for setup instructions.
 ---
 
 **Next Steps:**
+
 1. Review tool recommendations and adopt high-priority tools
 2. Test embedded usage workflow
 3. Provide feedback on new features
-

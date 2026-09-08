@@ -6,12 +6,12 @@ Official frontmatter fields are `description`, `globs`, and `alwaysApply`. Do no
 
 ## Four apply modes
 
-| Mode | Frontmatter | When to use |
-|------|-------------|-------------|
-| **Always Apply** | `alwaysApply: true` | Tiny set of universal standards |
-| **Apply Intelligently** | `alwaysApply: false` plus a clear `description` (no `globs`) | Agent decides from the task |
-| **Apply to Specific Files** | `globs:` plus `alwaysApply: false` | Language or path-specific |
-| **Manual** | `alwaysApply: false`, no globs, narrow description | User @-mentions the rule |
+| Mode                        | Frontmatter                                                  | When to use                     |
+| --------------------------- | ------------------------------------------------------------ | ------------------------------- |
+| **Always Apply**            | `alwaysApply: true`                                          | Tiny set of universal standards |
+| **Apply Intelligently**     | `alwaysApply: false` plus a clear `description` (no `globs`) | Agent decides from the task     |
+| **Apply to Specific Files** | `globs:` plus `alwaysApply: false`                           | Language or path-specific       |
+| **Manual**                  | `alwaysApply: false`, no globs, narrow description           | User @-mentions the rule        |
 
 Keep always-on rules small. Prefer globs or intelligent apply over dumping a huge bootstrap file into every chat.
 
@@ -56,7 +56,7 @@ Keep always-on rules small. Prefer globs or intelligent apply over dumping a hug
 ```yaml
 ---
 description: What this rule does (shown in the rule picker)
-globs: "**/*.ts"
+globs: '**/*.ts'
 alwaysApply: false
 ---
 ```

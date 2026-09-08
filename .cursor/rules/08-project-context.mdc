@@ -12,7 +12,7 @@ DevEnvTemplate is a "doctor" for development environments - it diagnoses issues,
 ## Tech Stack
 
 - TypeScript (strict mode, ES2020, CommonJS)
-- Node.js 20+ LTS
+- Node.js 24+ (Active LTS)
 - Node.js test runner (no heavy frameworks)
 - GitHub Actions for CI/CD
 - Free-tier optimization (2000 min/month)

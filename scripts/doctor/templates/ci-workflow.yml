@@ -15,25 +15,25 @@ jobs:
     name: Quick Checks
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
-      
+          node-version: "20"
+          cache: "npm"
+
       - run: npm ci --no-audit --no-fund
-      
+
       - name: Type check
         run: npm run typecheck
         if: ${{ hashFiles('tsconfig.json') != '' }}
-      
+
       - name: Lint
         run: npm run lint
         if: ${{ hashFiles('.eslintrc*', 'eslint.config.js') != '' }}
-      
+
       - name: Format check
         run: npm run format:check
         if: ${{ hashFiles('.prettierrc*', 'prettier.config.js') != '' }}
@@ -42,22 +42,21 @@ jobs:
     name: Tests
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
-      
+          node-version: "20"
+          cache: "npm"
+
       - run: npm ci --no-audit --no-fund
-      
+
       - name: Build
         run: npm run build
         if: ${{ hashFiles('package.json') != '' }}
-      
+
       - name: Run tests
         run: npm test
         if: ${{ hashFiles('package.json') != '' }}
-

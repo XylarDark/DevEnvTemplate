@@ -1,6 +1,6 @@
 /**
  * Unit Tests for Documentation Organizer
- * 
+ *
  * Tests documentation organization utilities including:
  * - Pattern matching
  * - Root exception detection
@@ -56,12 +56,12 @@ describe('Documentation Organizer', () => {
       const config = {
         rootExceptions: ['README.md', 'CHANGELOG.md'],
         directoryRules: {},
-        defaultTarget: 'docs'
+        defaultTarget: 'docs',
       };
 
       const projectRoot = '/test/project';
       const result = docsOrganizer.determineTargetDirectory('README.md', config, projectRoot);
-      
+
       assert.strictEqual(result.target, projectRoot, 'README.md should stay in root');
       assert.strictEqual(result.reason, 'Root exception', 'Should indicate root exception');
     });
@@ -72,14 +72,18 @@ describe('Documentation Organizer', () => {
         directoryRules: {
           deployment: {
             patterns: ['*_DEPLOYMENT.md'],
-            target: 'docs/deployment'
-          }
+            target: 'docs/deployment',
+          },
         },
-        defaultTarget: 'docs'
+        defaultTarget: 'docs',
       };
 
       const projectRoot = path.join(path.sep === '\\' ? 'C:\\test' : '', 'project');
-      const result = docsOrganizer.determineTargetDirectory('RAILWAY_DEPLOYMENT.md', config, projectRoot);
+      const result = docsOrganizer.determineTargetDirectory(
+        'RAILWAY_DEPLOYMENT.md',
+        config,
+        projectRoot
+      );
       const expected = path.join(projectRoot, 'docs', 'deployment');
 
       assert.strictEqual(result.target, expected, 'Should target deployment directory');
@@ -90,12 +94,12 @@ describe('Documentation Organizer', () => {
       const config = {
         rootExceptions: [],
         directoryRules: {},
-        defaultTarget: 'docs'
+        defaultTarget: 'docs',
       };
 
       const projectRoot = '/test/project';
       const result = docsOrganizer.determineTargetDirectory('RANDOM_FILE.md', config, projectRoot);
-      
+
       assert.ok(result.target.includes('docs'), 'Should use default target');
       assert.strictEqual(result.reason, 'Default target', 'Should indicate default');
     });
@@ -108,7 +112,7 @@ describe('Documentation Organizer', () => {
       try {
         const projectRoot = path.resolve(__dirname, '../../');
         const config = await docsOrganizer.loadDocsConfig(projectRoot);
-        
+
         assert.ok(config.rootExceptions, 'Should have rootExceptions');
         assert.ok(Array.isArray(config.rootExceptions), 'rootExceptions should be array');
         assert.ok(config.directoryRules, 'Should have directoryRules');
@@ -127,7 +131,7 @@ describe('Documentation Organizer', () => {
       try {
         const projectRoot = path.resolve(__dirname, '../../');
         const result = await docsOrganizer.validateOrganization(projectRoot);
-        
+
         assert.ok(typeof result.needsOrganization === 'boolean', 'Should return boolean');
         assert.ok(Array.isArray(result.misplacedFiles), 'Should return array of misplaced files');
         assert.ok(typeof result.totalFiles === 'number', 'Should return total file count');
@@ -138,4 +142,3 @@ describe('Documentation Organizer', () => {
     });
   });
 });
-

@@ -76,6 +76,7 @@ Create a detailed implementation plan with:
 ### Phase 5: CI Validation
 
 **CI automatically validates:**
+
 - Plan-only PR approval exists for code changes
 - Actual file changes match impact predictions
 - Quality gates pass (lint, test, security)
@@ -85,6 +86,7 @@ Create a detailed implementation plan with:
 Use these ready-made snippets from `docs/snippets/plan-mode/`:
 
 ### For New Features
+
 ```
 Based on CI stack analysis, implement [FEATURE] that addresses [GAP].
 
@@ -96,6 +98,7 @@ Create implementation plan with specific file paths and testing strategy.
 ```
 
 ### For Improvements
+
 ```
 Improve [AREA] based on CI gap analysis.
 
@@ -106,6 +109,7 @@ Plan specific changes to address high-priority gaps.
 ```
 
 ### For Refactoring
+
 ```
 Refactor [COMPONENT] following DevEnvTemplate patterns.
 
@@ -153,18 +157,21 @@ Control enforcement levels via GitHub repository variables:
 ## Best Practices
 
 ### Plan Creation
+
 - Always attach CI artifacts (stack report + gaps) for context
 - Use specific file paths in plans (not "update files")
 - Include testing strategy for each task
 - Define success metrics upfront
 
 ### Implementation
+
 - Follow plan exactly - CI validates alignment
 - Run quality gates frequently during development
 - Address CI feedback immediately
 - Document deviations from plan (if any)
 
 ### Review Process
+
 - Plan-only PRs get stakeholder approval
 - Implementation PRs validated by CI
 - Use PR templates for consistent process
@@ -173,16 +180,19 @@ Control enforcement levels via GitHub repository variables:
 ## Troubleshooting
 
 ### CI Not Detecting Stack
+
 - Ensure package.json exists with proper dependencies
 - Check that DevEnvTemplate folder is in repository root
 - Verify CI has read access to source files
 
 ### Plan Validation Failing
+
 - Ensure plan-only PR was merged before implementation
 - Check that file changes match plan predictions
 - Verify PR title/body references the plan
 
 ### Impact Analysis Issues
+
 - Update context contract with accurate impact predictions
 - Include all affected files in plan
 - Explain any deviations from predictions

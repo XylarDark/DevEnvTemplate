@@ -29,8 +29,9 @@ lunar_mining_sim/                    # Project root (main git repository)
 ## Why Two `lunar_mining_sim` Directories?
 
 ### Outer `lunar_mining_sim/` (Project Root)
+
 - **Purpose**: The main project repository
-- **Contains**: 
+- **Contains**:
   - Project configuration files (`pyproject.toml`, `requirements.txt`)
   - Documentation (`docs/`)
   - Tests (`tests/`)
@@ -40,8 +41,9 @@ lunar_mining_sim/                    # Project root (main git repository)
 - **Git Repository**: Yes - this is the main repository
 
 ### Inner `lunar_mining_sim/` (Python Package)
+
 - **Purpose**: The actual Python package that gets installed
-- **Contains**: 
+- **Contains**:
   - Package source code (all the `.py` modules)
   - Package `__init__.py` file
   - All subpackages (`core/`, `ai/`, `api/`, etc.)
@@ -60,14 +62,16 @@ This is the **standard Python package structure** recommended by Python packagin
 ## The `.devenv/` Directory
 
 ### What is it?
+
 - **Purpose**: DevEnvTemplate checkout embedded in the project
 - **Git Repository**: Yes - it's a separate git repository (clone of DevEnvTemplate)
-- **Why separate?**: 
+- **Why separate?**:
   - DevEnvTemplate is a reusable tool
   - It can be updated independently
   - It's in `.gitignore` of the main project (so it's not committed to lunar_mining_sim)
 
 ### How it works:
+
 ```bash
 # .devenv/ is a separate git repository
 cd .devenv
@@ -81,29 +85,35 @@ git status     # .devenv/ doesn't show up (it's in .gitignore)
 
 ## Summary
 
-| Directory | Type | Git Repo | Purpose |
-|-----------|------|----------|---------|
-| `lunar_mining_sim/` (outer) | Project root | ✅ Yes | Main project repository |
-| `lunar_mining_sim/lunar_mining_sim/` | Python package | ❌ No | Package source code |
-| `lunar_mining_sim/.devenv/` | DevEnvTemplate | ✅ Yes | Development tools |
+| Directory                            | Type           | Git Repo | Purpose                 |
+| ------------------------------------ | -------------- | -------- | ----------------------- |
+| `lunar_mining_sim/` (outer)          | Project root   | ✅ Yes   | Main project repository |
+| `lunar_mining_sim/lunar_mining_sim/` | Python package | ❌ No    | Package source code     |
+| `lunar_mining_sim/.devenv/`          | DevEnvTemplate | ✅ Yes   | Development tools       |
 
 ## Common Confusion Points
 
 ### "Why is there a nested directory with the same name?"
+
 This is standard Python packaging. The structure allows:
+
 - Clean separation of package code from project files
 - Easy installation with `pip install -e .`
 - Standard import paths: `from lunar_mining_sim import ...`
 
 ### "Is `.devenv/` part of the main repo?"
+
 No. `.devenv/` is:
+
 - A separate git repository (DevEnvTemplate)
 - Ignored by the main project's `.gitignore`
 - Cloned/updated independently
 - Used for development tooling
 
 ### "Should I commit `.devenv/`?"
+
 No. It's in `.gitignore` because:
+
 - It's a separate tool, not project code
 - Each developer can have their own version
 - It can be updated independently
@@ -114,4 +124,3 @@ No. It's in `.gitignore` because:
 - [Python Packaging Guide](https://packaging.python.org/en/latest/guides/distributing-packages-using-setuptools/)
 - [Project Structure Best Practices](best-practices/python.md#package-installation)
 - [DevEnvTemplate Embedded Usage](../../DevEnvTemplate/docs/EMBEDDED-USAGE.md)
-

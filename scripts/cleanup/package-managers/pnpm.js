@@ -53,4 +53,3 @@ class PnpmManager extends BasePackageManager {
 }
 
 module.exports = { PnpmManager };
-

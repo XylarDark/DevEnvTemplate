@@ -31,14 +31,14 @@ export class PipManager extends BasePackageManager {
     const removedDeps: Array<{ name: string; section?: string }> = [];
 
     if (rule.remove_deps) {
-      const filteredLines = lines.filter((line) => {
+      const filteredLines = lines.filter(line => {
         const trimmed = line.trim();
 
         // Keep empty lines and comments
         if (!trimmed || trimmed.startsWith('#')) return true;
 
         // Check if this line contains any of the packages to remove
-        const shouldRemove = rule.remove_deps!.some((dep) => {
+        const shouldRemove = rule.remove_deps!.some(dep => {
           // Handle various pip formats (with version, extras, etc.)
           return (
             trimmed.startsWith(dep) ||
@@ -68,4 +68,3 @@ export class PipManager extends BasePackageManager {
     return { modified, removedDeps };
   }
 }
-

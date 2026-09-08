@@ -32,7 +32,7 @@ export class PoetryManager extends BasePackageManager {
     let updatedContent = content;
 
     if (rule.remove_deps) {
-      rule.remove_deps.forEach((dep) => {
+      rule.remove_deps.forEach(dep => {
         // Match dependency line in TOML format
         const regex = new RegExp(`^${dep}\\s*=.*$`, 'gm');
         if (regex.test(updatedContent)) {
@@ -51,4 +51,3 @@ export class PoetryManager extends BasePackageManager {
     return { modified, removedDeps };
   }
 }
-

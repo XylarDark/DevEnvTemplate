@@ -22,31 +22,31 @@ import { ProgressTracker, ProgressVerbosity } from '../utils/progress';
 
 // Default file extensions for code files (used by block/line marker rules)
 const CODE_EXTENSIONS = [
-  "**/*.js",
-  "**/*.ts",
-  "**/*.jsx",
-  "**/*.tsx",
-  "**/*.py",
-  "**/*.rb",
-  "**/*.go",
-  "**/*.rs",
-  "**/*.java",
-  "**/*.cs",
-  "**/*.cpp",
-  "**/*.c",
-  "**/*.h",
-  "**/*.php",
-  "**/*.scala",
-  "**/*.kt",
-  "**/*.swift",
-  "**/*.dart",
-  "**/*.sh",
-  "**/*.bash",
-  "**/*.zsh",
-  "**/*.ps1",
-  "**/*.sql",
-  "**/*.html",
-  "**/*.xml",
+  '**/*.js',
+  '**/*.ts',
+  '**/*.jsx',
+  '**/*.tsx',
+  '**/*.py',
+  '**/*.rb',
+  '**/*.go',
+  '**/*.rs',
+  '**/*.java',
+  '**/*.cs',
+  '**/*.cpp',
+  '**/*.c',
+  '**/*.h',
+  '**/*.php',
+  '**/*.scala',
+  '**/*.kt',
+  '**/*.swift',
+  '**/*.dart',
+  '**/*.sh',
+  '**/*.bash',
+  '**/*.zsh',
+  '**/*.ps1',
+  '**/*.sql',
+  '**/*.html',
+  '**/*.xml',
 ];
 
 interface CleanupEngineOptions {
@@ -122,9 +122,9 @@ export class CleanupEngine {
   private progressTracker: ProgressTracker | null;
 
   constructor(options: CleanupEngineOptions = {}) {
-    this.profile = options.profile || "common";
+    this.profile = options.profile || 'common';
     this.features = new Set(options.features || []);
-    this.configPath = options.configPath || "cleanup.config.yaml";
+    this.configPath = options.configPath || 'cleanup.config.yaml';
     this.workingDir = options.workingDir || process.cwd();
     this.dryRun = options.dryRun !== false; // default true for safety
     this.failOnActions = options.failOnActions || false;
@@ -154,10 +154,7 @@ export class CleanupEngine {
     // Progress tracking
     this.progressEnabled = options.progress || false;
     this.progressTracker = this.progressEnabled
-      ? new ProgressTracker(
-          options.progressVerbosity || 'simple',
-          options.jsonProgress || false
-        )
+      ? new ProgressTracker(options.progressVerbosity || 'simple', options.jsonProgress || false)
       : null;
 
     // Performance optimizations
@@ -186,14 +183,14 @@ export class CleanupEngine {
   async loadConfig(): Promise<CleanupConfig> {
     try {
       const configPath = resolveConfigPath(this.configPath, this.workingDir);
-      
+
       // Load file content
-      const configContent = await fs.readFile(configPath, "utf8");
-      
+      const configContent = await fs.readFile(configPath, 'utf8');
+
       // Try to get from cache first
       let parsedConfig: CleanupConfig;
       let configCached = false;
-      
+
       if (this.configCache && this.fileCache) {
         const contentHash = this.fileCache.generateHash(configContent);
         const cached = this.configCache.get(configPath, contentHash);
@@ -297,7 +294,7 @@ export class CleanupEngine {
       const rule = rules[i];
       try {
         await this.executeRule(rule);
-        
+
         // Update overall progress
         if (this.progressTracker) {
           this.progressTracker.updateBar('overall', i + 1);
@@ -308,7 +305,7 @@ export class CleanupEngine {
           error: error.message,
           stack: error.stack,
         });
-        
+
         // Track error in performance metrics
         if (this.performanceTracker) {
           this.performanceTracker.trackRuleExecution(rule.id, 0, 0, true);
@@ -390,8 +387,8 @@ export class CleanupEngine {
    */
   private normalizePath(filePath: string): string {
     // Convert to forward slashes and normalize case on Windows
-    let normalized = path.normalize(filePath).replace(/\\/g, "/");
-    if (process.platform === "win32") {
+    let normalized = path.normalize(filePath).replace(/\\/g, '/');
+    if (process.platform === 'win32') {
       normalized = normalized.toLowerCase();
     }
     return normalized;
@@ -415,7 +412,7 @@ export class CleanupEngine {
 
     // Time rule execution
     const startTime = this.performanceTracker ? Date.now() : 0;
-    
+
     const actions = await handler(rule);
     if (actions && actions.length > 0) {
       this.report.actions.push(...actions);
@@ -450,7 +447,7 @@ export class CleanupEngine {
    */
   private getCommentSyntax(filePath: string): CommentSyntax {
     if (!this.config) {
-      return { single: "//", block: null };
+      return { single: '//', block: null };
     }
 
     const ext = path.extname(filePath).toLowerCase();
@@ -458,10 +455,10 @@ export class CleanupEngine {
 
     if (!syntax) {
       // Default to single-line comment
-      return { single: "//", block: null };
+      return { single: '//', block: null };
     }
 
-    if (typeof syntax === "string") {
+    if (typeof syntax === 'string') {
       return { single: syntax, block: null };
     }
 
@@ -469,7 +466,7 @@ export class CleanupEngine {
       return { single: null, block: { start: syntax[0], end: syntax[1] } };
     }
 
-    return { single: "//", block: null };
+    return { single: '//', block: null };
   }
 
   /**
@@ -508,7 +505,7 @@ export class CleanupEngine {
       return { blocks: [], taggedLines: [] };
     }
 
-    const lines = content.split("\n");
+    const lines = content.split('\n');
     const commentSyntax = this.getCommentSyntax(filePath);
     const blocks: BlockInfo[] = [];
     const taggedLines: number[] = [];
@@ -524,9 +521,10 @@ export class CleanupEngine {
 
       // Check for line tags
       if (this.config.markers.line_tag) {
-        const lineTag = typeof this.config.markers.line_tag === 'string' 
-          ? this.config.markers.line_tag 
-          : (this.config.markers.line_tag as any).start;
+        const lineTag =
+          typeof this.config.markers.line_tag === 'string'
+            ? this.config.markers.line_tag
+            : (this.config.markers.line_tag as any).start;
         if (trimmed.includes(lineTag)) {
           taggedLines.push(i);
           continue;
@@ -537,7 +535,7 @@ export class CleanupEngine {
       if (!inBlock) {
         // Look for start markers
         for (const [type, markerConfig] of Object.entries(this.config.markers)) {
-          if (type === "line_tag") continue;
+          if (type === 'line_tag') continue;
 
           const config = markerConfig as MarkerConfig;
           if (this.detectMarker(line, config.start, commentSyntax)) {
@@ -578,7 +576,7 @@ export class CleanupEngine {
 
     for (const pattern of globs) {
       if (!pattern) continue;
-      
+
       const files = await glob(pattern, {
         cwd: this.workingDir,
         absolute: true,
@@ -603,27 +601,27 @@ export class CleanupEngine {
         // Use parallel processing for large file sets
         const result = await parallel(
           filesToProcess,
-          async (file) => {
+          async file => {
             const relativePath = path.relative(this.workingDir, file);
-            
+
             if (!this.dryRun) {
               await fs.rm(file, { recursive: true, force: true });
             }
 
             return {
-              type: "file_delete",
+              type: 'file_delete',
               rule: rule.id,
               path: relativePath,
               dryRun: this.dryRun,
             } as CleanupAction;
           },
-          { 
+          {
             concurrency: this.concurrency,
             onProgress: (completed, total) => {
               if (this.progressTracker) {
                 this.progressTracker.updateBar(rule.id, completed);
               }
-            }
+            },
           }
         );
 
@@ -633,7 +631,7 @@ export class CleanupEngine {
         }
 
         actions.push(...result.results.filter(r => r !== undefined));
-        
+
         // Track batch in performance metrics
         if (this.performanceTracker) {
           this.performanceTracker.trackBatch();
@@ -648,7 +646,7 @@ export class CleanupEngine {
           }
 
           actions.push({
-            type: "file_delete",
+            type: 'file_delete',
             rule: rule.id,
             path: relativePath,
             dryRun: this.dryRun,
@@ -694,30 +692,30 @@ export class CleanupEngine {
         // Use parallel processing for large file sets
         const result = await parallel(
           filesToProcess,
-          async (file) => {
+          async file => {
             try {
-              const content = await fs.readFile(file, "utf8");
+              const content = await fs.readFile(file, 'utf8');
               const { blocks } = this.parseFileContent(content, file);
 
-              const templateBlocks = blocks.filter(b => b.type === "template_only");
+              const templateBlocks = blocks.filter(b => b.type === 'template_only');
 
               if (templateBlocks.length > 0) {
                 let newContent = content;
-                const lines = newContent.split("\n");
+                const lines = newContent.split('\n');
 
                 // Remove blocks in reverse order to maintain line numbers
                 templateBlocks.reverse().forEach(block => {
                   lines.splice(block.start, block.end - block.start + 1);
                 });
 
-                newContent = lines.join("\n");
+                newContent = lines.join('\n');
 
                 if (!this.dryRun) {
                   await fs.writeFile(file, newContent);
                 }
 
                 return {
-                  type: "block_remove",
+                  type: 'block_remove',
                   rule: rule.id,
                   path: path.relative(this.workingDir, file),
                   blocksRemoved: templateBlocks.length,
@@ -733,13 +731,13 @@ export class CleanupEngine {
             }
             return undefined;
           },
-          { 
+          {
             concurrency: this.concurrency,
             onProgress: (completed, total) => {
               if (this.progressTracker) {
                 this.progressTracker.updateBar(rule.id, completed);
               }
-            }
+            },
           }
         );
 
@@ -749,7 +747,7 @@ export class CleanupEngine {
         }
 
         actions.push(...result.results.filter(r => r !== undefined));
-        
+
         // Track batch in performance metrics
         if (this.performanceTracker) {
           this.performanceTracker.trackBatch();
@@ -760,28 +758,28 @@ export class CleanupEngine {
           const relativePath = path.relative(this.workingDir, file);
 
           try {
-            const content = await fs.readFile(file, "utf8");
+            const content = await fs.readFile(file, 'utf8');
             const { blocks } = this.parseFileContent(content, file);
 
-            const templateBlocks = blocks.filter(b => b.type === "template_only");
+            const templateBlocks = blocks.filter(b => b.type === 'template_only');
 
             if (templateBlocks.length > 0) {
               let newContent = content;
-              const lines = newContent.split("\n");
+              const lines = newContent.split('\n');
 
               // Remove blocks in reverse order to maintain line numbers
               templateBlocks.reverse().forEach(block => {
                 lines.splice(block.start, block.end - block.start + 1);
               });
 
-              newContent = lines.join("\n");
+              newContent = lines.join('\n');
 
               if (!this.dryRun) {
                 await fs.writeFile(file, newContent);
               }
 
               actions.push({
-                type: "block_remove",
+                type: 'block_remove',
                 rule: rule.id,
                 path: path.relative(this.workingDir, file),
                 blocksRemoved: templateBlocks.length,
@@ -836,10 +834,10 @@ export class CleanupEngine {
         // Use parallel processing for large file sets
         const result = await parallel(
           filesToProcess,
-          async (file) => {
+          async file => {
             try {
-              const content = await fs.readFile(file, "utf8");
-              const lines = content.split("\n");
+              const content = await fs.readFile(file, 'utf8');
+              const lines = content.split('\n');
               const { taggedLines } = this.parseFileContent(content, file);
 
               if (taggedLines.length > 0) {
@@ -848,14 +846,14 @@ export class CleanupEngine {
                   lines.splice(lineIndex, 1);
                 });
 
-                const newContent = lines.join("\n");
+                const newContent = lines.join('\n');
 
                 if (!this.dryRun) {
                   await fs.writeFile(file, newContent);
                 }
 
                 return {
-                  type: "line_remove",
+                  type: 'line_remove',
                   rule: rule.id,
                   path: path.relative(this.workingDir, file),
                   linesRemoved: taggedLines.length,
@@ -871,13 +869,13 @@ export class CleanupEngine {
             }
             return undefined;
           },
-          { 
+          {
             concurrency: this.concurrency,
             onProgress: (completed, total) => {
               if (this.progressTracker) {
                 this.progressTracker.updateBar(rule.id, completed);
               }
-            }
+            },
           }
         );
 
@@ -887,7 +885,7 @@ export class CleanupEngine {
         }
 
         actions.push(...result.results.filter(r => r !== undefined));
-        
+
         // Track batch in performance metrics
         if (this.performanceTracker) {
           this.performanceTracker.trackBatch();
@@ -898,8 +896,8 @@ export class CleanupEngine {
           const relativePath = path.relative(this.workingDir, file);
 
           try {
-            const content = await fs.readFile(file, "utf8");
-            const lines = content.split("\n");
+            const content = await fs.readFile(file, 'utf8');
+            const lines = content.split('\n');
             const { taggedLines } = this.parseFileContent(content, file);
 
             if (taggedLines.length > 0) {
@@ -908,14 +906,14 @@ export class CleanupEngine {
                 lines.splice(lineIndex, 1);
               });
 
-              const newContent = lines.join("\n");
+              const newContent = lines.join('\n');
 
               if (!this.dryRun) {
                 await fs.writeFile(file, newContent);
               }
 
               actions.push({
-                type: "line_remove",
+                type: 'line_remove',
                 rule: rule.id,
                 path: path.relative(this.workingDir, file),
                 linesRemoved: taggedLines.length,
@@ -948,7 +946,7 @@ export class CleanupEngine {
       return actions; // Keep the blocks
     }
 
-    const globs = rule.include_globs || ["**/*"];
+    const globs = rule.include_globs || ['**/*'];
     const excludeGlobs = [...(rule.exclude_globs || []), ...this.excludeGlobs];
 
     for (const pattern of globs) {
@@ -967,28 +965,28 @@ export class CleanupEngine {
           continue;
         }
         try {
-          const content = await fs.readFile(file, "utf8");
+          const content = await fs.readFile(file, 'utf8');
           const { blocks } = this.parseFileContent(content, file);
 
-          const conditionalBlocks = blocks.filter(b => b.type === "conditional");
+          const conditionalBlocks = blocks.filter(b => b.type === 'conditional');
 
           if (conditionalBlocks.length > 0) {
             let newContent = content;
-            const lines = newContent.split("\n");
+            const lines = newContent.split('\n');
 
             // Remove blocks in reverse order
             conditionalBlocks.reverse().forEach(block => {
               lines.splice(block.start, block.end - block.start + 1);
             });
 
-            newContent = lines.join("\n");
+            newContent = lines.join('\n');
 
             if (!this.dryRun) {
               await fs.writeFile(file, newContent);
             }
 
             actions.push({
-              type: "block_remove",
+              type: 'block_remove',
               rule: rule.id,
               path: path.relative(this.workingDir, file),
               blocksRemoved: conditionalBlocks.length,
@@ -1016,7 +1014,7 @@ export class CleanupEngine {
     if (!condition) return false;
 
     // Simple feature-based conditions: "feature" or "!feature"
-    if (condition.startsWith("!")) {
+    if (condition.startsWith('!')) {
       const feature = condition.slice(1);
       return !this.features.has(feature);
     } else {
@@ -1033,7 +1031,7 @@ export class CleanupEngine {
     const removeEmptyDirs = rule.remove_empty_dirs !== false;
 
     // Collect all files and directories
-    const allFiles = await glob("**/*", {
+    const allFiles = await glob('**/*', {
       cwd: this.workingDir,
       absolute: true,
     });
@@ -1060,16 +1058,16 @@ export class CleanupEngine {
     if (removeEmptyFiles) {
       for (const file of files) {
         try {
-          const content = await fs.readFile(file, "utf8");
-          if (content.trim() === "") {
+          const content = await fs.readFile(file, 'utf8');
+          if (content.trim() === '') {
             if (!this.dryRun) {
               await fs.unlink(file);
             }
             actions.push({
-              type: "file_delete",
+              type: 'file_delete',
               rule: rule.id,
               path: path.relative(this.workingDir, file),
-              reason: "empty file",
+              reason: 'empty file',
               dryRun: this.dryRun,
             });
           }
@@ -1089,10 +1087,10 @@ export class CleanupEngine {
               await fs.rmdir(dir);
             }
             actions.push({
-              type: "file_delete",
+              type: 'file_delete',
               rule: rule.id,
               path: path.relative(this.workingDir, dir),
-              reason: "empty directory",
+              reason: 'empty directory',
               dryRun: this.dryRun,
             });
           }
@@ -1110,12 +1108,12 @@ export class CleanupEngine {
    */
   private async handlePackagePrune(rule: CleanupRule): Promise<CleanupAction[]> {
     const actions: CleanupAction[] = [];
-    const managerName = rule.package_prune?.manager || "npm";
+    const managerName = rule.package_prune?.manager || 'npm';
 
     try {
       const packageManager = getPackageManager(managerName, this.workingDir, this.dryRun);
       const result = await packageManager.prune(rule);
-      
+
       if (result && result.actions) {
         actions.push(...result.actions);
       }
@@ -1128,7 +1126,6 @@ export class CleanupEngine {
 
     return actions;
   }
-
 
   /**
    * Handle custom rule
@@ -1147,7 +1144,7 @@ export class CleanupEngine {
       // Load the custom module
       const customModule = require(modulePath);
 
-      if (typeof customModule.execute !== "function") {
+      if (typeof customModule.execute !== 'function') {
         throw new Error(`Custom module '${rule.module}' must export an 'execute' function`);
       }
 
@@ -1181,16 +1178,16 @@ export class CleanupEngine {
 
     for (const action of this.report.actions) {
       switch (action.type) {
-        case "file_delete":
+        case 'file_delete':
           summary.filesDeleted++;
           break;
-        case "line_remove":
+        case 'line_remove':
           summary.linesRemoved++;
           break;
-        case "block_remove":
+        case 'block_remove':
           summary.blocksRemoved++;
           break;
-        case "dependency_remove":
+        case 'dependency_remove':
           summary.dependenciesRemoved++;
           break;
       }
@@ -1217,7 +1214,9 @@ interface ExecuteCleanupResult {
 /**
  * Execute cleanup with given options
  */
-export async function executeCleanup(options: CleanupEngineOptions = {}): Promise<ExecuteCleanupResult> {
+export async function executeCleanup(
+  options: CleanupEngineOptions = {}
+): Promise<ExecuteCleanupResult> {
   const engine = new CleanupEngine(options);
 
   try {
@@ -1239,4 +1238,3 @@ export async function executeCleanup(options: CleanupEngineOptions = {}): Promis
     throw new Error(`Cleanup failed: ${error.message}`);
   }
 }
-

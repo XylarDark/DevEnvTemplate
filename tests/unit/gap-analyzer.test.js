@@ -29,7 +29,7 @@ describe('Gap Analyzer', () => {
         quality: { testing: false, security: false },
         ci: { present: false },
         profiles: ['node'],
-        languageProfile: 'node'
+        languageProfile: 'node',
       };
 
       await fs.writeFile(
@@ -51,7 +51,7 @@ describe('Gap Analyzer', () => {
         quality: { testing: false, security: false },
         ci: { present: false },
         profiles: ['node'],
-        languageProfile: 'node'
+        languageProfile: 'node',
       };
 
       await fs.writeFile(
@@ -72,7 +72,7 @@ describe('Gap Analyzer', () => {
         quality: { testing: false, security: false },
         ci: { present: false },
         profiles: ['node'],
-        languageProfile: 'node'
+        languageProfile: 'node',
       };
 
       await fs.writeFile(
@@ -96,7 +96,7 @@ describe('Gap Analyzer', () => {
         quality: { testing: false, security: false },
         ci: { present: false },
         profiles: ['node'],
-        languageProfile: 'node'
+        languageProfile: 'node',
       };
 
       await fs.writeFile(
@@ -117,7 +117,7 @@ describe('Gap Analyzer', () => {
         quality: { testing: false, security: false },
         ci: { present: false },
         profiles: ['node'],
-        languageProfile: 'node'
+        languageProfile: 'node',
       };
 
       await fs.writeFile(
@@ -138,7 +138,7 @@ describe('Gap Analyzer', () => {
         technologies: [],
         configurations: [],
         quality: { testing: false, security: false },
-        ci: { present: false }
+        ci: { present: false },
       };
 
       await fs.writeFile(
@@ -157,7 +157,7 @@ describe('Gap Analyzer', () => {
         technologies: [{ name: 'React' }],
         configurations: [],
         quality: { testing: true, security: false },
-        ci: { present: false }
+        ci: { present: false },
       };
 
       await fs.writeFile(
@@ -178,7 +178,7 @@ describe('Gap Analyzer', () => {
         technologies: [],
         configurations: [],
         quality: { testing: false, security: false },
-        ci: { present: false }
+        ci: { present: false },
       };
 
       await fs.writeFile(
@@ -199,7 +199,7 @@ describe('Gap Analyzer', () => {
         quality: { testing: false, security: false },
         ci: { present: false },
         profiles: ['node'],
-        languageProfile: 'node'
+        languageProfile: 'node',
       };
 
       await fs.writeFile(
@@ -221,7 +221,7 @@ describe('Gap Analyzer', () => {
       quality: { testing: true, security: false, linting: true },
       ci: { present: true, type: 'github-actions' },
       profiles: ['python'],
-      languageProfile: 'python'
+      languageProfile: 'python',
     };
 
     async function writeStack(stack) {
@@ -278,7 +278,7 @@ describe('Gap Analyzer', () => {
         technologies: [],
         configurations: [],
         quality: { testing: false, security: false },
-        ci: { present: false }
+        ci: { present: false },
       };
 
       await fs.writeFile(
@@ -297,7 +297,7 @@ describe('Gap Analyzer', () => {
         technologies: [],
         configurations: [],
         quality: { testing: false, security: false },
-        ci: { present: true, type: 'github-actions' }
+        ci: { present: true, type: 'github-actions' },
       };
 
       await fs.writeFile(
@@ -318,7 +318,7 @@ describe('Gap Analyzer', () => {
         technologies: [],
         configurations: [],
         quality: { testing: false, security: false },
-        ci: { present: false }
+        ci: { present: false },
       };
 
       await fs.writeFile(
@@ -337,7 +337,7 @@ describe('Gap Analyzer', () => {
         technologies: [],
         configurations: [],
         quality: { testing: false, security: false },
-        ci: { present: false }
+        ci: { present: false },
       };
 
       await fs.writeFile(
@@ -361,7 +361,7 @@ describe('Gap Analyzer', () => {
         technologies: [{ name: 'Node.js' }],
         configurations: [],
         quality: { testing: false, security: false },
-        ci: { present: false }
+        ci: { present: false },
       };
 
       await fs.writeFile(
@@ -380,7 +380,7 @@ describe('Gap Analyzer', () => {
         technologies: [{ name: 'Node.js' }],
         configurations: [],
         quality: { testing: false, security: false },
-        ci: { present: false }
+        ci: { present: false },
       };
 
       await fs.writeFile(
@@ -404,7 +404,7 @@ describe('Gap Analyzer', () => {
         technologies: [],
         configurations: [],
         quality: { testing: false, security: false },
-        ci: { present: false }
+        ci: { present: false },
       };
 
       await fs.writeFile(
@@ -426,7 +426,7 @@ describe('Gap Analyzer', () => {
         technologies: [],
         configurations: [],
         quality: { testing: false, security: false },
-        ci: { present: false }
+        ci: { present: false },
       };
 
       await fs.writeFile(
@@ -449,7 +449,7 @@ describe('Gap Analyzer', () => {
         technologies: [],
         configurations: [],
         quality: { testing: false, security: false },
-        ci: { present: false }
+        ci: { present: false },
       };
 
       await fs.writeFile(
@@ -482,8 +482,8 @@ describe('Gap Analyzer', () => {
         languageProfile: 'python',
         manifest: {
           technologies: ['python', 'pytorch', 'numpy'],
-          packageManager: 'pip'
-        }
+          packageManager: 'pip',
+        },
       };
 
       await fs.writeFile(
@@ -516,8 +516,8 @@ describe('Gap Analyzer', () => {
           envTemplate: { present: true, files: ['.env.example'] },
           envIgnored: true,
           envLoader: { present: true, tools: ['python-dotenv'] },
-          dependencyAudit: { present: true, tools: ['pip-audit', 'bandit'] }
-        }
+          dependencyAudit: { present: true, tools: ['pip-audit', 'bandit'] },
+        },
       };
 
       await fs.writeFile(
@@ -546,8 +546,8 @@ describe('Gap Analyzer', () => {
           envTemplate: { present: true, files: ['.env.example'] },
           envIgnored: true,
           envLoader: { present: true, tools: ['dotenv'] },
-          dependencyAudit: { present: false, tools: [] }
-        }
+          dependencyAudit: { present: false, tools: [] },
+        },
       };
 
       await fs.writeFile(
@@ -565,4 +565,3 @@ describe('Gap Analyzer', () => {
     });
   });
 });
-

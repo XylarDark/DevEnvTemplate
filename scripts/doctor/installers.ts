@@ -1,6 +1,6 @@
 /**
  * Dependency Installer
- * 
+ *
  * Handles installing missing dev dependencies with --no-install guard.
  * Supports npm, pnpm, and yarn package managers.
  */
@@ -39,20 +39,20 @@ export async function detectPackageManager(rootDir: string): Promise<PackageMana
       name: 'pnpm',
       lockFile: 'pnpm-lock.yaml',
       installCommand: 'pnpm install',
-      addDevCommand: (pkgs) => `pnpm add -D ${pkgs.join(' ')}`
+      addDevCommand: pkgs => `pnpm add -D ${pkgs.join(' ')}`,
     },
     'yarn.lock': {
       name: 'yarn',
       lockFile: 'yarn.lock',
       installCommand: 'yarn install',
-      addDevCommand: (pkgs) => `yarn add -D ${pkgs.join(' ')}`
+      addDevCommand: pkgs => `yarn add -D ${pkgs.join(' ')}`,
     },
     'package-lock.json': {
       name: 'npm',
       lockFile: 'package-lock.json',
       installCommand: 'npm install',
-      addDevCommand: (pkgs) => `npm install --save-dev ${pkgs.join(' ')}`
-    }
+      addDevCommand: pkgs => `npm install --save-dev ${pkgs.join(' ')}`,
+    },
   };
 
   // Check for lock files in order of preference
@@ -90,9 +90,9 @@ export function getRequiredDevDependencies(framework: string, hasTypeScript: boo
       hasTypeScript ? '@typescript-eslint/eslint-plugin' : '',
       hasTypeScript ? '@typescript-eslint/parser' : '',
       'eslint-plugin-react-hooks',
-      'eslint-plugin-react'
+      'eslint-plugin-react',
     ].filter(Boolean),
-    express: hasTypeScript ? ['@types/express', 'tsx'] : ['tsx']
+    express: hasTypeScript ? ['@types/express', 'tsx'] : ['tsx'],
   };
 
   if (frameworkDeps[framework]) {
@@ -109,17 +109,17 @@ export async function getInstalledPackages(rootDir: string): Promise<Set<string>
   try {
     const packageJsonPath = path.join(rootDir, 'package.json');
     const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf8'));
-    
+
     const deps = new Set<string>();
-    
+
     if (packageJson.dependencies) {
       Object.keys(packageJson.dependencies).forEach(pkg => deps.add(pkg));
     }
-    
+
     if (packageJson.devDependencies) {
       Object.keys(packageJson.devDependencies).forEach(pkg => deps.add(pkg));
     }
-    
+
     return deps;
   } catch (error) {
     return new Set();
@@ -137,7 +137,7 @@ export async function installDevDependencies(
     installed: [],
     skipped: [],
     errors: [],
-    packageManager: 'npm'
+    packageManager: 'npm',
   };
 
   if (packages.length === 0) {
@@ -190,11 +190,11 @@ export async function installDevDependencies(
     execSync(command, {
       cwd: options.rootDir,
       stdio: options.verbose ? 'inherit' : 'pipe',
-      encoding: 'utf8'
+      encoding: 'utf8',
     });
 
     result.installed = toInstall;
-    
+
     if (options.verbose) {
       console.log(`✅ Installed ${toInstall.length} package(s)`);
     }
@@ -229,7 +229,7 @@ export async function suggestPackages(
   // Linting
   if (gaps.noLinting && !installed.has('eslint')) {
     suggestions.push('eslint');
-    
+
     if (hasTypeScript) {
       if (!installed.has('@typescript-eslint/parser')) {
         suggestions.push('@typescript-eslint/parser');
@@ -277,4 +277,3 @@ export async function suggestPackages(
 
   return suggestions;
 }
-

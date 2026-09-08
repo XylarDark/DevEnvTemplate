@@ -41,23 +41,23 @@ rootExceptions:
 directoryRules:
   deployment:
     patterns:
-      - "*_DEPLOYMENT.md"
-      - "*DEPLOYMENT*.md"
-    target: "docs/deployment"
-  
+      - '*_DEPLOYMENT.md'
+      - '*DEPLOYMENT*.md'
+    target: 'docs/deployment'
+
   api:
     patterns:
-      - "*_API*.md"
-      - "API*.md"
-    target: "docs/api"
-  
+      - '*_API*.md'
+      - 'API*.md'
+    target: 'docs/api'
+
   guides:
     patterns:
-      - "*_GUIDE.md"
-      - "GUIDE*.md"
-    target: "docs/guides"
+      - '*_GUIDE.md'
+      - 'GUIDE*.md'
+    target: 'docs/guides'
 
-defaultTarget: "docs"
+defaultTarget: 'docs'
 ```
 
 ### Project-Specific Configuration
@@ -74,6 +74,7 @@ The tool checks project-specific config first, then falls back to the default.
 ### Deployment Documentation
 
 Files matching these patterns go to `docs/deployment/`:
+
 - `*_DEPLOYMENT.md`
 - `*DEPLOYMENT*.md`
 - `DEPLOYMENT*.md`
@@ -82,40 +83,47 @@ Files matching these patterns go to `docs/deployment/`:
 - `*VERCEL*.md`
 
 **Examples:**
+
 - `RAILWAY_DEPLOYMENT.md` → `docs/deployment/RAILWAY_DEPLOYMENT.md`
 - `VERCEL_DEPLOY.md` → `docs/deployment/VERCEL_DEPLOY.md`
 
 ### API Documentation
 
 Files matching these patterns go to `docs/api/`:
+
 - `*_API*.md`
 - `API*.md`
 - `*API_*.md`
 
 **Examples:**
+
 - `API_GUIDE.md` → `docs/api/API_GUIDE.md`
 - `REST_API.md` → `docs/api/REST_API.md`
 
 ### Guides
 
 Files matching these patterns go to `docs/guides/`:
+
 - `*_GUIDE.md`
 - `*GUIDE*.md`
 - `GUIDE*.md`
 
 **Examples:**
+
 - `GETTING_STARTED_GUIDE.md` → `docs/guides/GETTING_STARTED_GUIDE.md`
 - `USER_GUIDE.md` → `docs/guides/USER_GUIDE.md`
 
 ### Quick Start Documentation
 
 Files matching these patterns go to `docs/`:
+
 - `*_QUICK_START.md`
 - `*QUICK_START*.md`
 - `QUICK_START*.md`
 - `*_QUICKSTART.md`
 
 **Examples:**
+
 - `QUICK_START.md` → `docs/QUICK_START.md`
 - `RAILWAY_QUICK_START.md` → `docs/RAILWAY_QUICK_START.md`
 
@@ -126,6 +134,7 @@ Files that don't match any pattern go to `docs/` (the default target).
 ## Root Exceptions
 
 These files always stay in the project root:
+
 - `README.md`
 - `CHANGELOG.md`
 - `BOOTSTRAP.md` (DevEnvTemplate specific)
@@ -183,6 +192,7 @@ npm run doctor
 ```
 
 **Output:**
+
 ```
 🟡 Warning: Misplaced Documentation Files
    Description: 2 markdown file(s) in project root should be organized
@@ -198,6 +208,7 @@ npm run doctor --fix
 ```
 
 This will:
+
 1. Detect misplaced documentation files
 2. Organize them automatically
 3. Stage moves in git
@@ -219,6 +230,7 @@ chmod +x .git/hooks/pre-commit
 ### Hook Behavior
 
 The hook:
+
 1. Checks for new markdown files staged in root
 2. Warns if files should be organized
 3. Optionally auto-organizes (if `DEVENV_AUTO_ORGANIZE_DOCS=true`)
@@ -237,11 +249,13 @@ The hook will automatically organize files before commit.
 ## Git Integration
 
 When files are moved with `--auto-fix`:
+
 - Files are moved using `fs.rename()`
 - Git tracks the move (if files were tracked)
 - Changes are automatically staged
 
 **Example:**
+
 ```bash
 $ devenv organize-docs --auto-fix
 ✅ Moved 2 file(s):
@@ -268,6 +282,7 @@ $ devenv organize-docs --auto-fix
 ```
 
 Resolve conflicts manually by:
+
 1. Reviewing both files
 2. Merging content if needed
 3. Removing the source file
@@ -278,6 +293,7 @@ Resolve conflicts manually by:
 ### 1. Use Consistent Naming
 
 Follow the naming patterns defined in the configuration:
+
 - Deployment docs: `*_DEPLOYMENT.md`
 - API docs: `*_API*.md`
 - Guides: `*_GUIDE.md`
@@ -285,6 +301,7 @@ Follow the naming patterns defined in the configuration:
 ### 2. Keep Root Clean
 
 Only keep essential files in root:
+
 - `README.md` - Project overview
 - `CHANGELOG.md` - Version history
 - `CONTRIBUTING.md` - Contribution guidelines
@@ -293,6 +310,7 @@ Only keep essential files in root:
 ### 3. Organize Early
 
 Run `devenv organize-docs` regularly to keep documentation organized:
+
 - After creating new documentation
 - Before committing changes
 - As part of your pre-commit workflow
@@ -315,8 +333,8 @@ Create project-specific configuration for custom organization rules:
 directoryRules:
   custom:
     patterns:
-      - "*_CUSTOM*.md"
-    target: "docs/custom"
+      - '*_CUSTOM*.md'
+    target: 'docs/custom'
 ```
 
 ## Troubleshooting
@@ -324,6 +342,7 @@ directoryRules:
 ### Files Not Detected
 
 If files aren't being detected:
+
 1. Check file extension is `.md`
 2. Verify file is in project root (not subdirectories)
 3. Check if file matches a root exception
@@ -331,6 +350,7 @@ If files aren't being detected:
 ### Files Not Moving
 
 If files aren't moving:
+
 1. Check for conflicts (target file exists)
 2. Verify write permissions
 3. Check git status (untracked files may not stage)
@@ -338,6 +358,7 @@ If files aren't moving:
 ### Configuration Not Loading
 
 If configuration isn't loading:
+
 1. Verify YAML syntax is correct
 2. Check file path (`.devenv/config/` or `config/`)
 3. Verify file is readable
@@ -391,4 +412,3 @@ project-root/
 - [Usage Guide](../USAGE.md) - General DevEnvTemplate usage
 - [Best Practices](../BEST-PRACTICES.md) - Development best practices
 - [Troubleshooting](../TROUBLESHOOTING.md) - Common issues and solutions
-

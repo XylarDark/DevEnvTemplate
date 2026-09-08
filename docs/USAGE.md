@@ -13,12 +13,14 @@ npm run doctor
 ```
 
 This runs a comprehensive health check:
+
 - **Diagnoses** your stack (technologies, frameworks, tooling)
 - **Identifies** gaps (missing tests, CI, security issues)
 - **Calculates** health score (0-100) across 5 categories
 - **Suggests** quick wins (< 10 min fixes)
 
 **Example Output:**
+
 ```
 🏥 DevEnvTemplate Health Check
 
@@ -43,15 +45,16 @@ This runs a comprehensive health check:
 
 Once `.devenv/stack-report.json` exists, the doctor prints the detected profile(s) up front. All subsequent recommendations switch to stack-specific quick wins:
 
-| Stack profile | Default quick wins |
-|---------------|--------------------|
-| `node` | Vitest + ESLint flat config + Playwright + Dependabot/lockfile checks |
-| `python` | Pytest + Ruff + Black + Mypy + pip/poetry lockfile hygiene + pre-commit hooks + experiment/run tracking |
-| `node + python` | Separate sections for each profile (doctor prints both) |
+| Stack profile   | Default quick wins                                                                                      |
+| --------------- | ------------------------------------------------------------------------------------------------------- |
+| `node`          | Vitest + ESLint flat config + Playwright + Dependabot/lockfile checks                                   |
+| `python`        | Pytest + Ruff + Black + Mypy + pip/poetry lockfile hygiene + pre-commit hooks + experiment/run tracking |
+| `node + python` | Separate sections for each profile (doctor prints both)                                                 |
 
 **Python Project Example:**
 
 For a Python project like `lunar_mining_sim`, the doctor detects:
+
 - Package structure (`pyproject.toml` or `setup.py`)
 - Testing framework (pytest, unittest)
 - Linting tools (ruff, black, flake8)
@@ -60,6 +63,7 @@ For a Python project like `lunar_mining_sim`, the doctor detects:
 - Import patterns (checks for sys.path hacks)
 
 Quick wins for Python projects:
+
 - Add `pytest` configuration
 - Set up `ruff` for linting
 - Configure `black` for formatting
@@ -67,6 +71,7 @@ Quick wins for Python projects:
 - Remove `sys.path` hacks (use `pip install -e .`)
 
 For simulation/ML-style Python repos the doctor now:
+
 - Accepts existing `env-example*` templates but nudges you to rename them to `.env.example`
 - Prefers `pre-commit` hooks over Husky
 - Recommends experiment budgets plus run-tracking observability instead of bundle-size budgets
@@ -101,12 +106,14 @@ devenv organize-docs --auto-fix
 ```
 
 This tool:
+
 - Detects markdown files in project root that should be moved
 - Organizes them based on filename patterns (e.g., `*_DEPLOYMENT.md` → `docs/deployment/`)
 - Preserves root-level files (README.md, CHANGELOG.md, CONTRIBUTING.md, LICENSE.md, BOOTSTRAP.md)
 - Stages moves in git if files are tracked
 
 **Example:**
+
 ```
 📚 Documentation Organization
 
@@ -140,11 +147,14 @@ When all four are present, the new stack detector metadata flips `quality.securi
 DevEnvTemplate provides utilities for validating environment variables and encryption keys:
 
 ```typescript
-import { requireEnvVar, requireEncryptionKey } from './scripts/utils/env-validator';
+import {
+  requireEnvVar,
+  requireEncryptionKey,
+} from './scripts/utils/env-validator';
 
 // Check for required environment variable
 const apiKey = requireEnvVar('API_KEY', {
-  hint: 'Set API_KEY in your .env file'
+  hint: 'Set API_KEY in your .env file',
 });
 
 // Validate encryption key format
@@ -180,6 +190,7 @@ npm run doctor:fix
 ```
 
 Automatically fixes simple issues:
+
 - Creates `.env.example`
 - Adds `.env` to `.gitignore`
 - Enables TypeScript strict mode
@@ -261,6 +272,7 @@ npm run doctor -- --project-root ../other-project
 ```
 
 The `--project-root` flag (or `DEVENV_PROJECT_ROOT` environment variable) is handy when:
+
 - `.devenv/` lives in a nested tools directory
 - You keep multiple DevEnvTemplate clones for different repos
 - You need to target a temporary scratch directory
@@ -278,8 +290,9 @@ Shows detected technologies and configurations.
 Lists what's missing (tests, security, docs, etc.) with recommendations.
 
 **Example gaps:**
+
 - ❌ No test framework detected
-- ❌ Missing TypeScript configuration  
+- ❌ Missing TypeScript configuration
 - ❌ No CI/CD pipeline
 - ❌ Dependencies not scanned for vulnerabilities
 
@@ -303,6 +316,7 @@ npm run test:fast   # Quick test run
 DevEnvTemplate includes deployment guides for free tiers:
 
 **Vercel** (recommended for Next.js, React):
+
 ```bash
 # Install Vercel CLI
 npm i -g vercel
@@ -312,6 +326,7 @@ vercel
 ```
 
 **Railway** (recommended for Node.js APIs):
+
 ```bash
 # Install Railway CLI
 npm i -g @railway/cli
@@ -321,6 +336,7 @@ railway up
 ```
 
 **Fly.io** (recommended for full-stack apps):
+
 ```bash
 # Install Fly CLI
 curl -L https://fly.io/install.sh | sh
@@ -348,6 +364,7 @@ npm run cleanup -- --apply
 ```
 
 **What it fixes:**
+
 - Removes unused files
 - Cleans up template code
 - Fixes linting issues
@@ -364,6 +381,7 @@ npm run cleanup -- --parallel --cache --apply
 ```
 
 **Performance gains:**
+
 - 2-3x faster on large codebases
 - Caches configuration parsing
 - Parallel file processing
@@ -379,6 +397,7 @@ npm run cleanup -- --parallel --cache --apply
 **Goal**: Launch MVP in 3 months
 
 **DevEnvTemplate setup:**
+
 ```bash
 npm run agent:init
 # Select: "Full-stack web app"
@@ -397,9 +416,10 @@ npm run agent:init
 **Goal**: Professional quality, fast delivery
 
 **DevEnvTemplate setup:**
+
 ```bash
 npm run agent:init
-# Select: "Static website" or "Web application"  
+# Select: "Static website" or "Web application"
 # Stack: React / Vue / vanilla JS
 # Features: Minimal (keep it simple)
 ```
@@ -415,6 +435,7 @@ npm run agent:init
 **Concern**: VCs will review code quality
 
 **DevEnvTemplate setup:**
+
 ```bash
 npm run agent:init
 # Select: "Full-stack web app"
@@ -435,6 +456,7 @@ npm run agent:init       # Generate project manifest (interactive)
 ```
 
 **Questions asked:**
+
 1. What type of project? (Web app, API, library, etc.)
 2. What's your primary language? (JavaScript, TypeScript, Python, etc.)
 3. What framework? (React, Express, Next.js, etc.)
@@ -452,6 +474,7 @@ npm run cleanup:check    # Alias for dry run
 ```
 
 **Common flags:**
+
 ```bash
 --apply              # Apply changes (default: dry run)
 --profile <name>     # Use specific profile (minimal, standard, strict)
@@ -497,7 +520,7 @@ For a quick sanity check you can append `--mode fast` to the stack detector or g
 
 The default `CI` workflow is now manual-only. Trigger it when you need a full validation run:
 
-1. Open **GitHub → Actions → CI**  
+1. Open **GitHub → Actions → CI**
 2. Click **Run workflow**, pick the branch, and confirm
 
 Or via GitHub CLI:
@@ -517,6 +540,7 @@ You will only receive email notifications for the runs you start manually.
 Located at `project.manifest.json` (auto-generated by `npm run agent:init`)
 
 **Example:**
+
 ```json
 {
   "name": "my-saas-app",
@@ -561,6 +585,7 @@ npm test
 ### "CI is taking too long"
 
 Check GitHub Actions usage:
+
 - Free tier: 2000 minutes/month
 - Enable caching: Speeds up installs
 - Use `--parallel` for large projects
@@ -568,6 +593,7 @@ Check GitHub Actions usage:
 ### "Gap analyzer shows too many issues"
 
 Start with high-priority gaps first:
+
 1. Critical security issues
 2. Missing tests
 3. Missing CI/CD
@@ -582,6 +608,7 @@ DevEnvTemplate now records a `languageProfile` in `.devenv/stack-report.json` (f
 ### "Deployment failed"
 
 Check deployment platform docs:
+
 - **Vercel**: [vercel.com/docs](https://vercel.com/docs)
 - **Railway**: [docs.railway.app](https://docs.railway.app)
 - **Fly.io**: [fly.io/docs](https://fly.io/docs)
@@ -595,12 +622,14 @@ Most issues: Missing environment variables.
 ### For Solo Developers
 
 ✅ **Do:**
+
 - Push often (CI runs automatically)
 - Fix broken tests immediately
 - Keep dependencies updated
 - Document user-facing changes
 
 ❌ **Don't:**
+
 - Skip tests (they're fast)
 - Commit secrets (use `.env`)
 - Ignore security warnings
@@ -609,12 +638,14 @@ Most issues: Missing environment variables.
 ### For Side Projects
 
 ✅ **Do:**
+
 - Use free tiers (GitHub Actions, Vercel, etc.)
 - Focus on shipping features
 - Let CI handle quality checks
 - Deploy early, deploy often
 
 ❌ **Don't:**
+
 - Spend hours on tooling setup (DevEnvTemplate handles it)
 - Skip CI (it's free and automatic)
 - Deploy without tests
@@ -623,12 +654,14 @@ Most issues: Missing environment variables.
 ### For Client Work
 
 ✅ **Do:**
+
 - Show clients the quality setup (builds trust)
 - Use consistent setup across projects
 - Document everything clearly
 - Keep projects professional
 
 ❌ **Don't:**
+
 - Skip documentation
 - Cut corners on testing
 - Ignore security scans
@@ -639,18 +672,21 @@ Most issues: Missing environment variables.
 ## Next Steps
 
 **Just Starting?**
+
 - Run `npm run agent:init`
 - Push to GitHub
 - Check `.devenv/gaps-report.md`
 - Fix high-priority gaps
 
 **Ready to Deploy?**
+
 - Tests passing? ✅
 - No secrets committed? ✅
 - Docs updated? ✅
 - Deploy! 🚀
 
 **Need Help?**
+
 - See [docs/ARCHITECTURE.md](ARCHITECTURE.md) and [docs/BEST-PRACTICES.md](BEST-PRACTICES.md) for advanced features
 - Check [docs/](docs/) for detailed guides
 - Open an issue on GitHub

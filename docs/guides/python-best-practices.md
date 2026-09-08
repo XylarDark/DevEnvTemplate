@@ -112,7 +112,7 @@ import sys
 def get_project_root() -> Path:
     """
     Get project root directory.
-    
+
     Tries multiple strategies:
     1. Check if package is installed and find root from package location
     2. Search upward from current file for pyproject.toml or setup.py
@@ -126,14 +126,14 @@ def get_project_root() -> Path:
             return package_path
     except (ImportError, AttributeError):
         pass
-    
+
     # Strategy 2: Search from current file
     current = Path(__file__).resolve()
     while current != current.parent:
         if (current / 'pyproject.toml').exists() or (current / 'setup.py').exists():
             return current
         current = current.parent
-    
+
     # Strategy 3: Fallback to cwd
     return Path.cwd()
 
@@ -239,19 +239,21 @@ pip install -e .
 
 Always document virtual environment setup in README:
 
-```markdown
+````markdown
 ## Development Setup
 
 1. Create virtual environment:
    ```bash
    python -m venv venv
    ```
+````
 
 2. Activate virtual environment:
    - **Windows PowerShell**: `.\venv\Scripts\Activate.ps1`
    - **Linux/macOS**: `source venv/bin/activate`
 
 3. Install package:
+
    ```bash
    pip install -e .
    ```
@@ -260,7 +262,8 @@ Always document virtual environment setup in README:
    ```bash
    pip install -e ".[dev]"
    ```
-```
+
+````
 
 ## Testing Patterns
 
@@ -274,7 +277,7 @@ from my_package.core import config
 
 # ✅ Correct - package should be installed
 from my_package.core import config
-```
+````
 
 ### Using pytest
 
@@ -372,17 +375,21 @@ cd project; python script.py
 
 **Documentation should provide both**:
 
-```markdown
+````markdown
 **Bash/Linux:**
+
 ```bash
 cd project && python script.py
 ```
+````
 
 **PowerShell:**
+
 ```powershell
 cd project; python script.py
 ```
-```
+
+````
 
 ### Path Separators
 
@@ -395,7 +402,7 @@ data_file = 'data/results.json'  # Fails on Windows
 # ✅ Correct - pathlib handles it
 from pathlib import Path
 data_file = Path('data') / 'results.json'  # Works everywhere
-```
+````
 
 ### Encoding
 
@@ -517,4 +524,3 @@ Key principles for Python development:
 - [pathlib Documentation](https://docs.python.org/3/library/pathlib.html)
 - [Python Packaging Guide](https://packaging.python.org/)
 - [pytest Documentation](https://docs.pytest.org/)
-

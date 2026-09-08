@@ -9,11 +9,13 @@ This document recommends tools that can enhance DevEnvTemplate's capabilities an
 **Purpose:** Automatically load environment variables per directory
 
 **Benefits:**
+
 - No need to manually source `.env` files
 - Automatic activation of virtual environments
 - Project-specific environment configuration
 
 **Installation:**
+
 ```bash
 # macOS
 brew install direnv
@@ -26,6 +28,7 @@ sudo apt-get install direnv
 ```
 
 **Usage:**
+
 ```bash
 # Create .envrc file
 echo 'export API_KEY="your-key"' > .envrc
@@ -41,17 +44,20 @@ direnv allow
 **Purpose:** Universal version manager for multiple languages
 
 **Benefits:**
+
 - Manage Node.js, Python, Ruby, Go, etc. from one tool
 - Per-project version pinning
 - Consistent across team members
 
 **Installation:**
+
 ```bash
 # macOS/Linux
 git clone https://github.com/asdf-vm/asdf.git ~/.asdf
 ```
 
 **Usage:**
+
 ```bash
 asdf plugin add nodejs
 asdf install nodejs 20.10.0
@@ -67,16 +73,19 @@ asdf local nodejs 20.10.0
 **Purpose:** Git hooks for quality checks before commits
 
 **Benefits:**
+
 - Automatic linting, formatting, type checking
 - Prevents bad code from being committed
 - Consistent code quality across team
 
 **Installation:**
+
 ```bash
 pip install pre-commit
 ```
 
 **Usage:**
+
 ```bash
 # Create .pre-commit-config.yaml
 pre-commit install
@@ -91,11 +100,13 @@ pre-commit install
 **Purpose:** File watching service for faster rebuilds
 
 **Benefits:**
+
 - Faster file watching than native tools
 - Better performance on large projects
 - Cross-platform support
 
 **Installation:**
+
 ```bash
 # macOS
 brew install watchman
@@ -115,16 +126,19 @@ brew install watchman
 **Purpose:** Fast Python linter and formatter
 
 **Benefits:**
+
 - 10-100x faster than black + flake8
 - Replaces multiple tools (black, flake8, isort, etc.)
 - Single tool for all Python code quality
 
 **Installation:**
+
 ```bash
 pip install ruff
 ```
 
 **Usage:**
+
 ```bash
 ruff check .
 ruff format .
@@ -139,16 +153,19 @@ ruff format .
 **Purpose:** Fast JavaScript/TypeScript formatter and linter
 
 **Benefits:**
+
 - Faster than Prettier + ESLint
 - Single tool for formatting and linting
 - Written in Rust for performance
 
 **Installation:**
+
 ```bash
 npm install --save-dev --save-exact @biomejs/biome
 ```
 
 **Usage:**
+
 ```bash
 npx @biomejs/biome format --write .
 npx @biomejs/biome lint --write .
@@ -163,16 +180,19 @@ npx @biomejs/biome lint --write .
 **Purpose:** Find dead Python code
 
 **Benefits:**
+
 - Identifies unused functions, classes, variables
 - Helps reduce codebase size
 - Improves maintainability
 
 **Installation:**
+
 ```bash
 pip install vulture
 ```
 
 **Usage:**
+
 ```bash
 vulture lunar_mining_sim/
 ```
@@ -186,16 +206,19 @@ vulture lunar_mining_sim/
 **Purpose:** Find unused npm dependencies
 
 **Benefits:**
+
 - Identifies unused packages
 - Reduces bundle size
 - Saves disk space
 
 **Installation:**
+
 ```bash
 npm install -g depcheck
 ```
 
 **Usage:**
+
 ```bash
 depcheck
 ```
@@ -211,17 +234,20 @@ depcheck
 **Purpose:** End-to-end testing for web applications
 
 **Benefits:**
+
 - Cross-browser testing (Chromium, Firefox, WebKit)
 - Better than Selenium
 - Modern API and good documentation
 
 **Installation:**
+
 ```bash
 npm install --save-dev @playwright/test
 npx playwright install
 ```
 
 **Usage:**
+
 ```typescript
 import { test, expect } from '@playwright/test';
 
@@ -240,16 +266,19 @@ test('homepage loads', async ({ page }) => {
 **Purpose:** Static type checking for Python
 
 **Benefits:**
+
 - Catches type errors before runtime
 - Improves code quality
 - Better IDE support
 
 **Installation:**
+
 ```bash
 pip install mypy
 ```
 
 **Usage:**
+
 ```bash
 mypy lunar_mining_sim/
 ```
@@ -263,16 +292,19 @@ mypy lunar_mining_sim/
 **Purpose:** Runtime validation for TypeScript (matches Pydantic)
 
 **Benefits:**
+
 - Type-safe runtime validation
 - Matches Pydantic patterns from Python
 - Great for API validation
 
 **Installation:**
+
 ```bash
 npm install zod
 ```
 
 **Usage:**
+
 ```typescript
 import { z } from 'zod';
 
@@ -293,16 +325,19 @@ const data = Schema.parse({ name: 'John', age: 30 });
 **Purpose:** Fast unit test runner (alternative to Jest)
 
 **Benefits:**
+
 - Faster than Jest
 - Native ESM support
 - Better TypeScript support
 
 **Installation:**
+
 ```bash
 npm install -D vitest
 ```
 
 **Usage:**
+
 ```typescript
 import { test, expect } from 'vitest';
 
@@ -322,16 +357,19 @@ test('example', () => {
 **Purpose:** TypeScript API documentation generator
 
 **Benefits:**
+
 - Auto-generates docs from TypeScript types
 - Better than JSDoc alone
 - Modern documentation site
 
 **Installation:**
+
 ```bash
 npm install --save-dev typedoc
 ```
 
 **Usage:**
+
 ```bash
 typedoc --out docs src/
 ```
@@ -345,16 +383,19 @@ typedoc --out docs src/
 **Purpose:** Python documentation generator
 
 **Benefits:**
+
 - Markdown-based documentation
 - Easy to maintain
 - Good for Python projects
 
 **Installation:**
+
 ```bash
 pip install mkdocs mkdocs-material
 ```
 
 **Usage:**
+
 ```bash
 mkdocs new .
 mkdocs serve
@@ -369,16 +410,19 @@ mkdocs serve
 **Purpose:** Enforce commit message format
 
 **Benefits:**
+
 - Consistent commit messages
 - Better changelog generation
 - Follows conventional commits
 
 **Installation:**
+
 ```bash
 npm install --save-dev @commitlint/cli @commitlint/config-conventional
 ```
 
 **Usage:**
+
 ```bash
 # Create commitlint.config.js
 echo "module.exports = { extends: ['@commitlint/config-conventional'] }" > commitlint.config.js
@@ -393,16 +437,19 @@ echo "module.exports = { extends: ['@commitlint/config-conventional'] }" > commi
 **Purpose:** Auto-generate changelogs from git commits
 
 **Benefits:**
+
 - Automatic changelog generation
 - Based on commit messages
 - Saves time
 
 **Installation:**
+
 ```bash
 npm install --save-dev conventional-changelog-cli
 ```
 
 **Usage:**
+
 ```bash
 conventional-changelog -p angular -i CHANGELOG.md -s
 ```
@@ -418,19 +465,22 @@ conventional-changelog -p angular -i CHANGELOG.md -s
 **Purpose:** Error tracking and performance monitoring
 
 **Benefits:**
+
 - Free tier available
 - Great error tracking
 - Performance monitoring
 - Source map support
 
 **Installation:**
+
 ```bash
 npm install @sentry/nextjs
 ```
 
 **Usage:**
+
 ```typescript
-import * as Sentry from "@sentry/nextjs";
+import * as Sentry from '@sentry/nextjs';
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
@@ -446,16 +496,19 @@ Sentry.init({
 **Purpose:** Performance monitoring and auditing
 
 **Benefits:**
+
 - Automated performance testing
 - CI/CD integration
 - Tracks performance over time
 
 **Installation:**
+
 ```bash
 npm install -g @lhci/cli
 ```
 
 **Usage:**
+
 ```bash
 lhci autorun
 ```
@@ -469,19 +522,21 @@ lhci autorun
 **Purpose:** Automated dependency updates
 
 **Benefits:**
+
 - Automatic PRs for dependency updates
 - Security vulnerability alerts
 - Free on GitHub
 
 **Setup:**
 Create `.github/dependabot.yml`:
+
 ```yaml
 version: 2
 updates:
-  - package-ecosystem: "npm"
-    directory: "/"
+  - package-ecosystem: 'npm'
+    directory: '/'
     schedule:
-      interval: "weekly"
+      interval: 'weekly'
 ```
 
 **Integration:** DevEnvTemplate could generate dependabot config.
@@ -493,11 +548,13 @@ updates:
 **Purpose:** Alternative to dependabot with more control
 
 **Benefits:**
+
 - More configuration options
 - Better grouping of updates
 - Self-hosted option
 
 **Installation:**
+
 ```bash
 # GitHub App: https://github.com/apps/renovate
 ```
@@ -542,6 +599,7 @@ DevEnvTemplate could:
 5. **Document usage**: Provide examples and best practices
 
 Example integration:
+
 ```typescript
 // In stack detector
 if (detectsPython) {
@@ -562,4 +620,3 @@ if (detectsNode) {
 - [Best Practices](BEST-PRACTICES.md) - Development best practices
 - [Troubleshooting](TROUBLESHOOTING.md) - Common issues and solutions
 - [Usage Guide](USAGE.md) - How to use DevEnvTemplate
-

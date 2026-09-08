@@ -67,18 +67,16 @@ export function runCommand(
       stdio: 'pipe',
       ...execOptions,
     };
-    
+
     // Add shell option if specified (Node.js supports this)
     if (shellPath) {
       (execOpts as any).shell = shellPath;
     }
-    
+
     return execSync(normalizedCommand, execOpts).toString();
   } catch (error: any) {
     throw new Error(
-      `Command failed: ${normalizedCommand}\n` +
-      `Shell: ${shellType}\n` +
-      `Error: ${error.message}`
+      `Command failed: ${normalizedCommand}\n` + `Shell: ${shellType}\n` + `Error: ${error.message}`
     );
   }
 }
@@ -98,7 +96,9 @@ export function chainCommands(commands: string[], shell?: ShellType): string {
 export function commandExists(command: string): boolean {
   try {
     if (detectShell() === 'powershell') {
-      runCommand(`Get-Command ${command} -ErrorAction SilentlyContinue`, { shellType: 'powershell' });
+      runCommand(`Get-Command ${command} -ErrorAction SilentlyContinue`, {
+        shellType: 'powershell',
+      });
     } else {
       runCommand(`which ${command}`, { shellType: 'bash' });
     }
@@ -122,4 +122,3 @@ export function normalizePath(path: string): string {
   const separator = getPathSeparator();
   return path.replace(/[/\\]/g, separator);
 }
-

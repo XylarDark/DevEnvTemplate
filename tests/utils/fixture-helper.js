@@ -1,6 +1,6 @@
 /**
  * Test Fixture Helper Utilities
- * 
+ *
  * Provides utilities for working with test fixtures including copying them
  * to temporary directories for isolated testing.
  */
@@ -16,18 +16,21 @@ const os = require('os');
  */
 async function createTempFixture(fixtureName) {
   const fixtureDir = path.join(__dirname, '../fixtures', fixtureName);
-  const tempDir = path.join(os.tmpdir(), `devenv-test-${Date.now()}-${Math.random().toString(36).substring(7)}`);
-  
+  const tempDir = path.join(
+    os.tmpdir(),
+    `devenv-test-${Date.now()}-${Math.random().toString(36).substring(7)}`
+  );
+
   // Check if fixture exists
   try {
     await fs.access(fixtureDir);
   } catch (error) {
     throw new Error(`Fixture '${fixtureName}' not found at ${fixtureDir}`);
   }
-  
+
   // Copy fixture to temp directory
   await fs.cp(fixtureDir, tempDir, { recursive: true });
-  
+
   return tempDir;
 }
 
@@ -40,7 +43,7 @@ async function cleanupTempFixture(tempDir) {
   if (!tempDir || !tempDir.includes('devenv-test')) {
     throw new Error('Invalid temp directory path for cleanup');
   }
-  
+
   try {
     await fs.rm(tempDir, { recursive: true, force: true });
   } catch (error) {
@@ -91,6 +94,5 @@ module.exports = {
   cleanupTempFixture,
   fileExists,
   readFile,
-  writeFile
+  writeFile,
 };
-

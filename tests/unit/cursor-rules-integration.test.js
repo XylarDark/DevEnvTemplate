@@ -22,7 +22,7 @@ describe('Cursor Rules Integration', () => {
     tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'cursor-integration-test-'));
     templateDir = path.join(tempDir, 'template', '.cursor', 'rules');
     projectDir = path.join(tempDir, 'project');
-    
+
     await fs.mkdir(templateDir, { recursive: true });
     await fs.mkdir(projectDir, { recursive: true });
 
@@ -46,7 +46,7 @@ describe('Cursor Rules Integration', () => {
       technologies: [],
       quality: { typescript: false },
       frameworks: { type: 'vanilla' },
-      files: { key_patterns: [] }
+      files: { key_patterns: [] },
     };
 
     const result = await integration.integrateCursorRules({
@@ -54,7 +54,7 @@ describe('Cursor Rules Integration', () => {
       templateRulesPath: templateDir,
       stackReport,
       overwriteCore: false,
-      dryRun: false
+      dryRun: false,
     });
 
     // Template stub only includes 00 + 01 as core files on disk; integration also copies README.
@@ -76,7 +76,7 @@ describe('Cursor Rules Integration', () => {
       technologies: [{ name: 'TypeScript', version: '5.0' }],
       quality: { typescript: true },
       frameworks: { type: 'vanilla' },
-      files: { key_patterns: [] }
+      files: { key_patterns: [] },
     };
 
     const result = await integration.integrateCursorRules({
@@ -84,7 +84,7 @@ describe('Cursor Rules Integration', () => {
       templateRulesPath: templateDir,
       stackReport,
       overwriteCore: false,
-      dryRun: false
+      dryRun: false,
     });
 
     // Should include TypeScript rule but not Python
@@ -99,7 +99,7 @@ describe('Cursor Rules Integration', () => {
       frameworks: { type: 'vanilla' },
       files: { key_patterns: [] },
       unrealProjectDetected: true,
-      unityProjectDetected: true
+      unityProjectDetected: true,
     };
 
     const result = await integration.integrateCursorRules({
@@ -107,7 +107,7 @@ describe('Cursor Rules Integration', () => {
       templateRulesPath: templateDir,
       stackReport,
       overwriteCore: false,
-      dryRun: false
+      dryRun: false,
     });
 
     assert.ok(result.copied.includes('21-unreal-engine.mdc'));
@@ -124,7 +124,7 @@ describe('Cursor Rules Integration', () => {
       technologies: [],
       quality: { typescript: false },
       frameworks: { type: 'vanilla' },
-      files: { key_patterns: [] }
+      files: { key_patterns: [] },
     };
 
     const result = await integration.integrateCursorRules({
@@ -132,7 +132,7 @@ describe('Cursor Rules Integration', () => {
       templateRulesPath: templateDir,
       stackReport,
       overwriteCore: false,
-      dryRun: false
+      dryRun: false,
     });
 
     assert.ok(result.preserved.includes('99-custom.mdc'));
@@ -152,7 +152,7 @@ describe('Cursor Rules Integration', () => {
       technologies: [],
       quality: { typescript: false },
       frameworks: { type: 'vanilla' },
-      files: { key_patterns: [] }
+      files: { key_patterns: [] },
     };
 
     const result = await integration.integrateCursorRules({
@@ -160,7 +160,7 @@ describe('Cursor Rules Integration', () => {
       templateRulesPath: templateDir,
       stackReport,
       overwriteCore: false,
-      dryRun: false
+      dryRun: false,
     });
 
     // Should not copy existing file
@@ -168,7 +168,10 @@ describe('Cursor Rules Integration', () => {
     assert.ok(result.updated.includes('00-core-principles.mdc'));
 
     // Verify file was not overwritten
-    const existingFile = await fs.readFile(path.join(projectRulesDir, '00-core-principles.mdc'), 'utf8');
+    const existingFile = await fs.readFile(
+      path.join(projectRulesDir, '00-core-principles.mdc'),
+      'utf8'
+    );
     assert.strictEqual(existingFile, '# Modified Core\n');
   });
 
@@ -182,7 +185,7 @@ describe('Cursor Rules Integration', () => {
       technologies: [],
       quality: { typescript: false },
       frameworks: { type: 'vanilla' },
-      files: { key_patterns: [] }
+      files: { key_patterns: [] },
     };
 
     const result = await integration.integrateCursorRules({
@@ -190,14 +193,17 @@ describe('Cursor Rules Integration', () => {
       templateRulesPath: templateDir,
       stackReport,
       overwriteCore: true,
-      dryRun: false
+      dryRun: false,
     });
 
     // Should copy and overwrite
     assert.ok(result.copied.includes('00-core-principles.mdc'));
 
     // Verify file was overwritten
-    const overwrittenFile = await fs.readFile(path.join(projectRulesDir, '00-core-principles.mdc'), 'utf8');
+    const overwrittenFile = await fs.readFile(
+      path.join(projectRulesDir, '00-core-principles.mdc'),
+      'utf8'
+    );
     assert.strictEqual(overwrittenFile, '# Core Principles\n');
   });
 
@@ -206,7 +212,7 @@ describe('Cursor Rules Integration', () => {
       technologies: [],
       quality: { typescript: false },
       frameworks: { type: 'vanilla' },
-      files: { key_patterns: [] }
+      files: { key_patterns: [] },
     };
 
     const result = await integration.integrateCursorRules({
@@ -214,7 +220,7 @@ describe('Cursor Rules Integration', () => {
       templateRulesPath: templateDir,
       stackReport,
       overwriteCore: false,
-      dryRun: true
+      dryRun: true,
     });
 
     // Should return empty results in dry-run
@@ -231,4 +237,3 @@ describe('Cursor Rules Integration', () => {
     }
   });
 });
-

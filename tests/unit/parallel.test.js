@@ -1,6 +1,10 @@
 const assert = require('assert');
 const { describe, it, beforeEach } = require('node:test');
-const { parallel, parallelBatch, calculateOptimalConcurrency } = require('../../dist/scripts/utils/parallel');
+const {
+  parallel,
+  parallelBatch,
+  calculateOptimalConcurrency,
+} = require('../../dist/scripts/utils/parallel');
 
 describe('Parallel Utility', () => {
   describe('parallel()', () => {
@@ -11,7 +15,7 @@ describe('Parallel Utility', () => {
 
       const result = await parallel(
         items,
-        async (item) => {
+        async item => {
           currentConcurrent++;
           maxConcurrent = Math.max(maxConcurrent, currentConcurrent);
           await new Promise(resolve => setTimeout(resolve, 10));
@@ -32,7 +36,7 @@ describe('Parallel Utility', () => {
 
       const result = await parallel(
         items,
-        async (item) => {
+        async item => {
           if (item === 3) {
             throw new Error(`Failed on item ${item}`);
           }
@@ -58,7 +62,7 @@ describe('Parallel Utility', () => {
 
       await parallel(
         items,
-        async (item) => {
+        async item => {
           await new Promise(resolve => setTimeout(resolve, 5));
           return item * 2;
         },
@@ -66,7 +70,7 @@ describe('Parallel Utility', () => {
           concurrency: 2,
           onProgress: (completed, total) => {
             progressUpdates.push({ completed, total });
-          }
+          },
         }
       );
 
@@ -76,22 +80,14 @@ describe('Parallel Utility', () => {
     });
 
     it('should handle empty array', async () => {
-      const result = await parallel(
-        [],
-        async (item) => item * 2,
-        { concurrency: 2 }
-      );
+      const result = await parallel([], async item => item * 2, { concurrency: 2 });
 
       assert.strictEqual(result.results.length, 0);
       assert.strictEqual(result.errors.length, 0);
     });
 
     it('should handle single item', async () => {
-      const result = await parallel(
-        [42],
-        async (item) => item * 2,
-        { concurrency: 2 }
-      );
+      const result = await parallel([42], async item => item * 2, { concurrency: 2 });
 
       assert.strictEqual(result.results.length, 1);
       assert.strictEqual(result.results[0], 84);
@@ -102,11 +98,7 @@ describe('Parallel Utility', () => {
       const items = Array.from({ length: 1000 }, (_, i) => i);
       const startMemory = process.memoryUsage().heapUsed;
 
-      const result = await parallel(
-        items,
-        async (item) => item * 2,
-        { concurrency: 10 }
-      );
+      const result = await parallel(items, async item => item * 2, { concurrency: 10 });
 
       const endMemory = process.memoryUsage().heapUsed;
       const memoryIncrease = endMemory - startMemory;
@@ -114,7 +106,10 @@ describe('Parallel Utility', () => {
       assert.strictEqual(result.results.length, 1000);
       assert.strictEqual(result.errors.length, 0);
       // Memory increase should be reasonable (< 50MB for 1000 items)
-      assert.ok(memoryIncrease < 50 * 1024 * 1024, `Memory increase was ${(memoryIncrease / 1024 / 1024).toFixed(2)}MB`);
+      assert.ok(
+        memoryIncrease < 50 * 1024 * 1024,
+        `Memory increase was ${(memoryIncrease / 1024 / 1024).toFixed(2)}MB`
+      );
     });
 
     it('should respect concurrency limit of 1 (sequential)', async () => {
@@ -123,7 +118,7 @@ describe('Parallel Utility', () => {
 
       const result = await parallel(
         items,
-        async (item) => {
+        async item => {
           executionOrder.push(`start-${item}`);
           await new Promise(resolve => setTimeout(resolve, 10));
           executionOrder.push(`end-${item}`);
@@ -143,11 +138,7 @@ describe('Parallel Utility', () => {
     it('should process items in batches', async () => {
       const items = [1, 2, 3, 4, 5, 6, 7, 8];
 
-      const result = await parallelBatch(
-        items,
-        async (item) => item * 2,
-        { concurrency: 3 }
-      );
+      const result = await parallelBatch(items, async item => item * 2, { concurrency: 3 });
 
       assert.strictEqual(result.results.length, 8);
       assert.deepStrictEqual(result.results, [2, 4, 6, 8, 10, 12, 14, 16]);
@@ -159,7 +150,7 @@ describe('Parallel Utility', () => {
 
       const result = await parallelBatch(
         items,
-        async (item) => {
+        async item => {
           if (item === 3) {
             throw new Error(`Failed on item ${item}`);
           }
@@ -177,16 +168,12 @@ describe('Parallel Utility', () => {
       const items = [1, 2, 3, 4, 5];
       const progressUpdates = [];
 
-      await parallelBatch(
-        items,
-        async (item) => item * 2,
-        {
-          concurrency: 2,
-          onProgress: (completed, total) => {
-            progressUpdates.push({ completed, total });
-          }
-        }
-      );
+      await parallelBatch(items, async item => item * 2, {
+        concurrency: 2,
+        onProgress: (completed, total) => {
+          progressUpdates.push({ completed, total });
+        },
+      });
 
       assert.ok(progressUpdates.length > 0);
       assert.strictEqual(progressUpdates[progressUpdates.length - 1].completed, 5);
@@ -221,4 +208,3 @@ describe('Parallel Utility', () => {
     });
   });
 });
-

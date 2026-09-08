@@ -1,6 +1,6 @@
 /**
  * Error Helper Utilities
- * 
+ *
  * Provides utilities for:
  * - Error message formatting with context
  * - Actionable error messages with hints
@@ -26,11 +26,11 @@ export interface ActionableErrorOptions {
 
 /**
  * Format error with context and hints
- * 
+ *
  * @param error - Original error
  * @param context - Additional context (file, hint, docs, code)
  * @returns Formatted error message
- * 
+ *
  * @example
  * ```typescript
  * try {
@@ -47,37 +47,37 @@ export interface ActionableErrorOptions {
  */
 export function formatError(error: Error, context: ErrorContext = {}): string {
   let message = error.message;
-  
+
   // Add file context
   if (context.file) {
     message = `Error in ${context.file}: ${message}`;
   }
-  
+
   // Add hint
   if (context.hint) {
     message += `\n\nHint: ${context.hint}`;
   }
-  
+
   // Add documentation link
   if (context.docs) {
     message += `\n\nSee ${context.docs} for more information.`;
   }
-  
+
   // Add code snippet if provided
   if (context.code) {
     message += `\n\nCode:\n${context.code}`;
   }
-  
+
   return message;
 }
 
 /**
  * Create actionable error message
- * 
+ *
  * @param message - Base error message
  * @param options - Options (hints, docs, code, category)
  * @returns Error object with formatted message
- * 
+ *
  * @example
  * ```typescript
  * throw createActionableError(
@@ -98,7 +98,7 @@ export function createActionableError(
   options: ActionableErrorOptions = {}
 ): Error {
   let fullMessage = message;
-  
+
   // Add hints
   if (options.hints && options.hints.length > 0) {
     fullMessage += '\n\nPossible solutions:';
@@ -106,33 +106,33 @@ export function createActionableError(
       fullMessage += `\n  ${index + 1}. ${hint}`;
     });
   }
-  
+
   // Add documentation link
   if (options.docs) {
     fullMessage += `\n\nSee ${options.docs} for more information.`;
   }
-  
+
   // Add code snippet if provided
   if (options.code) {
     fullMessage += `\n\nExample:\n${options.code}`;
   }
-  
+
   const error = new Error(fullMessage);
-  
+
   // Add category to error object for programmatic access
   if (options.category) {
     (error as any).category = options.category;
   }
-  
+
   return error;
 }
 
 /**
  * Categorize errors for better handling
- * 
+ *
  * @param error - Error to categorize
  * @returns Error category
- * 
+ *
  * @example
  * ```typescript
  * const category = categorizeError(error);
@@ -146,10 +146,10 @@ export function categorizeError(error: Error): ErrorCategory {
   if ((error as any).category) {
     return (error as any).category;
   }
-  
+
   const message = error.message.toLowerCase();
   const name = error.name.toLowerCase();
-  
+
   // Validation errors
   if (
     name.includes('validation') ||
@@ -161,7 +161,7 @@ export function categorizeError(error: Error): ErrorCategory {
   ) {
     return 'validation';
   }
-  
+
   // Configuration errors
   if (
     name.includes('config') ||
@@ -172,7 +172,7 @@ export function categorizeError(error: Error): ErrorCategory {
   ) {
     return 'configuration';
   }
-  
+
   // Runtime errors
   if (
     name.includes('runtime') ||
@@ -183,17 +183,17 @@ export function categorizeError(error: Error): ErrorCategory {
   ) {
     return 'runtime';
   }
-  
+
   return 'unknown';
 }
 
 /**
  * Wrap error with context
- * 
+ *
  * @param error - Original error
  * @param context - Additional context
  * @returns New error with formatted message
- * 
+ *
  * @example
  * ```typescript
  * try {
@@ -210,27 +210,27 @@ export function categorizeError(error: Error): ErrorCategory {
 export function wrapError(error: Error, context: ErrorContext): Error {
   const formattedMessage = formatError(error, context);
   const wrappedError = new Error(formattedMessage);
-  
+
   // Preserve original stack trace
   if (error.stack) {
     wrappedError.stack = `${formattedMessage}\n${error.stack}`;
   }
-  
+
   // Preserve category if set
   if ((error as any).category) {
     (wrappedError as any).category = (error as any).category;
   }
-  
+
   return wrappedError;
 }
 
 /**
  * Create JSON parsing error with helpful context
- * 
+ *
  * @param error - JSON parse error
  * @param filePath - Path to the file that failed to parse
  * @returns Formatted error
- * 
+ *
  * @example
  * ```typescript
  * try {
@@ -241,28 +241,25 @@ export function wrapError(error: Error, context: ErrorContext): Error {
  * ```
  */
 export function createJsonParseError(error: Error, filePath: string): Error {
-  return createActionableError(
-    `Failed to parse JSON in ${filePath}`,
-    {
-      hints: [
-        `Check ${filePath} for syntax errors`,
-        'Validate JSON using a JSON validator (e.g., jsonlint.com)',
-        'Check for trailing commas, unclosed brackets, or invalid characters',
-        'Ensure all strings are properly quoted'
-      ],
-      docs: 'docs/TROUBLESHOOTING.md#json-parsing-errors',
-      category: 'validation'
-    }
-  );
+  return createActionableError(`Failed to parse JSON in ${filePath}`, {
+    hints: [
+      `Check ${filePath} for syntax errors`,
+      'Validate JSON using a JSON validator (e.g., jsonlint.com)',
+      'Check for trailing commas, unclosed brackets, or invalid characters',
+      'Ensure all strings are properly quoted',
+    ],
+    docs: 'docs/TROUBLESHOOTING.md#json-parsing-errors',
+    category: 'validation',
+  });
 }
 
 /**
  * Create file not found error with helpful context
- * 
+ *
  * @param filePath - Path to the missing file
  * @param hint - Optional hint about what the file should contain
  * @returns Formatted error
- * 
+ *
  * @example
  * ```typescript
  * if (!fs.existsSync('package.json')) {
@@ -270,20 +267,15 @@ export function createJsonParseError(error: Error, filePath: string): Error {
  * }
  * ```
  */
-export function createFileNotFoundError(
-  filePath: string,
-  hint?: string
-): Error {
-  return createActionableError(
-    `File not found: ${filePath}`,
-    {
-      hints: hint ? [hint] : [
-        `Check if ${filePath} exists in the project root`,
-        'Verify the file path is correct',
-        'Create the file if it is missing'
-      ],
-      category: 'configuration'
-    }
-  );
+export function createFileNotFoundError(filePath: string, hint?: string): Error {
+  return createActionableError(`File not found: ${filePath}`, {
+    hints: hint
+      ? [hint]
+      : [
+          `Check if ${filePath} exists in the project root`,
+          'Verify the file path is correct',
+          'Create the file if it is missing',
+        ],
+    category: 'configuration',
+  });
 }
-

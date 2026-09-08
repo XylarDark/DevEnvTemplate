@@ -1,10 +1,10 @@
 /**
  * Unit Tests for Schema Validation
- * 
+ *
  * Tests JSON schema validation for:
  * - Project manifest schema
  * - Invalid input rejection
- * 
+ *
  * Note: Context contract, task slice, and assumption schemas removed as part of
  * enterprise bloat cleanup (Phase 1.5). These were enterprise features not needed
  * for indie developers.
@@ -32,7 +32,7 @@ describe('Schema Validation', () => {
       const schemaPath = path.join(__dirname, '../../config/schemas/project.manifest.schema.json');
       const schemaContent = fs.readFileSync(schemaPath, 'utf8');
       const schema = JSON.parse(schemaContent);
-      
+
       assert.ok(schema, 'Schema should load');
       assert.ok(schema.$schema, 'Schema should have $schema property');
       assert.ok(schema.properties, 'Schema should have properties');
@@ -42,9 +42,9 @@ describe('Schema Validation', () => {
       ajv = setupAjv();
       const schemaPath = path.join(__dirname, '../../config/schemas/project.manifest.schema.json');
       const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
-      
+
       const validate = ajv.compile(schema);
-      
+
       const validManifest = {
         version: '1.0.0',
         generatedAt: '2025-01-01T00:00:00.000Z',
@@ -58,7 +58,7 @@ describe('Schema Validation', () => {
           needsCI: true,
           needsDocker: true,
           needsMonitoring: false,
-          teamSize: 'Solo developer'
+          teamSize: 'Solo developer',
         },
         derived: {
           features: ['api', 'node', 'ci', 'docker', 'unit-tests'],
@@ -67,11 +67,11 @@ describe('Schema Validation', () => {
             stack: 'Test stack rationale',
             infrastructure: 'Test infrastructure rationale',
             governance: 'Test governance rationale',
-            testing: 'Test testing rationale'
-          }
-        }
+            testing: 'Test testing rationale',
+          },
+        },
       };
-      
+
       const isValid = validate(validManifest);
       assert.ok(isValid, 'Valid manifest should pass validation');
     });
@@ -80,14 +80,14 @@ describe('Schema Validation', () => {
       ajv = setupAjv();
       const schemaPath = path.join(__dirname, '../../config/schemas/project.manifest.schema.json');
       const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
-      
+
       const validate = ajv.compile(schema);
-      
+
       const invalidManifest = {
-        version: '1.0.0'
+        version: '1.0.0',
         // Missing required fields
       };
-      
+
       const isValid = validate(invalidManifest);
       assert.ok(!isValid, 'Invalid manifest should fail validation');
       assert.ok(validate.errors, 'Should have validation errors');
@@ -97,9 +97,9 @@ describe('Schema Validation', () => {
       ajv = setupAjv();
       const schemaPath = path.join(__dirname, '../../config/schemas/project.manifest.schema.json');
       const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
-      
+
       const validate = ajv.compile(schema);
-      
+
       const invalidManifest = {
         version: '1.0.0',
         generatedAt: '2025-01-01T00:00:00.000Z',
@@ -113,14 +113,14 @@ describe('Schema Validation', () => {
           needsCI: true,
           needsDocker: true,
           needsMonitoring: false,
-          teamSize: 'Solo developer'
+          teamSize: 'Solo developer',
         },
         derived: {
           features: [],
-          rationale: {}
-        }
+          rationale: {},
+        },
       };
-      
+
       const isValid = validate(invalidManifest);
       assert.ok(!isValid, 'Manifest with invalid productType should fail');
     });
@@ -129,9 +129,9 @@ describe('Schema Validation', () => {
       ajv = setupAjv();
       const schemaPath = path.join(__dirname, '../../config/schemas/project.manifest.schema.json');
       const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
-      
+
       const validate = ajv.compile(schema);
-      
+
       const invalidManifest = {
         version: '1.0.0',
         generatedAt: '2025-01-01T00:00:00.000Z',
@@ -145,14 +145,14 @@ describe('Schema Validation', () => {
           needsCI: true,
           needsDocker: true,
           needsMonitoring: false,
-          teamSize: 'Solo developer'
+          teamSize: 'Solo developer',
         },
         derived: {
           features: ['invalid-feature'], // Not in enum
-          rationale: {}
-        }
+          rationale: {},
+        },
       };
-      
+
       const isValid = validate(invalidManifest);
       assert.ok(!isValid, 'Manifest with invalid feature should fail');
     });
@@ -161,12 +161,15 @@ describe('Schema Validation', () => {
       ajv = setupAjv();
       const schemaPath = path.join(__dirname, '../../config/schemas/project.manifest.schema.json');
       const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
-      
+
       const validate = ajv.compile(schema);
-      
-      const fixtureManifestPath = path.join(__dirname, '../fixtures/basic-node-project/project.manifest.json');
+
+      const fixtureManifestPath = path.join(
+        __dirname,
+        '../fixtures/basic-node-project/project.manifest.json'
+      );
       const fixtureManifest = JSON.parse(fs.readFileSync(fixtureManifestPath, 'utf8'));
-      
+
       const isValid = validate(fixtureManifest);
       if (!isValid) {
         console.log('Validation errors:', validate.errors);
@@ -182,15 +185,14 @@ describe('Schema Validation', () => {
         'project.manifest.schema.json',
         // context-contract, task-slice, assumption schemas removed (enterprise bloat)
       ];
-      
+
       schemaFiles.forEach(schemaFile => {
         const schemaPath = path.join(__dirname, '../../config/schemas', schemaFile);
         const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
-        
+
         assert.ok(schema.$schema, `${schemaFile} should have $schema`);
         assert.ok(schema.type, `${schemaFile} should have type`);
       });
     });
   });
 });
-

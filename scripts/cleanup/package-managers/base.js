@@ -75,7 +75,7 @@ class BasePackageManager {
     try {
       // Read package file
       const content = await this.readPackageFile(packageFilePath);
-      
+
       // Remove dependencies
       const { modified, removedDeps } = await this.removeDependencies(content, rule);
 
@@ -121,4 +121,3 @@ class BasePackageManager {
 }
 
 module.exports = { BasePackageManager };
-

@@ -49,13 +49,13 @@ def require_api_key(api_key: Optional[str] = Security(get_api_key_from_header)):
             "license": None,
             "api_key": None,
         }
-    
+
     if not api_key:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="API key required",
         )
-    
+
     # ... rest of validation
 ```
 
@@ -83,7 +83,7 @@ async def lunar_mining_error_handler(request, exc: LunarMiningError):
         status_code = status.HTTP_403_FORBIDDEN
     else:
         status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
-    
+
     return JSONResponse(
         status_code=status_code,
         content={
@@ -169,9 +169,9 @@ async def simulate(
 ):
     """
     Run a simulation with specified parameters.
-    
+
     Requires Professional or Enterprise license.
-    
+
     - **scenario**: Terrain scenario to simulate
     - **depth**: Excavation depth in meters (0.1 to 1.0)
     - **angle**: Excavation angle in degrees (0 to 90)
@@ -213,29 +213,29 @@ def check_rate_limit(api_key: str, tier: str) -> bool:
         "PROFESSIONAL": 1000,  # requests per day
         "ENTERPRISE": None,  # unlimited
     }
-    
+
     daily_limit = limits.get(tier)
     if daily_limit is None:
         return True  # Unlimited
-    
+
     today = datetime.now().date().isoformat()
     key = f"{api_key}:{today}"
-    
+
     if key not in _rate_limit_store:
         _rate_limit_store[key] = {
             "count": 0,
             "reset_at": datetime.now() + timedelta(days=1),
         }
-    
+
     store = _rate_limit_store[key]
-    
+
     if datetime.now() > store["reset_at"]:
         store["count"] = 0
         store["reset_at"] = datetime.now() + timedelta(days=1)
-    
+
     if store["count"] >= daily_limit:
         return False
-    
+
     store["count"] += 1
     return True
 ```
@@ -311,4 +311,3 @@ Before committing FastAPI code:
 - [ ] API documentation at `/docs`
 - [ ] Production server configuration
 - [ ] Error handling with context
-

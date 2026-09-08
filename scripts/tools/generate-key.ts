@@ -2,16 +2,20 @@
 
 /**
  * Encryption Key Generation Tool
- * 
+ *
  * CLI tool for generating encryption keys with proper base64 encoding.
  * Supports different key lengths and formats.
- * 
+ *
  * Usage:
  *   node dist/scripts/tools/generate-key.js [--length 32] [--format base64|hex]
  */
 
 import { Command } from 'commander';
-import { generateEncryptionKey, validateBase64Key, getExpectedBase64Length } from '../utils/crypto-helpers';
+import {
+  generateEncryptionKey,
+  validateBase64Key,
+  getExpectedBase64Length,
+} from '../utils/crypto-helpers';
 
 const program = new Command();
 
@@ -29,19 +33,19 @@ const options = program.opts();
 
 async function main() {
   const length = parseInt(options.length, 10);
-  
+
   if (isNaN(length) || length <= 0) {
     console.error('Error: Length must be a positive number');
     process.exit(1);
   }
-  
+
   if (length < 16) {
     console.error('Error: Key length must be at least 16 bytes for security');
     process.exit(1);
   }
-  
+
   let key: string;
-  
+
   if (options.format === 'hex') {
     // Generate hex format
     const crypto = require('crypto');
@@ -50,7 +54,7 @@ async function main() {
     // Generate base64 format (default)
     key = generateEncryptionKey(length);
   }
-  
+
   // Validate if requested
   if (options.validate && options.format === 'base64') {
     const validation = validateBase64Key(key, length);
@@ -59,7 +63,7 @@ async function main() {
       process.exit(1);
     }
   }
-  
+
   // Output
   if (options.quiet) {
     console.log(key);
@@ -87,8 +91,7 @@ async function main() {
   }
 }
 
-main().catch((error) => {
+main().catch(error => {
   console.error('Error:', error.message);
   process.exit(1);
 });
-

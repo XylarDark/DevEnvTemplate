@@ -17,12 +17,13 @@ module.exports.default = PlanGeneratorClass;
 // CLI execution
 if (require.main === module) {
   const generator = new PlanGeneratorClass();
-  generator.generate()
-    .then(async (plan) => {
+  generator
+    .generate()
+    .then(async plan => {
       console.log(plan);
       await generator.saveReport(plan);
     })
-    .catch((error) => {
+    .catch(error => {
       console.error('Plan generation failed:', error.message);
       process.exit(1);
     });

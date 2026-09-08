@@ -28,7 +28,7 @@ describe('Cursor Rules Adapter', () => {
     // Create .cursor/rules directory with some files
     const rulesDir = path.join(tempDir, '.cursor', 'rules');
     await fs.mkdir(rulesDir, { recursive: true });
-    
+
     // Create some rule files
     await fs.writeFile(path.join(rulesDir, '00-core-principles.mdc'), '# Core Principles\n');
     await fs.writeFile(path.join(rulesDir, '10-typescript.mdc'), '# TypeScript Rules\n');
@@ -56,7 +56,7 @@ describe('Cursor Rules Adapter', () => {
     const stackReport = {
       technologies: [{ name: 'TypeScript', version: '5.0' }],
       quality: { typescript: true },
-      frameworks: { type: 'vanilla' }
+      frameworks: { type: 'vanilla' },
     };
 
     assert.strictEqual(adapter.shouldIncludeRule('10-typescript.mdc', stackReport), true);
@@ -67,7 +67,7 @@ describe('Cursor Rules Adapter', () => {
     const stackReport = {
       technologies: [{ name: 'Node.js', version: '20' }],
       quality: { typescript: false },
-      frameworks: { type: 'vanilla' }
+      frameworks: { type: 'vanilla' },
     };
 
     assert.strictEqual(adapter.shouldIncludeRule('11-javascript.mdc', stackReport), true);
@@ -77,7 +77,7 @@ describe('Cursor Rules Adapter', () => {
     const stackReport = {
       technologies: [{ name: 'TypeScript', version: '5.0' }],
       quality: { typescript: true },
-      frameworks: { type: 'vanilla' }
+      frameworks: { type: 'vanilla' },
     };
 
     assert.strictEqual(adapter.shouldIncludeRule('11-javascript.mdc', stackReport), false);
@@ -87,7 +87,7 @@ describe('Cursor Rules Adapter', () => {
     const stackReport = {
       technologies: [{ name: 'Python', version: '3.11' }],
       quality: { typescript: false },
-      frameworks: { type: 'vanilla' }
+      frameworks: { type: 'vanilla' },
     };
 
     assert.strictEqual(adapter.shouldIncludeRule('12-python.mdc', stackReport), true);
@@ -97,7 +97,7 @@ describe('Cursor Rules Adapter', () => {
     const stackReport = {
       technologies: [{ name: 'React', version: '18' }],
       quality: { typescript: false },
-      frameworks: { type: 'react' }
+      frameworks: { type: 'react' },
     };
 
     assert.strictEqual(adapter.shouldIncludeRule('20-frontend-frameworks.mdc', stackReport), true);
@@ -107,12 +107,15 @@ describe('Cursor Rules Adapter', () => {
     const stackReport = {
       technologies: [],
       quality: { typescript: false },
-      frameworks: { type: 'vanilla' }
+      frameworks: { type: 'vanilla' },
     };
 
     assert.strictEqual(adapter.shouldIncludeRule('00-core-principles.mdc', stackReport), true);
     assert.strictEqual(adapter.shouldIncludeRule('01-code-quality.mdc', stackReport), true);
-    assert.strictEqual(adapter.shouldIncludeRule('19-docs-directory-structure.mdc', stackReport), true);
+    assert.strictEqual(
+      adapter.shouldIncludeRule('19-docs-directory-structure.mdc', stackReport),
+      true
+    );
     assert.strictEqual(adapter.shouldIncludeRule('08-project-context.mdc', stackReport), false);
   });
 
@@ -121,7 +124,7 @@ describe('Cursor Rules Adapter', () => {
       technologies: [],
       quality: { typescript: false },
       frameworks: { type: 'vanilla' },
-      unrealProjectDetected: true
+      unrealProjectDetected: true,
     };
 
     assert.strictEqual(adapter.shouldIncludeRule('21-unreal-engine.mdc', stackReport), true);
@@ -132,7 +135,7 @@ describe('Cursor Rules Adapter', () => {
     const stackReport = {
       technologies: [],
       quality: { typescript: false },
-      frameworks: { type: 'vanilla' }
+      frameworks: { type: 'vanilla' },
     };
 
     assert.strictEqual(adapter.shouldIncludeRule('21-unreal-engine.mdc', stackReport), false);
@@ -144,7 +147,7 @@ describe('Cursor Rules Adapter', () => {
       technologies: [],
       quality: { typescript: false },
       frameworks: { type: 'vanilla' },
-      unityProjectDetected: true
+      unityProjectDetected: true,
     };
 
     assert.strictEqual(adapter.shouldIncludeRule('23-unity-csharp.mdc', stackReport), true);
@@ -155,7 +158,7 @@ describe('Cursor Rules Adapter', () => {
     const stackReport = {
       technologies: [],
       quality: { typescript: false },
-      frameworks: { type: 'vanilla' }
+      frameworks: { type: 'vanilla' },
     };
 
     assert.strictEqual(adapter.shouldIncludeRule('23-unity-csharp.mdc', stackReport), false);
@@ -165,7 +168,7 @@ describe('Cursor Rules Adapter', () => {
     // Create template rules directory
     const templateDir = path.join(tempDir, 'template', '.cursor', 'rules');
     await fs.mkdir(templateDir, { recursive: true });
-    
+
     // Create rule files
     await fs.writeFile(path.join(templateDir, '00-core-principles.mdc'), '# Core\n');
     await fs.writeFile(path.join(templateDir, '10-typescript.mdc'), '# TS\n');
@@ -175,7 +178,7 @@ describe('Cursor Rules Adapter', () => {
     const stackReport = {
       technologies: [{ name: 'TypeScript', version: '5.0' }],
       quality: { typescript: true },
-      frameworks: { type: 'vanilla' }
+      frameworks: { type: 'vanilla' },
     };
 
     const selected = await adapter.adaptRulesForStack(stackReport, templateDir);
@@ -187,4 +190,3 @@ describe('Cursor Rules Adapter', () => {
     assert.ok(!selected.includes('12-python.mdc'));
   });
 });
-

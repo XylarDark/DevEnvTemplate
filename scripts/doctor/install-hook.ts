@@ -1,6 +1,6 @@
 /**
  * Git Hook Installer
- * 
+ *
  * Installs git hooks for development environment features.
  */
 
@@ -20,12 +20,12 @@ export interface HookInstallOptions {
  */
 export async function installPreCommitDocsHook(options: HookInstallOptions): Promise<boolean> {
   const { rootDir, dryRun, verbose } = options;
-  
+
   const gitDir = path.join(rootDir, '.git');
   const hooksDir = path.join(gitDir, 'hooks');
   const preCommitHook = path.join(hooksDir, 'pre-commit');
   const templatePath = path.join(__dirname, 'templates', 'pre-commit-docs-check.sh');
-  
+
   // Check if .git exists
   try {
     await fs.access(gitDir);
@@ -35,7 +35,7 @@ export async function installPreCommitDocsHook(options: HookInstallOptions): Pro
     }
     return false;
   }
-  
+
   // Check if template exists
   try {
     await fs.access(templatePath);
@@ -45,15 +45,15 @@ export async function installPreCommitDocsHook(options: HookInstallOptions): Pro
     }
     return false;
   }
-  
+
   // Ensure hooks directory exists
   if (!dryRun) {
     await fs.mkdir(hooksDir, { recursive: true });
   }
-  
+
   // Read template
   const templateContent = await fs.readFile(templatePath, 'utf8');
-  
+
   // Check if hook already exists
   let existingHook = '';
   try {
@@ -61,16 +61,19 @@ export async function installPreCommitDocsHook(options: HookInstallOptions): Pro
   } catch {
     // Hook doesn't exist, that's fine
   }
-  
+
   if (existingHook) {
     // Check if our hook is already installed
-    if (existingHook.includes('pre-commit-docs-check') || existingHook.includes('Documentation Organization Check')) {
+    if (
+      existingHook.includes('pre-commit-docs-check') ||
+      existingHook.includes('Documentation Organization Check')
+    ) {
       if (verbose) {
         console.log('✅ Pre-commit docs hook already installed');
       }
       return true;
     }
-    
+
     // Append to existing hook
     if (dryRun) {
       if (verbose) {
@@ -78,13 +81,14 @@ export async function installPreCommitDocsHook(options: HookInstallOptions): Pro
       }
       return true;
     }
-    
-    const combinedHook = existingHook + '\n\n# .devenv: Documentation Organization Check\n' + templateContent;
+
+    const combinedHook =
+      existingHook + '\n\n# .devenv: Documentation Organization Check\n' + templateContent;
     await fs.writeFile(preCommitHook, combinedHook, 'utf8');
-    
+
     // Make executable
     execSync(`chmod +x "${preCommitHook}"`, { cwd: rootDir });
-    
+
     if (verbose) {
       console.log('✅ Added docs check to existing pre-commit hook');
     }
@@ -97,12 +101,12 @@ export async function installPreCommitDocsHook(options: HookInstallOptions): Pro
       }
       return true;
     }
-    
+
     await fs.writeFile(preCommitHook, templateContent, 'utf8');
-    
+
     // Make executable
     execSync(`chmod +x "${preCommitHook}"`, { cwd: rootDir });
-    
+
     if (verbose) {
       console.log('✅ Installed pre-commit docs hook');
     }
@@ -124,4 +128,3 @@ export async function installHook(options: HookInstallOptions): Promise<boolean>
       return false;
   }
 }
-

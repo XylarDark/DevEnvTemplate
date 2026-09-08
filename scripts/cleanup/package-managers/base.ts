@@ -71,7 +71,7 @@ export abstract class BasePackageManager {
       }
 
       // Record actions
-      removedDeps.forEach((dep) => {
+      removedDeps.forEach(dep => {
         actions.push({
           type: 'dependency_remove',
           rule: rule.id,
@@ -104,4 +104,3 @@ export abstract class BasePackageManager {
     }
   }
 }
-

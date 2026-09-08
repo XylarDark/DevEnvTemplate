@@ -58,6 +58,7 @@ These files document project-specific patterns and can be organized in the `docs
 ### Files That Match DevEnvTemplate
 
 All core DevEnvTemplate files are present and aligned:
+
 - `README.md` - Base DevEnvTemplate README (extended with project-specific info)
 - `CHANGELOG.md` - DevEnvTemplate changelog
 - `LICENSE` - MIT License
@@ -69,6 +70,7 @@ All core DevEnvTemplate files are present and aligned:
 ### Documentation Structure
 
 The `docs/` directory structure matches DevEnvTemplate:
+
 - All standard DevEnvTemplate documentation files
 - `LLM-REFERENCE.md` - Project-specific extension of DevEnvTemplate template
 - `archive/` - Historical documentation
@@ -94,12 +96,14 @@ To keep `.devenv/` aligned with DevEnvTemplate:
 ## File Locations
 
 ### Standard DevEnvTemplate Files (Aligned)
+
 - `docs/LLM-REFERENCE.md` - ✅ In docs/ directory (aligned)
 - `config/cleanup.config.yaml` - Standard cleanup configuration
 - `config/quality-budgets.json` - Standard quality budgets
 - `scripts/` - Standard DevEnvTemplate scripts
 
 ### Project-Specific Files (Keep Separate)
+
 - `BOOTSTRAP.md` - Single-file-loads-all for LLMs (root level)
 - `best-practices/` - Project-specific best practices
 - `config/python-best-practices.json` - Python-specific config
@@ -113,4 +117,3 @@ To keep `.devenv/` aligned with DevEnvTemplate:
 
 **Last Updated:** 2025  
 **Alignment Status:** ✅ Core structure aligned, project-specific additions documented
-
