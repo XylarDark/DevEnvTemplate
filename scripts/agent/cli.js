@@ -5,7 +5,7 @@
  * Provides backward compatibility by re-exporting compiled TypeScript code
  */
 
-const AgentCLI = require('../../dist/agent/cli').default;
+const AgentCLI = require('../../dist/scripts/agent/cli').default;
 
 // CLI entry point
 if (require.main === module) {

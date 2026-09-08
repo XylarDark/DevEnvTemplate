@@ -1,7 +1,5 @@
 // scripts/types/plan.ts
 
-import { Gap } from './gaps';
-
 export interface TaskDependency {
   taskId: string;
   reason: string;

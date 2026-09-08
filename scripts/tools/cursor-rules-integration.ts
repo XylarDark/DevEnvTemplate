@@ -8,7 +8,7 @@
 
 import { promises as fs } from 'fs';
 import path from 'path';
-import type { StackReport, CursorRulesInfo } from '../types/gaps';
+import type { StackReport } from '../types/gaps';
 import { createLogger } from '../utils/logger';
 import {
   detectExistingRules,

@@ -11,14 +11,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { createLogger, Logger } from '../../scripts/utils/logger';
 import { Gap, GapCategory } from '../types/gaps';
-import {
-  Task,
-  TaskGroup,
-  HardeningPlan,
-  CodeSnippet,
-  PlanGeneratorOptions,
-  PlanMetadata,
-} from '../types/plan';
+import { Task, TaskGroup, CodeSnippet, PlanGeneratorOptions, PlanMetadata } from '../types/plan';
 
 export class PlanGenerator {
   private rootDir: string;
@@ -52,7 +45,7 @@ export class PlanGenerator {
       this.logger.error('Failed to load gaps report. Run gap-analyzer first.', {
         error: error.message,
       });
-      throw new Error('Gaps report not found. Run gap-analyzer first.');
+      throw new Error('Gaps report not found. Run gap-analyzer first.', { cause: error });
     }
 
     // Convert gaps to tasks
@@ -102,7 +95,9 @@ export class PlanGenerator {
         if (titleMatch) {
           const severity = line.includes('🔴') ? 'high' : line.includes('🟡') ? 'medium' : 'low';
           // Extract title by removing "### " and the emoji
-          const title = line.replace(/^### [🔴🟡🟢] /, '');
+          // The `u` flag is required: without it each emoji is treated as two independent
+          // surrogate code units, so the class would also match a lone surrogate half.
+          const title = line.replace(/^### [🔴🟡🟢] /u, '');
           currentGap = {
             title: title,
             severity: severity as 'high' | 'medium' | 'low',

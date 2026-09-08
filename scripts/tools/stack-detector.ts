@@ -13,7 +13,6 @@ import { createLogger } from '../utils/logger';
 import { createJsonParseError } from '../utils/error-helpers';
 import type {
   StackReport,
-  SecretsMetadata,
   ToolingFramework,
   EnvTemplateInfo,
   EnvLoaderInfo,
@@ -987,12 +986,16 @@ class StackDetector {
           await fs.access(path.join(this.rootDir, 'app'));
           dirs.push('app');
           this.stack.files.key_patterns.push('app/ (Next.js app directory)');
-        } catch {}
+        } catch {
+          // No app/ directory: this project uses the pages router, or neither.
+        }
         try {
           await fs.access(path.join(this.rootDir, 'pages'));
           dirs.push('pages');
           this.stack.files.key_patterns.push('pages/ (Next.js pages directory)');
-        } catch {}
+        } catch {
+          // No pages/ directory: this project uses the app router, or neither.
+        }
 
         const nextVersion = this.stack.technologies.find(t => t.name === 'Next.js')?.version;
         this.stack.frameworks = {
@@ -1542,8 +1545,7 @@ class StackDetector {
       }
     }
 
-    let envLoaderPresent = loaderTools.size > 0;
-    if (!envLoaderPresent) {
+    if (loaderTools.size === 0) {
       const helperCandidates = [
         'scripts/check_env.py',
         'scripts/check-env.py',
@@ -1553,7 +1555,6 @@ class StackDetector {
       for (const helper of helperCandidates) {
         if (await this.fileExists(helper)) {
           loaderTools.add('env-check-script');
-          envLoaderPresent = true;
           break;
         }
       }

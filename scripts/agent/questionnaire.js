@@ -58,7 +58,7 @@ class QuestionnaireGenerator {
       const content = await fs.readFile(fullPath, 'utf8');
       return JSON.parse(content);
     } catch (error) {
-      throw new Error(`Failed to load context contract: ${error.message}`);
+      throw new Error(`Failed to load context contract: ${error.message}`, { cause: error });
     }
   }
 

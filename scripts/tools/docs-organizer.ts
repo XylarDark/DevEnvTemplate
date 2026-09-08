@@ -6,13 +6,11 @@
  * Command-line tool for organizing markdown files into appropriate directories.
  */
 
-import { promises as fs } from 'fs';
 import path from 'path';
 import { resolveProjectRoot } from '../utils/path-resolver';
 import {
   organizeDocumentation,
   validateOrganization,
-  detectMisplacedDocs,
   loadDocsConfig,
   determineTargetDirectory,
 } from '../utils/docs-organizer';

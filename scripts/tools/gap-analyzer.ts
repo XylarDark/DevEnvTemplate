@@ -126,7 +126,7 @@ class GapAnalyzer {
       });
     } catch (error) {
       logger.error('Stack report not found. Run stack-detector first.');
-      throw new Error('Stack report not found. Run stack-detector first.');
+      throw new Error('Stack report not found. Run stack-detector first.', { cause: error });
     }
 
     if (this.isFastMode()) {

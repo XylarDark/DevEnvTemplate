@@ -1,6 +1,6 @@
 // scripts/utils/parallel.ts
 
-import { createLogger, Logger } from './logger';
+import { createLogger } from './logger';
 
 const logger = createLogger({ context: 'parallel' });
 

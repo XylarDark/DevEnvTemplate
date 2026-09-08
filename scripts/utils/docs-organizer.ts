@@ -8,7 +8,7 @@
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import yaml from 'yaml';
-import { resolveConfigPath, resolveProjectRoot } from './path-resolver';
+import { resolveConfigPath } from './path-resolver';
 import { execSync } from 'child_process';
 
 /**
@@ -89,7 +89,9 @@ export async function loadDocsConfig(projectRoot: string): Promise<DocsOrganizat
       configPath = defaultConfigPath;
       configContent = await fs.readFile(configPath, 'utf8');
     } catch (error: any) {
-      throw new Error(`Failed to load docs-organization.yaml: ${error.message}`);
+      throw new Error(`Failed to load docs-organization.yaml: ${error.message}`, {
+        cause: error,
+      });
     }
   }
 
@@ -184,7 +186,7 @@ export async function detectMisplacedDocs(projectRoot: string): Promise<string[]
       }
     }
   } catch (error: any) {
-    throw new Error(`Failed to detect misplaced docs: ${error.message}`);
+    throw new Error(`Failed to detect misplaced docs: ${error.message}`, { cause: error });
   }
 
   return misplaced;
@@ -313,6 +315,6 @@ export async function validateOrganization(projectRoot: string): Promise<Validat
       totalFiles: mdFiles.length,
     };
   } catch (error: any) {
-    throw new Error(`Validation failed: ${error.message}`);
+    throw new Error(`Validation failed: ${error.message}`, { cause: error });
   }
 }

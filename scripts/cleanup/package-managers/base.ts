@@ -82,7 +82,9 @@ export abstract class BasePackageManager {
         });
       });
     } catch (error: any) {
-      throw new Error(`Failed to prune ${this.getManagerName()}: ${error.message}`);
+      throw new Error(`Failed to prune ${this.getManagerName()}: ${error.message}`, {
+        cause: error,
+      });
     }
 
     return { actions };

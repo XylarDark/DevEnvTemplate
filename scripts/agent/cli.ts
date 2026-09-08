@@ -7,7 +7,6 @@
 
 import * as readline from 'readline';
 import * as fs from 'fs';
-import * as path from 'path';
 import { createLogger } from '../utils/logger';
 import { Requirements, ProjectManifest } from '../types/manifest';
 

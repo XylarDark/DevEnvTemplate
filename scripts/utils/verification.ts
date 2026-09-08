@@ -10,9 +10,8 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { hasEnvVar, checkMissingEnvVars, requireEncryptionKey } from './env-validator';
+import { hasEnvVar } from './env-validator';
 import { verifyKeyFormat } from './crypto-helpers';
-import { createActionableError } from './error-helpers';
 
 export interface VerificationResult {
   passed: boolean;

@@ -274,7 +274,7 @@ describe('CI Tools Workflow Integration', () => {
     assert.ok(gapsReport.includes('Total gaps found:'), 'Should have total count');
 
     // If there are gaps, verify they have structured fields
-    const hasGaps = /### [🔴🟡🟢] .+/.test(gapsReport);
+    const hasGaps = /### [🔴🟡🟢] .+/u.test(gapsReport);
     if (hasGaps) {
       // Verify structured fields exist when there are gaps
       assert.ok(gapsReport.includes('**Category:**'), 'Gaps should have Category field');

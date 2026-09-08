@@ -5,8 +5,6 @@ import path from 'path';
 import { createHash } from 'crypto';
 import { createLogger, Logger } from './logger';
 
-const logger = createLogger({ context: 'cache' });
-
 export interface CacheEntry {
   hash: string;
   timestamp: number;

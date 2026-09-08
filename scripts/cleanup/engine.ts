@@ -17,8 +17,8 @@ import { getPackageManager } from './package-managers';
 import { CleanupRule, CleanupAction, CleanupReport, CleanupConfig } from '../types/cleanup';
 import { PerformanceTracker } from '../types/performance';
 import { FileCache, ConfigCache } from '../utils/cache';
-import { parallel, calculateOptimalConcurrency } from '../utils/parallel';
-import { ProgressTracker, ProgressVerbosity } from '../utils/progress';
+import { parallel } from '../utils/parallel';
+import { ProgressTracker } from '../utils/progress';
 
 // Default file extensions for code files (used by block/line marker rules)
 const CODE_EXTENSIONS = [
@@ -189,14 +189,12 @@ export class CleanupEngine {
 
       // Try to get from cache first
       let parsedConfig: CleanupConfig;
-      let configCached = false;
 
       if (this.configCache && this.fileCache) {
         const contentHash = this.fileCache.generateHash(configContent);
         const cached = this.configCache.get(configPath, contentHash);
         if (cached) {
           parsedConfig = cached;
-          configCached = true;
         } else {
           // Parse and cache the config
           parsedConfig = yaml.parse(configContent) as CleanupConfig;
@@ -207,7 +205,6 @@ export class CleanupEngine {
         parsedConfig = yaml.parse(configContent) as CleanupConfig;
       }
 
-      // Track cache hit/miss in performance tracker
       if (this.performanceTracker) {
         this.performanceTracker.trackFileScanned();
       }
@@ -230,7 +227,9 @@ export class CleanupEngine {
       this.config = parsedConfig;
       return this.config;
     } catch (error: any) {
-      throw new Error(`Failed to load config from ${this.configPath}: ${error.message}`);
+      throw new Error(`Failed to load config from ${this.configPath}: ${error.message}`, {
+        cause: error,
+      });
     }
   }
 
@@ -617,7 +616,7 @@ export class CleanupEngine {
           },
           {
             concurrency: this.concurrency,
-            onProgress: (completed, total) => {
+            onProgress: completed => {
               if (this.progressTracker) {
                 this.progressTracker.updateBar(rule.id, completed);
               }
@@ -733,7 +732,7 @@ export class CleanupEngine {
           },
           {
             concurrency: this.concurrency,
-            onProgress: (completed, total) => {
+            onProgress: completed => {
               if (this.progressTracker) {
                 this.progressTracker.updateBar(rule.id, completed);
               }
@@ -755,8 +754,6 @@ export class CleanupEngine {
       } else {
         // Sequential processing for small file sets
         for (const file of filesToProcess) {
-          const relativePath = path.relative(this.workingDir, file);
-
           try {
             const content = await fs.readFile(file, 'utf8');
             const { blocks } = this.parseFileContent(content, file);
@@ -871,7 +868,7 @@ export class CleanupEngine {
           },
           {
             concurrency: this.concurrency,
-            onProgress: (completed, total) => {
+            onProgress: completed => {
               if (this.progressTracker) {
                 this.progressTracker.updateBar(rule.id, completed);
               }
@@ -893,8 +890,6 @@ export class CleanupEngine {
       } else {
         // Sequential processing for small file sets
         for (const file of filesToProcess) {
-          const relativePath = path.relative(this.workingDir, file);
-
           try {
             const content = await fs.readFile(file, 'utf8');
             const lines = content.split('\n');
@@ -1142,6 +1137,9 @@ export class CleanupEngine {
       const modulePath = path.resolve(this.workingDir, rule.module);
 
       // Load the custom module
+      // Dynamic require is the point here: custom rules are user-supplied plugin modules
+      // resolved from the config at runtime, so the path is not statically known.
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const customModule = require(modulePath);
 
       if (typeof customModule.execute !== 'function') {
@@ -1158,7 +1156,9 @@ export class CleanupEngine {
         actions.push(...result.actions);
       }
     } catch (error: any) {
-      throw new Error(`Failed to execute custom rule '${rule.id}': ${error.message}`);
+      throw new Error(`Failed to execute custom rule '${rule.id}': ${error.message}`, {
+        cause: error,
+      });
     }
 
     return actions;
@@ -1235,6 +1235,6 @@ export async function executeCleanup(
 
     return { report, exitCode };
   } catch (error: any) {
-    throw new Error(`Cleanup failed: ${error.message}`);
+    throw new Error(`Cleanup failed: ${error.message}`, { cause: error });
   }
 }

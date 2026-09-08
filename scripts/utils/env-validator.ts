@@ -8,7 +8,7 @@
  * - Multiple variable checks
  */
 
-import { validateBase64Key, verifyKeyFormat } from './crypto-helpers';
+import { verifyKeyFormat } from './crypto-helpers';
 
 export interface EnvVarOptions {
   hint?: string;

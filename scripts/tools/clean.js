@@ -37,7 +37,7 @@ function removeTarget(relativeTarget) {
   try {
     fs.rmSync(absoluteTarget, { recursive: true, force: true });
   } catch (error) {
-    throw new Error(`Failed to remove ${relativeTarget}: ${error.message}`);
+    throw new Error(`Failed to remove ${relativeTarget}: ${error.message}`, { cause: error });
   }
 
   return 'removed';

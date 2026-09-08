@@ -10,12 +10,13 @@
 const { execSync } = require('child_process');
 const path = require('path');
 const fs = require('fs').promises;
-const { resolveConfigPath } = require('./utils/path-resolver');
+const { resolveConfigPath } = require('../dist/scripts/utils/path-resolver');
 
 async function runPostScaffoldCleanup() {
   const scriptDir = path.dirname(__filename);
   const projectRoot = path.resolve(scriptDir, '..');
-  const cleanupCli = path.join(scriptDir, 'cleanup', 'cli.js');
+  // Compiled output, not the TypeScript source: this script runs under plain node.
+  const cleanupCli = path.join(projectRoot, 'dist', 'scripts', 'cleanup', 'cli.js');
 
   console.log('🚀 Running post-scaffold cleanup...');
 

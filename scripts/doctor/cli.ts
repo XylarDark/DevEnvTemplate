@@ -801,7 +801,7 @@ function parseArgs(): CliOptions {
       case '--no-install':
         options.noInstall = true;
         break;
-      case '--preset':
+      case '--preset': {
         const nextArg = args[i + 1];
         if (nextArg && ['nextjs', 'vite', 'express', 'vanilla'].includes(nextArg)) {
           options.preset = nextArg as any;
@@ -811,6 +811,7 @@ function parseArgs(): CliOptions {
           process.exit(1);
         }
         break;
+      }
       case '--dry-run':
         options.dryRun = true;
         break;

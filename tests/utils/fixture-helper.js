@@ -25,7 +25,7 @@ async function createTempFixture(fixtureName) {
   try {
     await fs.access(fixtureDir);
   } catch (error) {
-    throw new Error(`Fixture '${fixtureName}' not found at ${fixtureDir}`);
+    throw new Error(`Fixture '${fixtureName}' not found at ${fixtureDir}`, { cause: error });
   }
 
   // Copy fixture to temp directory

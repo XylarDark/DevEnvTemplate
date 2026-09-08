@@ -10,6 +10,7 @@
  *   node dist/scripts/tools/generate-key.js [--length 32] [--format base64|hex]
  */
 
+import { randomBytes } from 'crypto';
 import { Command } from 'commander';
 import {
   generateEncryptionKey,
@@ -48,8 +49,7 @@ async function main() {
 
   if (options.format === 'hex') {
     // Generate hex format
-    const crypto = require('crypto');
-    key = crypto.randomBytes(length).toString('hex');
+    key = randomBytes(length).toString('hex');
   } else {
     // Generate base64 format (default)
     key = generateEncryptionKey(length);

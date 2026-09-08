@@ -71,7 +71,7 @@ class SimpleAgentCLI {
     );
 
     // Question 3: Framework (context-aware based on project type)
-    let frameworkOptions = [];
+    let frameworkOptions;
     if (projectType.includes('Side Project') || projectType.includes('Full-Stack')) {
       frameworkOptions = ['Next.js', 'React', 'Vue', 'Svelte', 'Vanilla JS'];
     } else if (projectType.includes('API')) {
