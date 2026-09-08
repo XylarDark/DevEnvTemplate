@@ -975,6 +975,7 @@ echo "npm run lint && npm run format:check" > .husky/pre-commit`,
     await this.checkAlwaysApplyBudget();
     await this.checkShimDrift();
     await this.checkMcpConfig();
+    await this.checkCursorIgnore();
   }
 
   /**
@@ -1170,6 +1171,54 @@ echo "npm run lint && npm run format:check" > .husky/pre-commit`,
           files: [candidate],
         });
       }
+    }
+  }
+
+  /**
+   * Generated and vendor trees inflate indexing cost without helping agents. A thin ignore file
+   * is cheap to maintain; missing entries are a low-severity gap hosts may decline.
+   */
+  private async checkCursorIgnore(): Promise<void> {
+    const content = await this.readFileOrNull('.cursorignore');
+    const vendorMarkers = [
+      'build/',
+      '.venv/',
+      '__pycache__/',
+      'vendor/',
+      '.next/',
+      '.turbo/',
+    ];
+
+    if (content === null) {
+      this.gaps.push({
+        category: 'agent-context',
+        severity: 'low',
+        title: '.cursorignore Is Missing',
+        description:
+          'No .cursorignore file was found. Without it, Cursor may index generated and vendor trees on every retrieval.',
+        impact: 'Agents pay tokens to read build output, caches, and dependencies',
+        recommendation:
+          'Add a .cursorignore that excludes node_modules/, build output, virtualenvs, and engine-generated trees',
+        effort: 'low',
+        files: ['.cursorignore'],
+      });
+      return;
+    }
+
+    const missing = vendorMarkers.filter(marker => !content.includes(marker));
+
+    if (missing.length >= 3) {
+      this.gaps.push({
+        category: 'agent-context',
+        severity: 'low',
+        title: '.cursorignore Missing Common Vendor Directories',
+        description: `.cursorignore lacks common generated and vendor paths (${missing.join(', ')}).`,
+        impact: 'Agents may index build output, caches, and dependencies unnecessarily',
+        recommendation:
+          'Add build/, .venv/, __pycache__/, vendor/, and other generated trees per the template .cursorignore',
+        effort: 'low',
+        files: ['.cursorignore'],
+      });
     }
   }
 

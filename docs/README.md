@@ -51,6 +51,26 @@ context; everything else in the agent layer loads on demand:
 | [`.cursor/agents/`](../.cursor/agents/)        | You invoke that subagent.                         |
 | [guides/mcp-hygiene.md](guides/mcp-hygiene.md) | You add or change an MCP server.                  |
 
+### Recommended host `AGENTS.md` shape
+
+Hosts write their own root `AGENTS.md`; the template does not copy one. A useful outline:
+
+- **Stack** — language, runtime, key frameworks.
+- **Commands** — exact build, test, and lint commands (with flag conventions).
+- **Layout** — where source, tests, and config live.
+- **Conventions** — naming, commits, and anything always true on every turn.
+
+Keep procedural detail in skills and file-specific guidance in glob-scoped rules.
+
+#### Agent cost
+
+- One task, one chat.
+- Cite files with `@` rather than asking the agent to scan the repo.
+- Always-on text must stay under roughly 20 lines of facts. Procedures go in skills.
+
+See [token-efficient-context](../.agents/skills/token-efficient-context/SKILL.md) when planning
+or starting a long agent run.
+
 ## Archive
 
 [archive/](archive/) holds superseded plans, RFCs, and release notes. It is kept for

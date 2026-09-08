@@ -983,6 +983,18 @@ node dist/scripts/tools/docs-organizer.js --auto-fix
 - Provide both options in documentation
 - Fix npm script if flag passing doesn't work
 
+## Token-efficient agent use
+
+Cursor bills input, output, and cache on every turn. Keep always-loaded context small and load
+procedures on demand:
+
+- Write a short host `AGENTS.md` (facts only); move how-to detail into skills.
+- Use glob-scoped rules, never `alwaysApply: true`.
+- Prefer `@file` / `@symbol` over `@codebase` for routine work.
+- Trim `.cursorignore` so generated and vendor trees are not indexed.
+
+Full guidance: [`.agents/skills/token-efficient-context/`](../.agents/skills/token-efficient-context/SKILL.md).
+
 ## Summary
 
 These best practices help prevent common mistakes and improve developer experience:
