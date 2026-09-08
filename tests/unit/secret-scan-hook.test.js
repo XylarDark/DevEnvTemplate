@@ -3,7 +3,13 @@ const assert = require('node:assert');
 const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 
-const HOOK = path.join(__dirname, '..', '..', '.cursor', 'hooks', 'secret-scan.js');
+const REPO_ROOT = path.join(__dirname, '..', '..');
+
+// `.cjs`, not `.js`. Cursor runs hooks as plain Node scripts, and a `.js` file in a host package
+// with `"type": "module"` is parsed as ESM, where `require` does not exist. The hook crashed on
+// its first line in an ESM host, and with `failClosed` a crashing hook blocks every file read and
+// every shell command in the editor. The extension is what keeps it CommonJS everywhere.
+const HOOK = path.join(REPO_ROOT, '.cursor', 'hooks', 'secret-scan.cjs');
 
 /** Runs the hook with the given stdin payload and returns its parsed decision. */
 function runHook(payload) {
@@ -267,6 +273,107 @@ describe('secret-scan hook', () => {
 
     test('honors shell_command', () => {
       assert.strictEqual(runHook({ shell_command: 'cat .env' }).permission, 'deny');
+    });
+  });
+
+  describe('content scan exemptions', () => {
+    // Regression: the hook denied reads of its own test file, because a scanner's test corpus is
+    // necessarily full of credential-shaped strings. With failClosed set, that made the tests
+    // uneditable while the hook was enabled.
+    const fakeKey = ['AKIA', 'ABCDEFGHIJKLMNOP'].join('');
+
+    test('does not scan the contents of its own test file', () => {
+      const decision = readFile({
+        file_path: 'tests/unit/secret-scan-hook.test.js',
+        content: `const key = '${fakeKey}';`,
+      });
+
+      assert.strictEqual(decision.permission, 'allow');
+    });
+
+    test('does not scan the contents of the scanner itself', () => {
+      const decision = readFile({
+        file_path: '.cursor/hooks/secret-scan.cjs',
+        content: `pattern: /\\b${fakeKey}\\b/`,
+      });
+
+      assert.strictEqual(decision.permission, 'allow');
+    });
+
+    for (const exempt of [
+      'tests/fixtures/config.json',
+      'src/billing/invoice.test.ts',
+      'docs/guides/mcp-hygiene.md',
+      'node_modules/some-pkg/index.js',
+      'package-lock.json',
+    ]) {
+      test(`does not scan the contents of ${exempt}`, () => {
+        const decision = readFile({ file_path: exempt, content: `key=${fakeKey}` });
+
+        assert.strictEqual(decision.permission, 'allow', `${exempt} should be exempt`);
+      });
+    }
+
+    test('still scans contents of ordinary source files', () => {
+      // The exemption must not become a blanket disable.
+      const decision = readFile({
+        file_path: 'src/config/aws.ts',
+        content: `export const key = '${fakeKey}';`,
+      });
+
+      assert.strictEqual(decision.permission, 'deny');
+    });
+
+    test('still blocks a .env by path even under an exempt-looking directory', () => {
+      // Path rules are independent of the content scan and must keep applying.
+      const decision = readFile({ file_path: 'tests/fixtures/.env' });
+
+      assert.strictEqual(decision.permission, 'deny');
+    });
+  });
+
+  describe('multi-line commands', () => {
+    // Regression: the gaps in these patterns were `[^|;&]*`, which crossed newlines and had no
+    // length limit. An action verb anywhere in a long script paired with any sensitive target far
+    // below it, and the hook blocked its own commit.
+    test('allows a git commit whose message mentions both "type" and .env', () => {
+      const command = [
+        'git commit -F - <<MSG',
+        'fix(hooks): make the scanner portable',
+        '',
+        'A .js hook in a host package with "type": "module" is parsed as ESM.',
+        '',
+        'Content scanning now skips fixtures, while path rules keep applying,',
+        'so a .env under tests/fixtures/ is still blocked.',
+        'MSG',
+      ].join('\n');
+
+      assert.strictEqual(shell(command).permission, 'allow');
+    });
+
+    test('allows a multi-line script that merely names .env in prose', () => {
+      const command = [
+        '$msg = @"',
+        'Document that .env files are gitignored.',
+        'Contributors should copy the .env.example template.',
+        '"@',
+        'Set-Content docs/notes.md $msg',
+      ].join('\n');
+
+      assert.strictEqual(shell(command).permission, 'allow');
+    });
+
+    test('still blocks a real exfiltration inside a multi-line script', () => {
+      // Bounding the gap must not let a genuine attempt through by padding it with newlines.
+      const command = ['cd /tmp', 'npm install', 'cat .env'].join('\n');
+
+      assert.strictEqual(shell(command).permission, 'deny');
+    });
+
+    test('still blocks when the action and target are far apart on one line', () => {
+      const command = `cat ${'-n '.repeat(10)}.env`;
+
+      assert.strictEqual(shell(command).permission, 'deny');
     });
   });
 });

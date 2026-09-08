@@ -95,6 +95,32 @@ const BLOCKED_FILE_PATTERNS = [
 const ALLOWED_FILE_PATTERNS = [/\.example$/i, /\.sample$/i, /\.template$/i];
 
 /**
+ * Paths exempt from the *content* scan, though still subject to the path checks above.
+ *
+ * Some files discuss credential formats as their subject matter: this scanner, its test corpus of
+ * deliberately fake keys, and security documentation. Scanning their contents denies reading them,
+ * which is both useless and actively obstructive - the hook blocked reads of its own test file,
+ * so the tests could not be edited while the hook was enabled.
+ *
+ * This weakens nothing that the path rules already cover. A real secret in a file named
+ * `secret-scan.test.js` is a problem, but it is not a problem this hook was ever going to catch,
+ * and the alternative is a scanner nobody can work alongside.
+ */
+const CONTENT_SCAN_EXEMPT_PATTERNS = [
+  // This scanner and its tests.
+  /(^|[\\/])secret-scan[^\\/]*$/i,
+  // Any test or fixture file. Fake credentials are the point of a scanner's test corpus.
+  /(^|[\\/])(tests?|__tests__|fixtures?)[\\/]/i,
+  /\.(test|spec)\.[cm]?[jt]sx?$/i,
+  // Documentation about secret handling quotes the formats it warns about.
+  /(^|[\\/])docs[\\/]/i,
+  /\.mdc?$/i,
+  // Vendored code is not ours to fix, and lockfiles carry high-entropy strings by design.
+  /(^|[\\/])node_modules[\\/]/i,
+  /(^|[\\/])(package-lock\.json|pnpm-lock\.yaml|yarn\.lock)$/i,
+];
+
+/**
  * Live credential material, matched against file *contents* rather than names. A token pasted
  * into an innocuously named config file is the case a path allowlist cannot catch.
  *
@@ -121,23 +147,29 @@ const CONTENT_SECRET_PATTERNS = [
  * pass. Blocking too broadly is its own failure: a hook that stops `npm test` gets removed, and
  * then nothing is protected. `tests/unit/secret-scan-hook.test.js` holds a corpus of routine
  * commands that must keep passing.
+ *
+ * Every gap between an action and its target is written `[^|;&\r\n]{0,120}`: bounded, and
+ * newline-free. An earlier `[^|;&]*` spanned newlines and unlimited text, so an action verb
+ * anywhere in a long script paired with any sensitive target far below it. That blocked a
+ * `git commit` whose message happened to contain `"type": "module"` and, fifteen lines later,
+ * `.env`. A real invocation keeps its target on the same line, close by.
  */
 const BLOCKED_COMMANDS = [
   {
     pattern:
-      /\b(curl|wget|nc|ncat|netcat|scp|rsync|ftp|Invoke-WebRequest|Invoke-RestMethod)\b[^|;&]*\$\{?[A-Za-z_]*(TOKEN|SECRET|API_?KEY|PASSWORD|CREDENTIAL)/i,
+      /\b(curl|wget|nc|ncat|netcat|scp|rsync|ftp|Invoke-WebRequest|Invoke-RestMethod)\b[^|;&\r\n]{0,120}\$\{?[A-Za-z_]*(TOKEN|SECRET|API_?KEY|PASSWORD|CREDENTIAL)/i,
     reason: 'sends an environment secret to a remote host',
   },
   {
     // The `.example`/`.sample`/`.template` exclusion keeps template files readable; those
     // carry placeholders and contributors legitimately cat them.
     pattern:
-      /\b(cat|head|tail|less|more|bat|Get-Content|type)\b[^|;&]*\.env(?!\.(?:example|sample|template)\b)(\.[A-Za-z0-9_-]+)?(?=\s|$|["'])/i,
+      /\b(cat|head|tail|less|more|bat|Get-Content|type)\b[^|;&\r\n]{0,120}\.env(?!\.(?:example|sample|template)\b)(\.[A-Za-z0-9_-]+)?(?=\s|$|["'])/i,
     reason: 'prints a .env file into the transcript',
   },
   {
     pattern:
-      /\b(curl|wget|Invoke-WebRequest|Invoke-RestMethod)\b[^|;&]*(--data|--data-binary|--upload-file|--form|-T|-F|-Body)\s*[^|;&]*\.env\b/i,
+      /\b(curl|wget|Invoke-WebRequest|Invoke-RestMethod)\b[^|;&\r\n]{0,120}(--data|--data-binary|--upload-file|--form|-T|-F|-Body)\s*[^|;&\r\n]{0,120}\.env\b/i,
     reason: 'uploads a .env file',
   },
   {
@@ -145,7 +177,7 @@ const BLOCKED_COMMANDS = [
     reason: 'pipes the environment to a network or encoding tool',
   },
   {
-    pattern: /\bgit\s+config\s+[^|;&]*(user\.password|credential\.helper)\s*=/i,
+    pattern: /\bgit\s+config\s+[^|;&\r\n]{0,120}(user\.password|credential\.helper)\s*=/i,
     reason: 'rewrites stored git credentials',
   },
   {
@@ -155,11 +187,11 @@ const BLOCKED_COMMANDS = [
   {
     // MCP config rewrites were the vector in CVE-2025-54135; changing them is a reviewed act.
     pattern:
-      /(>>?|Set-Content|Out-File|\btee\b)\s*[^|;&]*(\.cursor[\\/]mcp\.json|(^|[\s"'/\\])\.mcp\.json)\b/i,
+      /(>>?|Set-Content|Out-File|\btee\b)\s*[^|;&\r\n]{0,120}(\.cursor[\\/]mcp\.json|(^|[\s"'/\\])\.mcp\.json)\b/i,
     reason: 'rewrites MCP server configuration outside of review',
   },
   {
-    pattern: /\b(cat|Get-Content|type)\s+[^|;&]*(id_rsa|id_ed25519|\.pem)\b/i,
+    pattern: /\b(cat|Get-Content|type)\s+[^|;&\r\n]{0,120}(id_rsa|id_ed25519|\.pem)\b/i,
     reason: 'prints a private key into the transcript',
   },
 ];
@@ -226,10 +258,24 @@ function checkFilePath(filePath) {
   return null;
 }
 
-/** Returns a denial reason for file contents, or null when no live credential is present. */
-function checkFileContent(content) {
+/**
+ * Returns a denial reason for file contents, or null when no live credential is present.
+ *
+ * @param {string} content File contents, as Cursor supplies them on `beforeReadFile`.
+ * @param {string} [filePath] Path being read. Files whose subject is credential formats are
+ *   exempt from the content scan; see `CONTENT_SCAN_EXEMPT_PATTERNS`.
+ * @returns {string|null} Denial reason, or null.
+ */
+function checkFileContent(content, filePath) {
   if (typeof content !== 'string' || !content) {
     return null;
+  }
+
+  if (filePath) {
+    const normalized = String(filePath).replace(/\\/g, '/');
+    if (CONTENT_SCAN_EXEMPT_PATTERNS.some(pattern => pattern.test(normalized))) {
+      return null;
+    }
   }
 
   for (const { pattern, label } of CONTENT_SECRET_PATTERNS) {
@@ -274,7 +320,7 @@ function decideReadFile(input) {
     if (reason) return deny(reason);
   }
 
-  const contentReason = checkFileContent(input.content);
+  const contentReason = checkFileContent(input.content, paths[0]);
   if (contentReason) return deny(contentReason);
 
   return ALLOW;
@@ -340,6 +386,27 @@ function decide(raw) {
   return deny('Secret scanner could not identify the requested operation; denying by default.');
 }
 
+/**
+ * Extract the event name and target from a raw payload, for the audit log only.
+ *
+ * Deliberately tolerant: this runs after a decision is already made, so a malformed payload must
+ * degrade to a partial log entry rather than throwing and losing the decision.
+ *
+ * @param {string} raw The stdin payload.
+ * @returns {{event: string, target?: string}} Fields to merge into the log line.
+ */
+function describeInput(raw) {
+  try {
+    const input = JSON.parse(String(raw).replace(/^\uFEFF/, '').trim());
+    return {
+      event: input.hook_event_name || 'unknown',
+      target: input.file_path || input.command || undefined,
+    };
+  } catch {
+    return { event: 'unparsable' };
+  }
+}
+
 async function main() {
   let decision;
   let raw = '';
@@ -354,6 +421,10 @@ async function main() {
   const payload = JSON.stringify(decision);
 
   audit({
+    // The event and target make a denial traceable to the operation it blocked. Without them, a
+    // log of bare permissions cannot answer "which read did this stop?" - which is what made the
+    // hook's own test file being denied take so long to spot.
+    ...describeInput(raw),
     permission: decision.permission,
     inputBytes: raw.length,
     reason: decision.user_message || undefined,

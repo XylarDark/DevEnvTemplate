@@ -1,4 +1,19 @@
 {
   "version": 1,
-  "hooks": {}
+  "hooks": {
+    "beforeReadFile": [
+      {
+        "command": "node .cursor/hooks/secret-scan.cjs",
+        "timeout": 10,
+        "failClosed": true
+      }
+    ],
+    "beforeShellExecution": [
+      {
+        "command": "node .cursor/hooks/secret-scan.cjs",
+        "timeout": 10,
+        "failClosed": true
+      }
+    ]
+  }
 }
