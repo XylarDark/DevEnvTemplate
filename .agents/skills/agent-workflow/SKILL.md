@@ -43,9 +43,15 @@ part is not local: npm consumes flags that appear before the separator, so the
 script never sees them.
 
 ```
-npm run doctor -- --fix     # correct: --fix reaches the CLI
+npm run doctor '--' --fix   # correct everywhere, including PowerShell
+npm run doctor -- --fix     # correct in bash; PowerShell eats the bare --
 npm run doctor --fix        # wrong: npm swallows --fix
 ```
+
+PowerShell strips the first bare `--` from a native command's arguments, so the second
+form above silently runs with no flag at all — a full scan where a fast one was asked
+for, or human output where JSON was. Quoting the separator survives both shells. Read
+the package manager's echoed command line to confirm: it must end in your flag.
 
 A package manager can do worse than ignore a forwarded argument: it may append the
 argument to the end of the script, folding it into the **previous flag's value**. A
@@ -62,6 +68,10 @@ many passed, whether the type check was clean, and which checks were already fai
 Without that, any breakage you meet later is indistinguishable from something you
 caused, and proving otherwise is expensive. State the baseline next to the final
 numbers when you report.
+
+Scoped to **settled** areas, per the host's `AGENTS.md`. A baseline is worth its cost where
+something is expected to keep working. Where an area is still **shaping**, there is no
+established behavior to protect, so skip it.
 
 This matters most when you are not alone in the repository. If another agent or
 person may be working in the same tree at the same time, read the
@@ -108,13 +118,15 @@ person may be working in the same tree at the same time, read the
 - Include error handling and validate inputs at boundaries.
 - Comment complex logic only; follow existing project patterns.
 - Verify the code compiles and runs.
-- **Verifiable goals:** for feature work, define or run tests as the success
-  criterion and iterate until they pass, or state explicitly why tests are deferred.
+- **Verifiable goals:** in a settled area, define or run tests as the success criterion
+  and iterate until they pass. While shaping, the developer's reaction is the success
+  criterion instead; say in one line what you did not verify.
 
 ## File management
 
 - Read before editing; preserve existing structure where possible.
-- Update related files (tests, docs) in the same change.
+- Update related files (tests, docs) in the same change in a settled area; while shaping,
+  that update is owed at promotion.
 - Do not create files the task does not need.
 
 ### When a file is blocked by globalignore
@@ -200,6 +212,10 @@ complete:
 
 Clean up after the objectives are verified and before reporting results. Do not
 defer cleanup to a future session.
+
+While an area is **shaping**, a scratch file that will be reused next turn may stay, provided it
+lives somewhere gitignored rather than in tracked space, and everything is deleted at promotion.
+Nothing temporary gets committed at any phase.
 
 ## Checklist
 

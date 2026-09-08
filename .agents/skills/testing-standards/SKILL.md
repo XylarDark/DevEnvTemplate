@@ -9,6 +9,12 @@ Tests document expected behavior. Write many small, fast, isolated tests instead
 large ones, and test behavior rather than implementation. Aim for high coverage of critical
 paths; 100% is not the goal.
 
+**Scope.** These standards describe how to test a **settled** area — one whose shape the
+developer has agreed to. Where the host's `AGENTS.md` marks an area as **shaping**, its design
+is still being decided, tests are optional, and logging is the evidence instead. The obligations
+below are owed when that area is promoted, not while its shape is still moving. Writing tests
+against a shape that is about to change spends the budget twice and pays for the wrong one.
+
 ## Test pyramid
 
 - **Unit (~70%):** individual functions and classes, fully isolated.
@@ -87,6 +93,9 @@ A test written to prevent a specific regression should be shown to catch it:
 reintroduce the regression, confirm the test fails and fails for the stated reason,
 restore the code, and note in the test's comment that this was done. An untested
 guard test is decoration.
+
+This is the most expensive obligation in this skill, so it is the one most worth scoping: it is
+owed for guard tests in settled areas, and at promotion for bugs fixed while shaping.
 
 For the wider version of this — checks that pass while measuring nothing — read the
 `verification-evidence` skill.

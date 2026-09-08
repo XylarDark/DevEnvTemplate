@@ -15,6 +15,12 @@ logging or extra steps. Add the logs — and, where applicable, tests or runnabl
 checks that produce logs — as part of the implementation, so "did it work?" is
 answerable by inspecting logs or test results with no further action.
 
+**This obligation survives shaping.** Where the host's `AGENTS.md` marks an area as **shaping**,
+tests are deferred, which leaves logging as the only evidence there is. It is not an addition to
+the budget in that phase — it is the cheap substitute for the expensive part, and it is what lets
+the developer see whether the result matches what they had in mind. In a settled area, logs and
+tests do the job together.
+
 ## What to add
 
 - **Entry and exit.** Log the start and end of main flows (`main()`, key public

@@ -127,8 +127,11 @@ every few months, so an entry is only finished when it says what was _ruled out_
 
 ## Maintenance
 
-- Update docs in the same change as the code they describe.
-- Delete outdated documentation rather than leaving it to mislead.
+- Update docs in the same change as the code they describe, once that code is in an area the
+  host's `AGENTS.md` marks as **settled**. While an area is **shaping**, documenting a shape
+  that is about to change writes the document twice; the update is owed at promotion.
+- Delete outdated documentation rather than leaving it to mislead. This one does not wait for
+  promotion: a stale document actively misleads, which is worse than an absent one.
 - Keep examples working; test them before committing.
 
 ## Checklist

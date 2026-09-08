@@ -114,6 +114,11 @@ nothing about what the user gets.
 
 ## Mutation-test your guard tests
 
+Scoped to **settled** areas. Where the host's `AGENTS.md` marks an area as **shaping**, there is
+usually no guard test yet to mutate, and the proof is owed together with the test at promotion.
+Everything above this section is unscoped: knowing what a check measured costs nothing extra, and
+a check that measures nothing is worthless at any phase.
+
 A test that exists to prevent a specific regression should be proven to catch it:
 
 1. Deliberately reintroduce the regression.

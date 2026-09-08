@@ -55,9 +55,13 @@ Run these from the repository root.
 `npm run doctor --fix` gives it to npm instead, which silently ignores it. This has been a
 recurring source of no-op commands in this repo's own docs and CI.
 
+**In PowerShell, quote the separator:** `npm run doctor '--' --fast`. PowerShell strips a bare
+`--` before npm sees it, so the unquoted form silently runs without the flag. Check npm's echoed
+command line: it must end in the flag you passed. The quoted form is also correct in bash.
+
 Useful doctor flags: `--fix`, `--no-install`, `--preset <framework>`, `--dry-run`, `--json`,
-`--strict` (fail on warnings), `--fast` (skip docs, accessibility, Docker, git hooks),
-`--project-root <path>`.
+`--strict` (fail on warnings), `--fast` (skip docs, performance, accessibility, Docker,
+environment, git hooks, frameworks, Python tooling), `--project-root <path>`.
 
 ## Layout
 
@@ -101,6 +105,27 @@ cannot be scripted, record it in `docs/operational/automation-gaps.md` instead.
 **Plan multi-file work.** For changes spanning several modules, or that touch architecture or
 public APIs, propose a short plan before editing. See the `plan-first` skill.
 
+## Development phase
+
+Every area is **shaping** or **settled**. Shaping means the design is still being decided and the
+developer's judgment is the success criterion. Settled means the shape is agreed and the job is to
+keep it that way.
+
+- `scripts/doctor/**`, `scripts/tools/**`, `scripts/utils/**` — settled
+- `.agents/**`, `docs/**`, and everything else — shaping
+
+**In a shaping area**, spend the budget on something the developer can react to. Skip tests,
+guard-test proofs, the pre-work baseline, and doc updates; say in one line what you did not verify.
+Use `npm run doctor '--' --fast` and leave the full run for promotion. The security baseline below
+is the only floor: no committed secrets, no destructive operation without an explicit flag.
+
+**In a settled area**, every obligation in the skills applies as written.
+
+**Promotion is a deliberate step.** When an area moves to settled, that same change adds tests for
+the behavior that survived, a guard test per bug fixed while shaping, updated docs, deleted scratch
+files, and `docs/KNOWN_ERRORS.md` entries for the failures that cost real time. Shaping defers
+these obligations; it does not abolish them.
+
 ## Conventions
 
 - **Commits:** Conventional Commits (`feat`, `fix`, `docs`, `refactor`, `perf`, `test`, `chore`,
@@ -115,6 +140,8 @@ public APIs, propose a short plan before editing. See the `plan-first` skill.
   or renaming anything.
 
 ## Testing
+
+These apply to settled areas. While shaping, see **Development phase** above.
 
 - Unit tests finish in under 5 seconds total; integration tests in under 60.
 - Every test needs a timeout, must run independently, and must clean up in `afterEach`.
