@@ -166,12 +166,17 @@ jobs:
           npm run doctor -- --json > .devenv/health.json
         continue-on-error: true
 
+      # `.devenv/` is a dot-directory, and upload-artifact excludes hidden files by default
+      # since v4.4. Without this flag the glob matches nothing and `if-no-files-found: error`
+      # fails the job, which made every pull request red while `master` stayed green - this
+      # job only runs on pull requests.
       - name: Upload analysis
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: devenv-analysis
           path: .devenv/
+          include-hidden-files: true
           if-no-files-found: error
 
       - name: Comment health score on PR
