@@ -28,7 +28,7 @@ The layers are independent, and they are listed in the order most consumers actu
 | Layer                          | What it is                                                                                                   | Depends on                                                    |
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------- |
 | **Agent context**              | `AGENTS.md` as a shape, `.agents/skills/`, glob-scoped `.cursor/rules/`                                      | Nothing. Any language, any stack.                             |
-| **Operational memory**         | `docs/KNOWN_ERRORS.md`, `docs/operational/automation-gaps.md`, `docs/DOCS_LAYOUT.md`                       | Nothing. These are entry shapes, not content.                 |
+| **Operational memory**         | `docs/KNOWN_ERRORS.md`, `docs/operational/automation-gaps.md`, `docs/DOCS_LAYOUT.md`, `docs/human-use/`   | Nothing. These are entry shapes, not content.                 |
 | **Verification with evidence** | The `verify` pipeline pattern: each stage names what passing it proves and extracts a number from its output | A test runner of some kind. Not this one.                     |
 | **The doctor**                 | `npm run doctor`, gap analysis, quick-win auto-fixes, the CI workflow                                        | Node.js in the host, or the host vendors it under `.devenv/`. |
 
@@ -47,7 +47,7 @@ For Unity, Unreal, or any repository where you want better agent context but **n
 Copy these from this repository (write your own root `AGENTS.md`; do not copy ours):
 
 - `.agents/skills/` and the stack rules you need from `.cursor/rules/` (for example `23-unity-csharp.mdc`, or Unreal `21`/`22`)
-- `docs/DOCS_LAYOUT.md`, `docs/KNOWN_ERRORS.md`, `docs/operational/automation-gaps.md`
+- `docs/DOCS_LAYOUT.md`, `docs/KNOWN_ERRORS.md`, `docs/operational/automation-gaps.md`, `docs/human-use/`
 - `.cursorignore` and workspace `.vscode/settings.json` if useful
 
 Full checklist and engine notes: **[docs/SETUP-GUIDE.md — Files-only adoption](docs/SETUP-GUIDE.md#files-only-adoption-agent-and-docs-layers)**. Optional stubs: [Unity](docs/templates/unity/README.md), [Unreal](docs/templates/unreal/README.md).

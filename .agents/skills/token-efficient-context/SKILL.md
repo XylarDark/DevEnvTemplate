@@ -13,6 +13,21 @@ description: Use when planning a multi-file change, starting an agent or Compose
 - Do not paste full folders or whole-repo dumps.
 - Trim tool output: failures and the relevant slice, not full passing logs.
 
+## Stay in the smart zone
+
+Quality falls off as the window fills. Treat roughly 60k tokens as the ceiling for
+implementation work.
+
+- Split work across agents or chats instead of growing one thread.
+- Start a new chat with a short written summary; do not drag a debug thread into a
+  feature build.
+- Use the IDE's HANDOFF skill (`ce-handoff`) when the next session needs a focused
+  packet. Do not duplicate that skill here.
+- Compact or compress markdown you are about to re-feed, rather than pasting it whole.
+- A 1M-class window is for the initial research pass on a large tree; write the
+  findings to a file and leave the window. A 200k-class window is for implementation
+  and needs a tight harness (this skill, `AGENTS.md`, the files in play).
+
 ## Model routing
 
 Advice to the human and agent, not a hard pin.

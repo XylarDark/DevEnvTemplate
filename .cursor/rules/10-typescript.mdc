@@ -57,3 +57,9 @@ version: 1.0
 - Use source maps for development
 - Compile to appropriate target (ES2020+)
 - Enable incremental compilation for faster builds
+
+## Cyclomatic complexity
+
+When changing a function, count independent paths (`if`/`else`, loops, `switch`,
+`&&`/`||`, ternaries). Report the count if it is greater than 5. Split the function
+if it is greater than 15. This is a review signal, not a CI job.

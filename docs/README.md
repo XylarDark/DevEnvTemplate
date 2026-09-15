@@ -30,6 +30,7 @@ subdirectory that fits, not to this root.
 | [guides/embedded-usage.md](guides/embedded-usage.md)             | Running as a vendored `.devenv/` directory.   |
 | [guides/docs-organization.md](guides/docs-organization.md)       | How the docs organizer moves files.           |
 | [operational/automation-gaps.md](operational/automation-gaps.md) | What cannot be automated, and why.            |
+| [human-use/](human-use/README.md)                                | Human vs agent ownership; agent alerts when a decision you own is missing. |
 | [guides/mistake-patterns.md](guides/mistake-patterns.md)         | Recurring mistakes worth recognizing early.   |
 
 ## Decisions
@@ -50,6 +51,7 @@ context; everything else in the agent layer loads on demand:
 | [`.cursor/rules/`](../.cursor/rules/README.md) | You open a file matching the rule's globs.        |
 | [`.cursor/agents/`](../.cursor/agents/)        | You invoke that subagent.                         |
 | [guides/mcp-hygiene.md](guides/mcp-hygiene.md) | You add or change an MCP server.                  |
+| [guides/cursor-plan-integration.md](guides/cursor-plan-integration.md) | Plan mode → Human Use contract → branch → verify. |
 
 ### Recommended host `AGENTS.md` shape
 

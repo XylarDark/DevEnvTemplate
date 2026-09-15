@@ -15,6 +15,18 @@ is still being decided, tests are optional, and logging is the evidence instead.
 below are owed when that area is promoted, not while its shape is still moving. Writing tests
 against a shape that is about to change spends the budget twice and pays for the wrong one.
 
+## Behavior-driven vs red-green TDD
+
+Feature work uses behavior-driven scenarios: user flow, not class-by-class red-green.
+Write those scenarios (or read them from the host's Human Use test contract) before
+implementation, and keep re-running them after.
+
+Classic TDD (test first, then the unit) is for critical or low-level functionality —
+network, parsers, compilers, this repo's own checks — and for a bug that already
+escaped: write the failing behavior test before the fix.
+
+The pyramid, isolation, and budgets below still apply either way.
+
 ## Test pyramid
 
 - **Unit (~70%):** individual functions and classes, fully isolated.

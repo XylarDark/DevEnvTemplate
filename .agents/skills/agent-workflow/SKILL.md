@@ -1,6 +1,6 @@
 ---
 name: agent-workflow
-description: Use when carrying out any coding task in this repo end-to-end - covers context gathering, PowerShell and npm command patterns, research-before-implement policy, error recording in docs/KNOWN_ERRORS.md, and the mandatory temp-file cleanup before reporting results.
+description: Use when carrying out any coding task in this repo end-to-end - covers human vs agent ownership at the start of work anywhere in the tree, context gathering, PowerShell and npm command patterns, research-before-implement policy, error recording in docs/KNOWN_ERRORS.md, and the mandatory temp-file cleanup before reporting results.
 ---
 
 # Agent workflow
@@ -77,6 +77,22 @@ This matters most when you are not alone in the repository. If another agent or
 person may be working in the same tree at the same time, read the
 `multi-agent-collaboration` skill before staging anything.
 
+## Name the owner before the first edit
+
+First move on **any** coding task, from **any** path in the tree.
+
+Read [docs/human-use/OWNERSHIP.md](../../../docs/human-use/OWNERSHIP.md) and
+[CYCLE.md](../../../docs/human-use/CYCLE.md) enough to say who owns the next step.
+If that owner is the **human** and the decision is missing, alert (`Owner: human — … /
+I will not: … / Need from you:`) and stop. If that owner is the **agent**, say so and
+execute — still do not invent a human decision (purpose, acceptance, isolation,
+ship/no-ship, new libraries). Prefer a structured multiple-choice tool for the ask.
+
+A typo or one-line fix: one owner sentence, then the fix.
+
+If `docs/human-use/` is not in this repository, there is no Human Use split on disk.
+Still do not silently take human-owned decisions.
+
 ## Conversation and context
 
 - Prefer a new chat for each new unit of work so the agent stays focused. Bring in
@@ -118,9 +134,25 @@ person may be working in the same tree at the same time, read the
 - Include error handling and validate inputs at boundaries.
 - Comment complex logic only; follow existing project patterns.
 - Verify the code compiles and runs.
-- **Verifiable goals:** in a settled area, define or run tests as the success criterion
-  and iterate until they pass. While shaping, the developer's reaction is the success
-  criterion instead; say in one line what you did not verify.
+
+## Verifiable goals
+
+In a settled area, define or run tests as the success criterion and iterate until they
+pass. Feature tests describe user flow (behavior-driven). Classic red-green TDD stays
+for critical or low-level units (network, parsers, this repo's own checks) and for
+regression guards. Write the failing behavior test before implementing a bug fix.
+
+While shaping, the developer's reaction is the success criterion instead; say in one
+line what you did not verify.
+
+**Done means evidence.** The most common failure is declaring victory when the work is
+not done. "Linters are clean" is not evidence. Run the named verify command (the line
+in `docs/human-use/environment.md` when that file is filled, otherwise the host's
+verify or doctor command) and report what it printed: counts, not adjectives. If that
+command was not run, the task is not done.
+
+Human-owned blanks stay blank until the human fills, skips, or dictates them (see
+**Name the owner before the first edit**).
 
 ## File management
 
@@ -190,14 +222,14 @@ instrumentation.
 - Large refactorings (more than ~10 files).
 - Security-sensitive changes.
 - Changes to core architecture.
+- Creating a new shared utility, helper library, or extracting code into one.
 - Any time the user's intent is unclear.
 
 ## Communication
 
-- Explain the approach before implementing it, and show the reasoning behind
-  non-obvious decisions.
-- Flag uncertainties and offer alternatives when blocked.
-- Stay professional; do not apologize.
+Accuracy first. Do not flatter, and do not apologize as a substitute for a fix. Stay
+professional. Explain the approach before implementing it, and show the reasoning
+behind non-obvious decisions. Flag uncertainties and offer alternatives when blocked.
 
 ## Session cleanup (mandatory before ending a task)
 
@@ -227,5 +259,7 @@ Nothing temporary gets committed at any phase.
 - [ ] Errors recorded; known errors checked before repeating similar work
 - [ ] Scripts that create resources are idempotent (check before create, no
       duplicates on re-run)
+- [ ] Named verify command produced evidence (counts); the task is not done without it
+- [ ] Owner named before the first edit; human decisions were asked for, not taken
 - [ ] Session cleanup done — temporary scripts, result files, and diagnostic
       artifacts deleted

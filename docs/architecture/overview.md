@@ -1,103 +1,110 @@
 # Project Architecture
 
-## Overview
+DevEnvTemplate is the doctor for development environments: it diagnoses repository
+health, prescribes fixes, and keeps codebases sound while you code with LLMs. It is a
+**menu**, not a monolith — agent context, operational logs, a verification pattern,
+and the doctor are each adoptable alone. See [Adopt it in layers](../../README.md#adopt-it-in-layers).
 
-DevEnvTemplate is a toolkit for modern development environment management, focused on indie developer workflows. It provides automated project analysis, health checking, and configuration setup.
+Humans keep this document true. Who owns the next step, and when the agent must stop
+for a decision: [human-use/OWNERSHIP.md](../human-use/OWNERSHIP.md)
+([CYCLE.md](../human-use/CYCLE.md)).
 
-## Directory Structure
+## Directory structure
 
-### Root Level
+### Root
 
 ```
 DevEnvTemplate/
-├── .github/            # GitHub-specific files
-├── config/             # Configuration files
-├── docs/               # Documentation
-├── scripts/            # Source code (TypeScript)
-├── tests/              # Test suite
-├── CHANGELOG.md        # Version history
-├── LICENSE             # MIT License
-├── package.json        # Node dependencies & scripts
-├── README.md           # Main documentation
-└── tsconfig*.json      # TypeScript configuration
+├── .agents/            # Core skills and extras
+├── .cursor/            # Glob-scoped rules, example MCP, worktree setup
+├── .github/            # CI workflow, PR templates, Dependabot
+├── config/             # Checked-in tool config
+├── docs/               # Documentation (see DOCS_LAYOUT.md)
+├── scripts/            # TypeScript source
+├── tests/              # Unit, integration, fixtures
+├── AGENTS.md           # Always-loaded agent context for this repo
+├── CHANGELOG.md
+├── LICENSE
+├── package.json
+├── README.md
+└── tsconfig*.json
 ```
 
-### Source Code (`scripts/`)
-
-All source code is organized under `scripts/` directory:
+### Source (`scripts/`)
 
 ```
 scripts/
-├── agent/              # Project initialization & setup
-│   ├── cli-simple.js   # Simple standalone CLI
-│   ├── cli.js          # Wrapper for backward compatibility
-│   ├── cli.ts          # Main TypeScript implementation
-│   └── questionnaire.js # Interactive setup questions
-│
-├── cleanup/            # Template cleanup utilities
-│   ├── cli.ts          # Cleanup CLI (dry run by default)
-│   ├── engine.ts       # Cleanup engine implementation
-│   └── package-managers/ # Package manager adapters
-│
-├── doctor/             # Health checking & auto-fixes
-│   ├── cli.ts          # Doctor mode CLI and health scoring
-│   ├── quick-wins.ts   # Quick-fix registry (drives --fix)
-│   └── templates/      # Config templates
-│       ├── tsconfig-*.json
-│       ├── prettierrc.json
-│       ├── ci-workflow.yml
-│       └── env.example
-│
-├── tools/              # Analysis tools
-│   ├── stack-detector.ts  # Technology stack detection
-│   ├── gap-analyzer.ts    # Gap analysis
-│   ├── plan-generator.ts  # Improvement plan generation
-│   └── clean.js           # Removes build output
-│
-├── types/              # TypeScript type definitions
-│   ├── cleanup.ts      # Cleanup types
-│   ├── gaps.ts         # Gap analysis types
-│   ├── manifest.ts     # Project manifest types
-│   ├── performance.ts  # Performance tracking types
-│   └── plan.ts         # Plan generation types
-│
-├── utils/              # Shared utilities (TypeScript only)
-│   ├── cache.ts        # Caching utilities
-│   ├── logger.ts       # Logging utilities
-│   ├── parallel.ts     # Parallel execution
-│   ├── path-resolver.ts # Path resolution
-│   └── progress.ts     # Progress reporting
-│
-├── init.js             # Main initialization script
-└── init-cleanup.js     # Cleanup initialization
+├── agent/              # Host adoption: AGENTS.md stub, layer copy, init
+│   ├── agents-stub.ts
+│   ├── layers.ts
+│   ├── init.ts
+│   ├── cli.ts
+│   ├── cli.js          # Compatibility wrapper
+│   ├── cli-simple.js   # Standalone init helper
+│   ├── questionnaire.js
+│   └── stubs/          # KNOWN_ERRORS, DOCS_LAYOUT, automation-gaps
+├── cleanup/            # Template cleanup engine and CLI
+│   ├── cli.ts
+│   ├── engine.ts
+│   └── package-managers/
+├── doctor/             # Health check, scoring, --fix registry
+│   ├── cli.ts
+│   ├── quick-wins.ts
+│   └── templates/
+├── sync/               # Pull template updates into a host (`npm run sync`)
+│   └── cli.ts
+├── tools/              # Stack detect, gaps, plans, verify, preflight, docs
+│   ├── stack-detector.ts
+│   ├── gap-analyzer.ts
+│   ├── plan-generator.ts
+│   ├── cursor-rules-integration.ts
+│   ├── cursor-rules-adapter.ts
+│   ├── verify.js
+│   ├── preflight.js
+│   ├── check-doc-links.js
+│   ├── fix-mojibake.js
+│   └── ...
+├── types/              # Shared types (gaps, manifest, plan, cleanup, performance)
+├── utils/              # Logging, cache, paths, JSONC, verification helpers
+├── init.js
+└── init-cleanup.js
 ```
+
+Settled areas (full skill obligations): `scripts/doctor/**`, `scripts/tools/**`,
+`scripts/utils/**`. Everything else, including `docs/` and `.agents/`, is shaping.
 
 ### Documentation (`docs/`)
 
+Canonical map: [DOCS_LAYOUT.md](../DOCS_LAYOUT.md). Topic docs live in
+subdirectories; the root is a closed set of entry points.
+
 ```
 docs/
-├── archive/                    # Historical documentation
-│   ├── PHASE2-COMPLETE.md
-│   ├── RELEASE_NOTES_v3.0.0.md
-│   ├── IMPLEMENTATION-SUMMARY-v3.x.md
-│   └── plans/                  # Historical planning docs
-│
-├── guides/                     # Integration guides
-│   └── cursor-plan-integration.md
-│
-├── ARCHITECTURE.md             # This file
-├── LLM-CONTEXT-GUIDE.md        # Context for AI assistants
-├── TROUBLESHOOTING.md          # Troubleshooting guide
-└── USAGE.md                    # Usage documentation
+├── architecture/       # This file, tooling notes
+├── adr/
+├── best-practices/
+├── guides/
+├── human-use/          # Ownership split and cycle (OWNERSHIP.md, CYCLE.md)
+├── operational/
+├── templates/          # Unity / Unreal stubs
+├── archive/
+├── README.md
+├── DOCS_LAYOUT.md
+├── KNOWN_ERRORS.md
+├── BEST-PRACTICES.md
+├── SETUP-GUIDE.md
+└── TROUBLESHOOTING.md
 ```
 
 ### Configuration (`config/`)
 
 ```
 config/
-├── cleanup.config.yaml         # Cleanup rules
-├── quality-budgets.json        # Quality thresholds
-└── schemas/                    # JSON schemas
+├── cleanup.config.yaml
+├── quality-budgets.json   # Health-score weights and quality budgets
+├── docs-organization.yaml
+├── sync-layers.json
+└── schemas/
     └── project.manifest.schema.json
 ```
 
@@ -105,327 +112,125 @@ config/
 
 ```
 tests/
-├── fixtures/           # Test data & sample projects
-│   ├── nextjs-app-dir/
-│   ├── vite-react/
-│   └── express-api/
-│
-├── integration/        # Integration tests
-├── unit/              # Unit tests
-└── utils/             # Test helpers
+├── fixtures/           # Sample host projects
+├── integration/
+├── unit/
+└── utils/              # fixture-helper.js
 ```
 
-## Module Responsibilities
+## Module responsibilities
 
-### Agent Module (`scripts/agent/`)
+### Agent (`scripts/agent/`)
 
-**Purpose**: Project initialization and setup
+Host adoption: write a short host `AGENTS.md` from stack facts (never copy this
+repo's), copy agent-context and operational-memory layers, optional questionnaire
+and `project.manifest.json`.
 
-**Key Features**:
+Entry: `npm run agent:init` (`--advanced` for the longer path).
 
-- Interactive project questionnaire
-- Manifest generation (`project.manifest.json`)
-- Multiple implementation variants:
-  - `cli-simple.js`: Standalone, no dependencies
-  - `cli.ts`: Full-featured TypeScript implementation
-  - `cli.js`: Wrapper for backward compatibility
+### Doctor (`scripts/doctor/`)
 
-**Entry Points**:
+Health scoring and `--fix`. Weights and penalties come from
+`config/quality-budgets.json` (`healthScore`): testing, CI, type safety, quality,
+security, agent context. Documentation is reported and not weighted into the
+overall score.
 
-- `npm run agent:init`
-- `npm run agent:init-simple`
+Entry: `npm run doctor`. Pass flags after `--` (`npm run doctor '--' --fix` in
+PowerShell).
 
-### Doctor Module (`scripts/doctor/`)
+### Cleanup (`scripts/cleanup/`)
 
-**Purpose**: Project health analysis and automated fixes
+Remove template-only files; package-manager adapters for npm, pnpm, yarn, pip,
+Poetry.
 
-**Key Features**:
+Entry: `npm run cleanup` (dry-run by default; `--apply` to write).
 
-- Health scoring across 5 categories (Testing, CI/CD, Type Safety, Environment, Linting)
-- Framework-aware configuration generation (Next.js, Vite, Express)
-- Quick-win registry for common issues
-- Automatic dependency installation
-- Dry-run mode for previewing changes
+### Tools (`scripts/tools/`)
 
-**Entry Points**:
+Stack detection, gap analysis, plan generation, Cursor rules integration, the
+`verify` and `preflight` pipelines, doc-link and encoding checks, docs organizer.
 
-- `npm run doctor` - Health check
-- `npm run doctor -- --fix` - Auto-fix issues
-- `npm run doctor -- --json` - JSON output
+Used by the doctor, CI (`indie-ci.yml`), and `npm run verify` / `npm run preflight`.
 
-### Cleanup Module (`scripts/cleanup/`)
+### Sync (`scripts/sync/`)
 
-**Purpose**: Remove template-specific files and setup new projects
+Pull selected template layers into a host. Entry: `npm run sync`.
 
-**Key Features**:
+### Utils (`scripts/utils/`)
 
-- Multi-package-manager support (npm, pnpm, yarn)
-- Template file removal
-- Dependency cleanup
-- Git history cleanup
+Shared TypeScript helpers: cache, logger, parallel, paths, JSONC, env validation,
+verification evidence helpers.
 
-**Entry Points**:
+## Data flow
 
-- `npm run cleanup`
-
-### Tools Module (`scripts/tools/`)
-
-**Purpose**: Analysis and planning utilities
-
-**Key Features**:
-
-- Stack detection (frameworks, languages, tooling)
-- Gap analysis (identify missing best practices)
-- Improvement plan generation
-
-**Used By**: Doctor module, CI workflows
-
-### Utils Module (`scripts/utils/`)
-
-**Purpose**: Shared utilities across all modules
-
-**Key Features**:
-
-- Caching for performance
-- Structured logging
-- Parallel execution helpers
-- Path resolution
-- Progress reporting
-
-**Design Principle**: Pure TypeScript, no JavaScript duplicates
-
-## Data Flow
-
-### Doctor Mode Workflow
+### Doctor
 
 ```
-User runs: npm run doctor -- --fix
+npm run doctor '--' --fix
 
-1. Stack Detection (scripts/tools/stack-detector.ts)
-   ↓
-   Analyzes project files to identify:
-   - Frameworks (Next.js, Vite, Express, etc.)
-   - Languages (TypeScript, JavaScript, Python)
-   - Tooling (ESLint, Prettier, Jest, etc.)
-   ↓
-2. Gap Analysis (scripts/tools/gap-analyzer.ts)
-   ↓
-   Compares detected stack against best practices:
-   - Missing configurations
-   - Missing dependencies
-   - Missing CI/CD
-   - Environment variable issues
-   ↓
-   Writes .devenv/gaps-report.json (machine-readable, consumed downstream)
-   and .devenv/gaps-report.md (for humans)
-   ↓
-3. Health Scoring (scripts/doctor/cli.ts)
-   ↓
-   Reads gaps-report.json and routes each gap to one scored dimension by
-   its category. Weights and per-severity penalties come from
-   config/quality-budgets.json (healthScore block); the defaults are
-   testing 25%, CI/CD 20%, type safety 20%, quality 20%, security 15%.
-   Documentation is scored and reported but not weighted into the overall.
-   ↓
-4. Quick Wins Registry (scripts/doctor/quick-wins.ts)
-   ↓
-   Each entry pairs a detectCondition with a fixAction, so --fix decides
-   what to do by inspecting the filesystem rather than by matching gap text
-   ↓
-5. Auto-Fix (scripts/doctor/cli.ts)
-   ↓
-   Runs the applicable registry entries:
-   - Generates configs from templates
-   - Adds npm scripts
-   - Creates missing files
-   - Honors --dry-run, --no-install, and --preset
-   ↓
-6. Report
-   ↓
-   Outputs health report (text or JSON)
+1. Stack detection  →  .devenv/stack-report.json
+2. Gap analysis     →  .devenv/gaps-report.json (machine) and .devenv/gaps-report.md (human)
+3. Health scoring   →  reads JSON; categoryMap in quality-budgets.json routes each gap
+4. Quick-wins       →  detectCondition + fixAction on the filesystem, not on gap text
+5. Auto-fix         →  honors --dry-run, --no-install, --preset
+6. Report           →  text or --json
 ```
 
-### Agent Init Workflow
+Read the JSON artifacts. Never parse the markdown report back.
+
+### Agent init
 
 ```
-User runs: npm run agent:init
+npm run agent:init
 
-1. Questionnaire (scripts/agent/questionnaire.js)
-   ↓
-   Prompts for:
-   - Project name & description
-   - Tech stack
-   - Author info
-   ↓
-2. Manifest Generation (scripts/agent/cli.ts)
-   ↓
-   Creates project.manifest.json
-   ↓
-3. Stack Setup
-   ↓
-   Optionally runs doctor --fix with detected preset
+1. Optional questionnaire
+2. Host AGENTS.md stub from stack facts (skip if one exists)
+3. Layer copy (agent-context, operational-memory) when requested
 ```
 
-## Technology Stack
+## Technology stack
 
-- **Language**: TypeScript (compiled to JavaScript)
-- **Runtime**: Node.js 20+
-- **Package Manager**: npm (also supports pnpm, yarn)
-- **Testing**: Node.js built-in test runner
-- **CI/CD**: GitHub Actions
-- **Linting**: ESLint + Prettier
+- **Language:** TypeScript (strict, ES2022, CommonJS), compiled to `dist/`
+- **Runtime:** Node.js 24+ (pinned in `package.json` `engines`, `volta`, `.nvmrc`)
+- **Tests:** Node.js built-in test runner (`node --test`)
+- **CI:** `.github/workflows/indie-ci.yml` (GitHub Actions free tier)
+- **Lint / format:** ESLint flat config, Prettier (single quotes)
 
-## Design Principles
+## Design principles
 
-### 1. TypeScript First
+1. **Menu, not mandate.** Hosts may take agent context and skip the doctor and the
+   lint toolchain. A declined gap is recorded in the host `AGENTS.md`, not re-litigated.
+2. **TypeScript source of truth.** New code is `.ts`. Remaining `.js` is wrappers,
+   standalone tools, or tests that exercise `dist/`.
+3. **Prefer Node built-ins.** Small install footprint.
+4. **Evidence over green checks.** `npm run verify` extracts a count from each stage.
+5. **Indie focus.** No team approval gates; optimize for Actions free tier.
+6. **Idempotent scripts.** Check before create; re-running must not duplicate or destroy.
 
-- All new code is written in TypeScript
-- TypeScript is the source of truth
-- JavaScript files are only for:
-  - Backward compatibility wrappers
-  - Standalone tools (cli-simple.js)
+## File organization
 
-### 2. Minimal Dependencies
+- New **module** under `scripts/[name]/` when it has its own CLI and a real surface.
+- Add to **utils** when three or more modules need it and it has no product logic.
+- Shared types live in `scripts/types/`.
+- Files are kebab-case; types PascalCase; functions camelCase.
 
-- Prefer Node.js built-in modules
-- No heavy frameworks
-- Small install footprint (<50MB node_modules)
+## Build and development
 
-### 3. Framework Awareness
-
-- Detect project context (Next.js, Vite, Express, etc.)
-- Generate appropriate configs for each framework
-- Provide framework-specific guidance
-
-### 4. Performance Optimization
-
-- Target: Doctor mode < 2s on typical projects
-- Caching for repeated operations
-- Parallel execution where possible
-- Minimal file I/O
-
-### 5. Indie Developer Focus
-
-- Free-tier CI optimization
-- Quick wins over perfect solutions
-- One-command operations
-- Non-blocking workflows
-
-## File Organization Rules
-
-### When to Add New Files
-
-**Create new module** (`scripts/[module]/`) if:
-
-- Functionality is standalone (can run independently)
-- Has its own CLI entry point
-- Significant codebase (>500 lines)
-
-**Add to existing module** if:
-
-- Extends existing functionality
-- Shares types/utilities
-- Part of same workflow
-
-**Add to utils** if:
-
-- Used by 3+ modules
-- Pure utility function
-- No business logic
-
-**Add to types** if:
-
-- Shared TypeScript types
-- Used across modules
-- Part of public API
-
-### Naming Conventions
-
-- **Files**: kebab-case (`stack-detector.js`, `quick-wins.ts`)
-- **Directories**: kebab-case (`scripts/doctor/`, `docs/archive/`)
-- **TypeScript types**: PascalCase (`StackReport`, `HealthScore`)
-- **Functions**: camelCase (`detectStack`, `calculateScore`)
-
-## Build & Development
-
-### Build Process
-
-```bash
-# Compile TypeScript to JavaScript
-npm run build
-
-# Output: dist/ directory (gitignored)
 ```
-
-### Development Workflow
-
-```bash
-# Run tests
-npm test
-
-# Run doctor on self
-npm run doctor
-
-# Type checking
-npm run typecheck
-
-# Linting
+npm run build            # tsc --build (prebuild type-checks)
+npm test                 # build, then tests/**/*.test.js
+npm run doctor '--' --fast
 npm run lint
+npm run verify           # type-check, lint, tests, build, doc-links, encoding
 ```
 
-### CI/CD
-
-GitHub Actions workflow (`.github/workflows/indie-ci.yml`):
-
-1. **Quick Checks**: Lint + Type check (parallel)
-2. **Tests**: Unit + Integration tests
-3. **Doctor**: Health report (non-blocking)
-
-**Optimizations**:
-
-- Caches: node_modules, npm cache, TypeScript builds
-- Target: <2.5 minutes total runtime
-- Free-tier compatible
-
-## Migration History
-
-### Recent Restructuring (v3.x)
-
-**Phase 1: Documentation Consolidation**
-
-- Moved USAGE.md, TROUBLESHOOTING.md to `docs/`
-- Created `docs/archive/` for historical docs
-- Consolidated duplicate issue templates
-
-**Phase 2: Source Organization**
-
-- Eliminated JS/TS duplicates in `scripts/utils/`
-- Moved `.github/tools/` to `scripts/tools/`
-- Merged `.github/types/` into `scripts/types/`
-
-**Phase 3: Configuration Consolidation**
-
-- Moved `schemas/` into `config/schemas/`
-- Single configuration directory
-
-**Phase 4: Build Artifacts**
-
-- Updated .gitignore to exclude `dist/`, `*.tsbuildinfo`
-- Removed build artifacts from version control
-
-## Contributing
-
-When contributing to this project:
-
-1. **Follow the directory structure** - Add files to appropriate modules
-2. **Use TypeScript** - All new code should be .ts (exceptions: wrappers, standalone tools)
-3. **Update tests** - Add tests in `tests/unit/` or `tests/integration/`
-4. **Update docs** - Document new features in `docs/guides/usage.md`
-5. **Run doctor** - Ensure project passes health checks
+CI (`.github/workflows/indie-ci.yml`) runs lint, tests, and a doctor pass on
+`main`/`master`. Cache npm and TypeScript build info; keep the job on the free tier.
 
 ## References
 
-- [Main README](../README.md) - Getting started
-- [Usage Guide](../guides/usage.md) - Detailed command reference
-- [AGENTS.md](../../AGENTS.md) - Canonical context for AI agents
-- [Troubleshooting](../TROUBLESHOOTING.md) - Common issues
+- [README](../../README.md)
+- [Usage](../guides/usage.md)
+- [AGENTS.md](../../AGENTS.md)
+- [Human Use](../human-use/README.md)
+- [Troubleshooting](../TROUBLESHOOTING.md)

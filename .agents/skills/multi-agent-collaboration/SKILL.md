@@ -70,7 +70,14 @@ room.
   a shared one.
 
 Independent worktrees or clones remove most of this, and are worth the setup when the
-work genuinely parallelizes. The rules above are for when they were not used.
+work genuinely parallelizes. Prefer a worktree when another agent is already in the
+same checkout. The rules above are for when isolation was not used.
+
+## Work on a branch you created
+
+Do not implement on `main` or `master`. Create a `feat/`, `fix/`, `refactor/`,
+`perf/`, `docs/`, `test/`, or `chore/` branch first. Do not commit to, rebase, or
+otherwise touch a branch you did not create.
 
 ## Establish your own baseline before you start
 
@@ -115,6 +122,7 @@ agent will discover it the hard way too.
 
 ## Checklist
 
+- [ ] Work is on a branch this agent created; `main` / `master` was not used for implementation
 - [ ] File ownership is clear before editing; no edits to files another agent owns
 - [ ] Every commit stages explicit paths; no `git add -A` or `git add .`
 - [ ] No modified file was committed whose authorship could not be confirmed

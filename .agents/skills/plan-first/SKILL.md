@@ -33,21 +33,26 @@ implicit or explicit approval before editing.
   `docs/KNOWN_ERRORS.md`, idempotency requirements.
 - **Success:** how the result will be verified (tests, a manual check, or an
   explicit note on why verification is deferred).
+- **Ownership:** who owns each step ([OWNERSHIP.md](../../../docs/human-use/OWNERSHIP.md)).
+  A plan that assigns a human decision to the agent is not executable. If a human
+  decision is still missing, **alert and stop** — do not plan implementation past it.
+  See [CYCLE.md](../../../docs/human-use/CYCLE.md).
 
 Keep the plan short: bullets, not essays. Reference existing docs instead of
 duplicating them.
 
 ## When the user asks for a plan
 
-When the user says "make a plan," "create a plan," or "develop a plan," write the
-plan directly in the response. Do not use the Cursor plan feature and do not create
-files under `.cursor/plans/` unless the user explicitly asks for the plan to be
-saved. Never ask clarifying questions in Plan mode.
+- If Cursor Plan mode is active (or the environment exposes `CreatePlan`), use that
+  tool. Clarifying questions are allowed when those Plan-mode instructions require
+  them.
+- If the user asks for a plan in Agent mode, write the plan in the reply. Do not
+  switch modes just to produce a file.
+- Save under `.cursor/plans/` only when the user asks to save the plan to a file or
+  to the workspace.
 
 ## Saving plans
 
-Save a plan to `.cursor/plans/` only when the user explicitly asks for it to be
-written to a file or to the workspace ("save this plan," "save to workspace"). When
-the work is large enough to benefit from a persistent reference, you may suggest
+When the work is large enough to benefit from a persistent reference, you may suggest
 saving it after the user has confirmed the plan — but never create
 `.cursor/plans/*.md` by default.

@@ -187,6 +187,21 @@
   this is the same failure arriving from the other direction, so the warning was necessary but not
   sufficient on Windows. When a flag appears to do nothing, read npm's echoed command line first.
 
+### `check:doc-links` fails on `scripts/agent/stubs/automation-gaps.stub.md`
+
+- **Date:** 2026-09-15
+- **Symptom:** `npm run check:doc-links` reports
+  `scripts\agent\stubs\automation-gaps.stub.md:5 -> ../../.agents/skills/automation-standards/SKILL.md`.
+- **Cause:** Layer stubs are stored under `scripts/agent/stubs/` but their relative links are
+  written for the destination (`docs/operational/automation-gaps.md`). The checker resolves
+  links from the stub's on-disk path, so `../../.agents/` becomes `scripts/.agents/`. The live
+  operational file correctly points at `.agents/skills-extras/automation-standards/SKILL.md`.
+- **Fix:** Treat the stub failure as a false positive until the checker skips `scripts/agent/stubs/`
+  or stubs use a path that is valid in both places. Do not "fix" the stub by pointing it at a
+  path that would break once copied into `docs/operational/`.
+- **Prevention:** Not automated. The extras skill is optional on hosts; the live
+  `docs/operational/automation-gaps.md` is the file to keep correct.
+
 ---
 
 ## Related

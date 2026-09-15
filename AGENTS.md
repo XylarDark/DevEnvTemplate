@@ -74,6 +74,8 @@ environment, git hooks, frameworks, Python tooling), `--project-root <path>`.
 - `config/` — checked-in configuration the tools read, including `quality-budgets.json`.
 - `tests/unit/`, `tests/integration/`, `tests/fixtures/` — tests and fixture projects.
 - `docs/` — documentation, organized per `docs/DOCS_LAYOUT.md`.
+- `docs/human-use/` — who owns the next step ([OWNERSHIP.md](docs/human-use/OWNERSHIP.md)).
+  Alert the human when a decision they own is missing; do not invent it. Cycle: `docs/human-use/CYCLE.md`.
 - `.devenv/` — generated reports. Gitignored; never commit anything from here.
 
 The tools exchange structured data: the stack detector writes `.devenv/stack-report.json`, the
@@ -82,11 +84,12 @@ and `.devenv/gaps-report.md` (for humans). Read the JSON; never parse the markdo
 
 ## Working agreements
 
-**Verify, don't assume.** Read a file before editing it. Run the build, tests, and linter before
-claiming work is done. When you assert something about the repo, base it on file contents. A green
-check is not evidence unless you know what it measured — `npm run verify` reports what each stage
-proved, and the `verification-evidence` skill covers the ways a check passes while measuring
-nothing.
+**Verify, don't assume.** Read a file before editing it. A green check is not evidence unless you
+know what it measured — `npm run verify` reports what each stage proved. Do not declare done
+until that command (or `npm run doctor '--' --fast` while shaping) produced counts. Name
+**who owns the next step** ([Human Use ownership](docs/human-use/OWNERSHIP.md)): decisions are
+human, execution is agent. If a human decision is missing, alert and ask; do not take it on.
+New shared utilities need human approval. After a real failure, append `docs/KNOWN_ERRORS.md`.
 
 **Assume you are not alone.** Another agent may be working in this tree. Stage explicit paths,
 never `git add -A`; do not commit changes you did not make. See `multi-agent-collaboration`.
@@ -152,8 +155,9 @@ These apply to settled areas. While shaping, see **Development phase** above.
 - Unit tests finish in under 5 seconds total; integration tests in under 60.
 - Every test needs a timeout, must run independently, and must clean up in `afterEach`.
 - Use real temporary directories (`fs.mkdtemp`), not `mock-fs` — this repo runs on Windows too.
-- Test behavior, not implementation. Cover the error and edge cases, not just the happy path.
-- Prefer a failing test as the definition of done. If you skip tests, say why.
+- Test behavior, not implementation. Feature work uses user-flow (BDD) scenarios; a failing
+  test is still the definition of done in settled areas. Classic red-green TDD is for
+  critical or low-level units and for regression guards. If you skip tests, say why.
 
 ## Security baseline
 
@@ -183,7 +187,8 @@ This repo is developed on Windows and must work on macOS and Linux.
 Copy this repo into the host as `.devenv/` only when the host wants the Node doctor. For game and
 engine repositories, copy just the agent and docs layer: `AGENTS.md`, `.agents/skills/` (core),
 optionally `.agents/skills-extras/`, the glob-scoped `.cursor/rules/`, `docs/DOCS_LAYOUT.md`,
-`docs/KNOWN_ERRORS.md`, and `docs/operational/automation-gaps.md`. See `.agents/README.md`.
+`docs/KNOWN_ERRORS.md`, `docs/operational/automation-gaps.md`, and `docs/human-use/`.
+See `.agents/README.md`.
 
 Host projects write their **own** `AGENTS.md`. The copy in this repo describes this repo.
 

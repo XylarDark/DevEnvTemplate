@@ -32,6 +32,7 @@
 | **`docs/DOCS_LAYOUT.md`** | Where new docs belong. |
 | **`docs/KNOWN_ERRORS.md`** | Append-only failure log (start empty or with host-specific entries). |
 | **`docs/operational/automation-gaps.md`** | What automation cannot reach. |
+| **`docs/human-use/`** | Human vs agent ownership. The agent names the owner and alerts when a decision you own is missing. |
 | **`.cursorignore`** | Optional; reduces noise in large trees. |
 | **`.vscode/settings.json`** | Optional workspace defaults. |
 
@@ -50,6 +51,8 @@ When you later add the doctor to the same repo, `integrateCursorRules` can copy 
 1. Rewrite root `AGENTS.md` for your repository (stack, commands, paths agents must not guess).
 2. Trim or localize any skill **Localize on copy** sections that still describe DevEnvTemplate.
 3. Record host-specific failures in `docs/KNOWN_ERRORS.md` as they happen.
+4. Agents treat `docs/human-use/` as the ownership split: they execute agent-owned
+   work and stop for decisions you own ([OWNERSHIP.md](human-use/OWNERSHIP.md)).
 
 No build step. No `npm install`. See also [Applying this template to another project](../AGENTS.md#applying-this-template-to-another-project) in `AGENTS.md`.
 
