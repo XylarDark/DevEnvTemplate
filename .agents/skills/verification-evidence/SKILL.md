@@ -7,6 +7,9 @@ description: Use when writing, reviewing, or relying on anything meant to prove 
 
 **A green check is not evidence unless you know what it measured.**
 
+The agent that produced the artifact does not also declare a Human Use rubric
+satisfied. Launch or role-switch to the **verifier** subagent for that score.
+
 An exit code says "nothing threw". Evidence says "the suite ran 349 tests and 349
 passed", "the audit inspected 41 elements", "the run ended on the state the caller
 asked for". Only the second kind lets anyone else check the claim, and only the
@@ -146,3 +149,5 @@ be automated away in `docs/operational/automation-gaps.md`.
 - [ ] Boundaries are probed, not just centres
 - [ ] Assertions are on effective runtime values, not requested constants
 - [ ] Guard tests have been shown to fail when the regression is reintroduced
+- [ ] Rubric scoring (when `docs/human-use/outcome.md` has criteria) was a separate
+      verifier pass, not the implementer's own claim

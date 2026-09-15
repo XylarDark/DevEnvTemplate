@@ -61,6 +61,22 @@ npm run doctor:fix
 Hosts that already copied the full skill set before this split can leave extra skills in place;
 nothing breaks. New adopters start with the six core skills above.
 
+## Authoring
+
+Keep `SKILL.md` short: only what the model does not already know. Extra files in the
+skill folder load on demand.
+
+- **`description`:** one sentence. Third-person *capability*, then this repo's
+  `Use when …` trigger (Cursor matching). Do not lecture in the description; it is
+  always-on.
+- **Degrees of freedom:** high when the task is judgment (reviews); low when the
+  agent must run exactly one script. Match shaping vs settled in `AGENTS.md`:
+  shaping = higher freedom; settled work and migrations = lower.
+- **Attach only what the task needs.** Core vs extras already splits the dormant
+  surface; do not add a seventh core skill for a niche procedure.
+
+Do not rewrite every existing description to match this. New skills follow it.
+
 ## Portability
 
 Skills copied into host projects travel verbatim. Sections marked **Localize on copy** describe

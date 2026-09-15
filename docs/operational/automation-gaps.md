@@ -4,6 +4,8 @@
 
 Use the [`automation-standards` skill](../../.agents/skills-extras/automation-standards/SKILL.md) for the full procedure (identify → verify access → document → re-check on upgrade).
 
+Cursor product limits from the Week 1 PDF (not API gaps): [human-use/cursor-cannot/](../human-use/cursor-cannot/README.md).
+
 ---
 
 ## How to add an entry

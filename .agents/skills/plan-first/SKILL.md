@@ -35,7 +35,8 @@ implicit or explicit approval before editing.
   explicit note on why verification is deferred).
 - **Ownership:** who owns each step ([OWNERSHIP.md](../../../docs/human-use/OWNERSHIP.md)).
   A plan that assigns a human decision to the agent is not executable. If a human
-  decision is still missing, **alert and stop** — do not plan implementation past it.
+  decision is still missing **for this task** (any path, any phase), **alert with a
+  recommendation and stop** — do not plan implementation past it.
   See [CYCLE.md](../../../docs/human-use/CYCLE.md).
 
 Keep the plan short: bullets, not essays. Reference existing docs instead of

@@ -42,6 +42,23 @@ Two failure modes to name explicitly rather than smooth over:
   longer matches the source. If results look inconsistent with the code, re-run with
   `npm run build:clean` and say that you did.
 
+## Score the Human Use rubric when it exists
+
+If `docs/human-use/outcome.md` has real criteria (not still `(fill in)`, and not
+skipped), score **each** one as pass, fail, or could-not-measure, with the evidence
+that supports the score. Then return one of:
+
+- `satisfied` — every criterion passed
+- `needs_revision` — at least one failed; name which
+- `could_not_measure` — at least one could not be measured; name which
+
+Write that result into the **Last grade** block on `outcome.md`. Do not fix the
+code. The implementer that produced the artifact must not score the rubric in the
+same turn.
+
+If the rubric was skipped or the file is missing, skip this section and report
+pipeline evidence only.
+
 ## What you cannot see
 
 State this in every report where it is relevant. The pipeline runs locally, so it says nothing

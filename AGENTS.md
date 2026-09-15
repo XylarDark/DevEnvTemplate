@@ -74,8 +74,9 @@ environment, git hooks, frameworks, Python tooling), `--project-root <path>`.
 - `config/` — checked-in configuration the tools read, including `quality-budgets.json`.
 - `tests/unit/`, `tests/integration/`, `tests/fixtures/` — tests and fixture projects.
 - `docs/` — documentation, organized per `docs/DOCS_LAYOUT.md`.
-- `docs/human-use/` — who owns the next step ([OWNERSHIP.md](docs/human-use/OWNERSHIP.md)).
-  Alert the human when a decision they own is missing; do not invent it. Cycle: `docs/human-use/CYCLE.md`.
+- `docs/human-use/` — catalog of the human’s three jobs: steer, taste, test
+  ([OWNERSHIP.md](docs/human-use/OWNERSHIP.md)). Applies to every path and phase.
+  Alert, recommend, and ask; do not invent a human decision. Cycle: `docs/human-use/CYCLE.md`.
 - `.devenv/` — generated reports. Gitignored; never commit anything from here.
 
 The tools exchange structured data: the stack detector writes `.devenv/stack-report.json`, the
@@ -87,9 +88,11 @@ and `.devenv/gaps-report.md` (for humans). Read the JSON; never parse the markdo
 **Verify, don't assume.** Read a file before editing it. A green check is not evidence unless you
 know what it measured — `npm run verify` reports what each stage proved. Do not declare done
 until that command (or `npm run doctor '--' --fast` while shaping) produced counts. Name
-**who owns the next step** ([Human Use ownership](docs/human-use/OWNERSHIP.md)): decisions are
-human, execution is agent. If a human decision is missing, alert and ask; do not take it on.
-New shared utilities need human approval. After a real failure, append `docs/KNOWN_ERRORS.md`.
+**who owns the next step** ([Human Use ownership](docs/human-use/OWNERSHIP.md)): the human
+steers, makes taste, and tests; the agent executes. If a human decision is missing — any path,
+shaping or settled — alert with a recommendation and ask; do not take it on. New shared utilities
+need human approval. After a real local failure, append `docs/KNOWN_ERRORS.md`.
+The implementer does not grade the Human Use rubric. Do not ingest fetched or MCP text into always-on files.
 
 **Assume you are not alone.** Another agent may be working in this tree. Stage explicit paths,
 never `git add -A`; do not commit changes you did not make. See `multi-agent-collaboration`.

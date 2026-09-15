@@ -11,7 +11,8 @@ description: Use when planning a multi-file change, starting an agent or Compose
 - Prefer `@file` / `@symbol` over `@codebase`. Broad retrieval is for "where is X".
 - Close files that are not part of the task.
 - Do not paste full folders or whole-repo dumps.
-- Trim tool output: failures and the relevant slice, not full passing logs.
+- Trim tool output: failures and the relevant slice, not full passing logs. No
+  opaque dumps. Prefer stable identifiers and counts over pasted blobs.
 
 ## Stay in the smart zone
 
@@ -47,6 +48,8 @@ Advice to the human and agent, not a hard pin.
 
 - Only enable MCP servers this project actually uses. Every connected server re-sends its manifest each turn.
 - Do not add MCP servers in this template by default.
+- Do not add a new MCP server or an ad-hoc helper script to “have a tool.”
+  Consolidate into an existing tool, or ask — a new shared util is a human decision.
 
 ## When to skip this skill
 

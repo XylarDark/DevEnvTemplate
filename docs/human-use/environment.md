@@ -1,14 +1,16 @@
-# Environment and verification (human-owned)
+# Environment and verification (human-owned) — Steer
 
-You own isolation and which command counts as evidence. The agent owns running that
-command and reporting counts. It does not invent a sandbox or a “linters are clean”
-stand-in. See [OWNERSHIP.md](OWNERSHIP.md).
+You own isolation, web reach, permission posture, and which command counts as
+evidence. That is the wheel: how far the agent may reach, and what counts as
+proof. The agent owns running that command and reporting counts. It does not
+invent a sandbox, an allowlist, or a “linters are clean” stand-in. See
+[OWNERSHIP.md](OWNERSHIP.md).
 
 ## Options the agent must offer
 
-When `Choice:` or the command is still blank:
+When `Choice:` or the command is still blank **for this task**:
 
-1. **Editor sandbox** + this repo’s default: `npm run verify` (settled) or
+1. **Editor sandbox** + this repo’s default (recommended): `npm run verify` (settled) or
    `npm run doctor '--' --fast` (shaping).
 2. **Multi-root workspace** — I’ll add the extra folder; agent waits until I say it is open.
 3. **Container** (Docker / Podman) — I’ll start it; agent waits.
@@ -49,3 +51,36 @@ Evidence the command must print (counts, not “passed”):
 ```
 (fill in)
 ```
+
+## Web reach (human-owned)
+
+Cursor has no first-party domain ACL. This is a policy the agent must obey: do not
+fetch or search off-list. Server reach is also [MCP hygiene](../guides/mcp-hygiene.md).
+
+The agent does **not** invent an allowlist.
+
+| Choice | Meaning |
+| ------ | ------- |
+| Unrestricted | Agent may fetch and search as the task needs |
+| Allowlist | Agent may fetch/search only the domains listed below |
+| Skip-web | Agent does not fetch or search the public web |
+
+```
+Choice: (unrestricted | allowlist | skip-web)
+Domains (if allowlist):
+```
+
+When this field is still blank, offer: (1) unrestricted, (2) I’ll paste an allowlist,
+(3) skip-web, (4) skip this field.
+
+## Permission posture (human-owned)
+
+Cursor's UI owns enforcement. The agent still follows this:
+
+- **Allow:** read, grep, glob, targeted file reads.
+- **Ask:** mutating shell, new MCP server, new shared util.
+
+A session keeps the posture it started with; do not silently widen it.
+
+Isolation products Cursor does not ship (AI-Jail, Codex kernel guard, Claude
+`/sandbox`): [cursor-cannot/environment-security.md](cursor-cannot/environment-security.md).

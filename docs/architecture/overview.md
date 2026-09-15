@@ -5,8 +5,8 @@ health, prescribes fixes, and keeps codebases sound while you code with LLMs. It
 **menu**, not a monolith — agent context, operational logs, a verification pattern,
 and the doctor are each adoptable alone. See [Adopt it in layers](../../README.md#adopt-it-in-layers).
 
-Humans keep this document true. Who owns the next step, and when the agent must stop
-for a decision: [human-use/OWNERSHIP.md](../human-use/OWNERSHIP.md)
+Humans keep this document true (taste). Who owns the next step — steer, taste, or
+test — and when the agent must stop: [human-use/OWNERSHIP.md](../human-use/OWNERSHIP.md)
 ([CYCLE.md](../human-use/CYCLE.md)).
 
 ## Directory structure
@@ -84,7 +84,7 @@ docs/
 ├── adr/
 ├── best-practices/
 ├── guides/
-├── human-use/          # Ownership split and cycle (OWNERSHIP.md, CYCLE.md)
+├── human-use/          # Steer / taste / test; cursor-cannot/ for PDF gaps
 ├── operational/
 ├── templates/          # Unity / Unreal stubs
 ├── archive/

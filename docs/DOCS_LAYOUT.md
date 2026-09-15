@@ -42,7 +42,7 @@ is written, not a new file at the root.
 | **deployment/**     | Release and infra docs                     | `*_DEPLOYMENT.md` (also matched by organizer)                                                      |
 | **api/**            | API design and references                  | `*_API.md`                                                                                         |
 | **best-practices/** | Per-stack practice guides                  | `python.md`, `nextjs.md`, `fastapi.md`, `deployment.md`                                            |
-| **human-use/**      | Human vs agent ownership and when to stop for a decision | [`OWNERSHIP.md`](human-use/OWNERSHIP.md), [`CYCLE.md`](human-use/CYCLE.md) |
+| **human-use/**      | Human jobs (steer, taste, test) and when to stop | [`OWNERSHIP.md`](human-use/OWNERSHIP.md), [`CYCLE.md`](human-use/CYCLE.md), [`cursor-cannot/`](human-use/cursor-cannot/README.md) |
 | **archive/**        | Superseded plans, RFCs, and release notes  | historical documents kept for provenance only                                                      |
 
 Create a subdirectory only when you have at least one document to place there, then add a row here.

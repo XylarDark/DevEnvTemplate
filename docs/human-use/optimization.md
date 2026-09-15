@@ -1,8 +1,9 @@
-# Optimization (human-owned numbers, then agent code)
+# Optimization (human-owned numbers, then agent code) — Test
 
-You own what to measure and which variant won. The agent owns the code change only
-after you paste numbers. It does not start a cycle here because the code “looks
-slow.” See [OWNERSHIP.md](OWNERSHIP.md).
+You own what to measure and which variant won. That is testing performance, not
+taste-by-eyeball. The agent owns the code change only after you paste numbers. It
+does not start a cycle here because the code “looks slow.” See
+[OWNERSHIP.md](OWNERSHIP.md).
 
 ## Options the agent must offer
 
@@ -38,3 +39,6 @@ A specific change grounded in the numbers above. Leave blank until you have them
 ```
 (fill in)
 ```
+
+Cursor has no profiler for this template:
+[cursor-cannot/optimization-refactor.md](cursor-cannot/optimization-refactor.md).

@@ -73,6 +73,16 @@ Independent worktrees or clones remove most of this, and are worth the setup whe
 work genuinely parallelizes. Prefer a worktree when another agent is already in the
 same checkout. The rules above are for when isolation was not used.
 
+## Isolated context, one-level delegation
+
+Independent subtasks get a **new chat or Task subagent** (isolated conversation
+history), not one giant thread. They share the filesystem, so the file-ownership
+rules above still apply.
+
+Do not chain coordinators: a planner must not spawn a planner that spawns another.
+One level of delegation. An adversarial or advisor pass is the optional Human Use
+review choice, not a nested coordinator.
+
 ## Work on a branch you created
 
 Do not implement on `main` or `master`. Create a `feat/`, `fix/`, `refactor/`,
@@ -131,3 +141,4 @@ agent will discover it the hard way too.
 - [ ] A pre-work baseline was recorded and is stated in the report
 - [ ] Shared tools were not edited while others were using them
 - [ ] Durable findings written to a file, not just reported in the session
+- [ ] Independent subtasks used a new chat or Task subagent; coordinators were not nested

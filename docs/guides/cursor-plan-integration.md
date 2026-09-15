@@ -1,10 +1,10 @@
 ﻿# Cursor Plan Integration
 
 Plan mode turns a request into a scoped change. CI does not enforce plans.
-[Ownership](../human-use/OWNERSHIP.md) is the split: **decisions are human,
-execution is agent.** The agent names the owner at the start of work **anywhere in
-the tree**. If a human decision is missing, it alerts and asks; it does not take
-that work on.
+[Ownership](../human-use/OWNERSHIP.md) is the split: **you steer, make taste, and
+test; the agent executes.** The agent names the job at the start of work **and at
+every fork**, anywhere in the tree, in any phase. If a human decision is missing,
+it alerts with a recommendation and asks; it does not take that work on.
 
 ## Workflow
 
@@ -25,8 +25,8 @@ No plan-only PR, stakeholder sign-off, or QA-lead gate. Indie / Actions free tie
 ```
 I need to implement [FEATURE NAME].
 
-Ownership: docs/human-use/OWNERSHIP.md. Decisions are mine; execution is yours.
-If a human decision is missing, name it, offer that file’s options, and stop.
+Ownership: docs/human-use/OWNERSHIP.md. I steer, make taste, and test; you execute.
+If a human decision is missing, name the job, recommend, offer that file’s options, and stop.
 
 If present, use:
 - .devenv/stack-report.json

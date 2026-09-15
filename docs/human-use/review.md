@@ -1,8 +1,8 @@
-# Review (human-owned)
+# Review (human-owned) — Test
 
-You own ship / no-ship. The agent owns graphs, complexity numbers, and verify
-evidence — not the sign-off. Do not read the diff as if a junior human wrote it.
-See [OWNERSHIP.md](OWNERSHIP.md).
+You own ship / no-ship. You test **outcomes** (graphs, complexity, the contract) —
+you do not read the diff as if a junior human wrote it. The agent supplies those
+artifacts; it does not tick sign-off. See [OWNERSHIP.md](OWNERSHIP.md).
 
 ## Options the agent must offer
 
@@ -59,3 +59,6 @@ Anything you would not ship:
 - [ ] Flows match the architecture
 - [ ] Test contract scenarios still describe the product
 - [ ] No new shared utility landed without approval
+
+Mutation testing, CRAP as CI, and a dependency-matrix product are **Cursor
+cannot**: [cursor-cannot/code-quality-review.md](cursor-cannot/code-quality-review.md).

@@ -30,7 +30,7 @@ subdirectory that fits, not to this root.
 | [guides/embedded-usage.md](guides/embedded-usage.md)             | Running as a vendored `.devenv/` directory.   |
 | [guides/docs-organization.md](guides/docs-organization.md)       | How the docs organizer moves files.           |
 | [operational/automation-gaps.md](operational/automation-gaps.md) | What cannot be automated, and why.            |
-| [human-use/](human-use/README.md)                                | Human vs agent ownership; agent alerts when a decision you own is missing. |
+| [human-use/](human-use/README.md)                                | Human as steer / taste / test; agent recommends and asks when a job you own is missing. |
 | [guides/mistake-patterns.md](guides/mistake-patterns.md)         | Recurring mistakes worth recognizing early.   |
 
 ## Decisions

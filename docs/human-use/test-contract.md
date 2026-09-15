@@ -1,4 +1,4 @@
-# Test contract (human-owned)
+# Test contract (human-owned) — Test
 
 You own what “done” means (scenarios, coverage, acceptance). The agent owns writing
 the tests *from those scenarios* and the product code. Feature work is user-flow
@@ -7,14 +7,17 @@ See [OWNERSHIP.md](OWNERSHIP.md).
 
 ## Options the agent must offer
 
-When no scenario has a real Given/When/Then (still the template stubs):
+When no scenario is decided **for this task** (still stubs, and not a one-line skip).
+Put any draft in the alert; do not write this file until I confirm.
 
-1. **I'll fill `test-contract.md` myself** — agent waits.
-2. **Dictate scenarios in chat** — agent restates them, I confirm, then it scribes.
-3. **Bug fix** — I'll name the broken behavior in one sentence; agent writes that
+1. **Accept or edit the agent’s restatement** (recommended for a new behavior) —
+   Given/When/Then taken from *my* request, not invented product goals.
+2. **I'll fill `test-contract.md` myself** — agent waits.
+3. **Dictate scenarios in chat** — agent restates them, I confirm, then it scribes.
+4. **Bug fix** — I'll name the broken behavior in one sentence; agent writes that
    failing test first and does not implement until it fails.
-4. **Existing suite is the contract** — no new scenarios; point at the tests to run.
-5. **Skip this gate** — no new behavior. Agent records the skip.
+5. **Existing suite is the contract** — no new scenarios; point at the tests to run.
+6. **Skip this gate** — no new behavior. Agent records the skip.
 
 ## Task type
 

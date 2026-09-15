@@ -1,8 +1,8 @@
-# Architecture (human-owned)
+# Architecture (human-owned) — Taste
 
 You own purpose, private knowledge, and vision. The agent owns flesh-out only after
-you decide (or skip). Blank fields are a missing **decision**, not a prompt to invent.
-See [OWNERSHIP.md](OWNERSHIP.md).
+you decide (or skip). Blank fields are a missing **taste** decision, not a prompt to
+invent. See [OWNERSHIP.md](OWNERSHIP.md).
 
 Unreal-specific notes (engine version, render pipeline, Data Assets, plugins, Epic
 C++) belong in [templates/unreal](../templates/unreal/README.md) and
@@ -11,13 +11,16 @@ Unity: [templates/unity](../templates/unity/README.md).
 
 ## Options the agent must offer
 
-When purpose is still `(fill in)` (and this is not a one-line skip):
+When purpose is not decided **for this task** (and this is not a one-line skip).
+Put any draft in the alert; do not write this file until I confirm.
 
-1. **I'll fill `architecture.md` myself** — agent waits.
-2. **Reuse existing architecture** — treat [docs/architecture/overview.md](../architecture/overview.md)
+1. **Accept or edit the agent’s draft** (recommended when the task is architectural) —
+   one-sentence purpose and map grounded in the files this task touches.
+2. **I'll fill `architecture.md` myself** — agent waits.
+3. **Reuse existing architecture** — treat [docs/architecture/overview.md](../architecture/overview.md)
    as the vision; I'll add only private knowledge in chat.
-3. **Dictate in chat** — agent restates my wording, I confirm, then it scribes into this file.
-4. **Skip this gate** — typo, one-file change, or I accept the current layout. Agent
+4. **Dictate in chat** — agent restates my wording, I confirm, then it scribes.
+5. **Skip this gate** — typo, one-file change, or I accept the current layout. Agent
    records the skip and does not tick the checklist.
 
 ## What is not on the public internet

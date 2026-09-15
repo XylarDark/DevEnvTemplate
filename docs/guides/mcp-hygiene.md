@@ -87,6 +87,10 @@ this file:
 - Re-read the entry after upgrading a server. A version bump can change `command` and `args`.
 - Remove servers you no longer use. Dormant entries are unreviewed attack surface.
 
+New MCP tools stay **ask / approve** (Claude Managed Agents default `always_ask`)
+until the human pre-approves that server. Do not treat a newly added server as
+auto-allow.
+
 ## Related
 
 - [`.cursor/mcp.json.example`](../../.cursor/mcp.json.example) — the template to copy
