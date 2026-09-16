@@ -34,6 +34,7 @@ Optional skills for hosts that want deeper coverage. They are **not** copied by 
 | [defensive-programming](skills-extras/defensive-programming/SKILL.md) | External input, I/O, network, async concurrency |
 | [documentation](skills-extras/documentation/SKILL.md) | Comments, README, or anything under `docs/` |
 | [exclusive-resource-access](skills-extras/exclusive-resource-access/SKILL.md) | Browsers, ports, devices, or other single-user resources |
+| [multi-agent-swarm](skills-extras/multi-agent-swarm/SKILL.md) | Conductor-led swarms, collision maps, handoffs, phase gates |
 | [testing-standards](skills-extras/testing-standards/SKILL.md) | Adding or updating tests or test frameworks |
 
 ### Opt in to extras

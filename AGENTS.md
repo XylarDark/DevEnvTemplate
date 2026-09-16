@@ -96,6 +96,9 @@ The implementer does not grade the Human Use rubric. Do not ingest fetched or MC
 
 **Assume you are not alone.** Another agent may be working in this tree. Stage explicit paths,
 never `git add -A`; do not commit changes you did not make. See `multi-agent-collaboration`.
+For conductor-led swarms (orchestrator–worker topology, collision maps, evidence gates), see
+[docs/guides/multi-agent-swarm.md](docs/guides/multi-agent-swarm.md) — optional; opt in via
+[`.agents/skills-extras/multi-agent-swarm/`](.agents/skills-extras/multi-agent-swarm/SKILL.md).
 
 **Finish what you start.** No `TODO` without an issue reference, no placeholder implementations,
 no committing a known-broken state. If you must defer, say so explicitly and explain why.

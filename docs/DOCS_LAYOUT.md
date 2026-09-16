@@ -31,7 +31,7 @@ is written, not a new file at the root.
 
 | Directory           | Purpose                                    | Examples                                                                                           |
 | ------------------- | ------------------------------------------ | -------------------------------------------------------------------------------------------------- |
-| **guides/**         | How-to and long-form guides                | `docs-organization.md`, tutorials                                                                  |
+| **guides/**         | How-to and long-form guides                | `docs-organization.md`, [`multi-agent-swarm.md`](guides/multi-agent-swarm.md), tutorials         |
 | **architecture/**   | System design, diagrams, ADR supplements   | diagrams, service boundaries                                                                       |
 | **adr/**            | Architecture Decision Records              | `001-use-postgres.md`                                                                              |
 | **runbooks/**       | Operational procedures, on-call steps      | deploy, rollback, incident response                                                                |

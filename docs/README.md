@@ -52,6 +52,7 @@ context; everything else in the agent layer loads on demand:
 | [`.cursor/agents/`](../.cursor/agents/)        | You invoke that subagent.                         |
 | [guides/mcp-hygiene.md](guides/mcp-hygiene.md) | You add or change an MCP server.                  |
 | [guides/cursor-plan-integration.md](guides/cursor-plan-integration.md) | Plan mode → Human Use contract → branch → verify. |
+| [guides/multi-agent-swarm.md](guides/multi-agent-swarm.md) | Optional conductor–worker swarm patterns (ownership, handoffs, gates). |
 
 ### Recommended host `AGENTS.md` shape
 
