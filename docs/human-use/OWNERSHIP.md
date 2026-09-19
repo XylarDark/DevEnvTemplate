@@ -83,6 +83,9 @@ After you pick: <what I do next; the next human fork if any>
 Put any draft **in the alert**, not in the file. Scribe after you confirm or edit.
 Use a structured multiple-choice tool when the environment has one, then **stop**.
 
+When the fork is a **taste limit** (would invent feel/purpose/next track), also follow
+[taste-gates.md](taste-gates.md) and the opt-in `taste-gate` skill: queue the ask, then stop.
+
 When the next step is **agent-owned** and no human decision is pending:
 
 ```

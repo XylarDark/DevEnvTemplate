@@ -17,6 +17,8 @@ uses the same three jobs as a feature cycle.
 Start here: **[OWNERSHIP.md](OWNERSHIP.md)** (jobs, split, alert shape). Then
 [CYCLE.md](CYCLE.md) (when a decision is due *for this task*).
 
+**Taste Gates** (detect → queue → ask → scribe → resume): [taste-gates.md](taste-gates.md) · opt-in skill `taste-gate` under `.agents/skills-extras/`.
+
 This is agentic engineering, not vibe coding. The model can leave the syntax. It
 cannot leave modular design, taste, or accountability.
 

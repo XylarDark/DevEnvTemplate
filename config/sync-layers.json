@@ -51,6 +51,11 @@
           "src": "docs/DOCS_LAYOUT.md",
           "kind": "file",
           "overwrite": false
+        },
+        {
+          "src": "docs/human-use/taste-gates.md",
+          "kind": "file",
+          "overwrite": false
         }
       ]
     },
