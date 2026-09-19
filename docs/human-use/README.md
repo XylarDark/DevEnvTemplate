@@ -19,6 +19,8 @@ Start here: **[OWNERSHIP.md](OWNERSHIP.md)** (jobs, split, alert shape). Then
 
 **Taste Gates** (detect → queue → ask → scribe → resume): [taste-gates.md](taste-gates.md) · opt-in skill `taste-gate` under `.agents/skills-extras/`.
 
+**Taste Profiler** (durable prefs; read before inventing): [taste-profiler.md](taste-profiler.md) · [taste-profile.md](taste-profile.md) · opt-in skill `taste-profiler`.
+
 This is agentic engineering, not vibe coding. The model can leave the syntax. It
 cannot leave modular design, taste, or accountability.
 
