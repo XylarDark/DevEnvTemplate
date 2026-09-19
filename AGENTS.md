@@ -1,3 +1,5 @@
+> **Product name:** **DevHarness** (repo historically DevEnvTemplate).
+
 # DevEnvTemplate — agent instructions
 
 DevEnvTemplate is the **doctor** for development environments: it diagnoses repository health,

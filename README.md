@@ -4,7 +4,7 @@
 [![Version](https://img.shields.io/github/package-json/v/XylarDark/DevEnvTemplate)](https://github.com/XylarDark/DevEnvTemplate)
 [![License](https://img.shields.io/github/license/XylarDark/DevEnvTemplate)](LICENSE)
 
-**A menu of development-environment layers, plus a doctor that tells you which ones you are missing.** DevEnvTemplate diagnoses repository health and ships the agent context, operational-memory and tooling layers that fix what it finds — so an AI assistant working in your repo spends its turns on your features instead of on broken tooling and stale instructions.
+**DevHarness** is a menu of development-environment layers, plus a doctor that tells you which ones you are missing.** DevEnvTemplate diagnoses repository health and ships the agent context, operational-memory and tooling layers that fix what it finds — so an AI assistant working in your repo spends its turns on your features instead of on broken tooling and stale instructions.
 
 ## What this is for
 

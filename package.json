@@ -1,9 +1,10 @@
 {
-  "name": "devenv-template",
+  "name": "devharness",
   "version": "3.0.0",
-  "description": "Doctor for your development environment - Diagnose, prescribe, and cure issues while coding with AI assistants",
+  "description": "DevHarness \u2014 doctor and agent-context layers for AI-assisted development (formerly DevEnvTemplate)",
   "bin": {
-    "devenv-init": "./scripts/init.js"
+    "devenv-init": "./scripts/init.js",
+    "devharness-init": "./scripts/init.js"
   },
   "scripts": {
     "prepare": "husky",
