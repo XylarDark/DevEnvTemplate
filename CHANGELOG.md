@@ -1,3 +1,9 @@
+## Unreleased
+
+### Changed
+
+- Product rename: **DevEnvTemplate** → **DevHarness** (`package.json` name `devharness`, `devharness-init` CLI alias). See [docs/DEVHARNESS_RENAME.md](docs/DEVHARNESS_RENAME.md).
+
 # Changelog
 
 All notable changes to DevEnvTemplate will be documented in this file.

@@ -6,7 +6,10 @@
 
 ---
 
-## Root (`docs/`) — entry points and indexes
+## Root
+
+| [DEVHARNESS_RENAME.md](DEVHARNESS_RENAME.md) | Product rename DevEnvTemplate → DevHarness |
+ (`docs/`) — entry points and indexes
 
 | File                                                         | Purpose                                              |
 | ------------------------------------------------------------ | ---------------------------------------------------- |
