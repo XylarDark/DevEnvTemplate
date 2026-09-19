@@ -1,5 +1,9 @@
 ## Unreleased
 
+### Added
+
+- **Taste Gates** — [docs/human-use/taste-gates.md](docs/human-use/taste-gates.md) + opt-in skill [`.agents/skills-extras/taste-gate`](.agents/skills-extras/taste-gate/SKILL.md): detect human taste limits, OWNERSHIP alert, queue, stop, scribe/resume. Proven in HomeWorld Docs/28.
+
 ### Changed
 
 - Product rename: **DevEnvTemplate** → **DevHarness** (`package.json` name `devharness`, `devharness-init` CLI alias). See [docs/DEVHARNESS_RENAME.md](docs/DEVHARNESS_RENAME.md).
