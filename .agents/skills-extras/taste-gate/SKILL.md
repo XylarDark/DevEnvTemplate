@@ -7,7 +7,7 @@ description: Use when the agent would invent product feel, purpose, architecture
 
 When the agent hits a **human taste limit**, stop inventing. Detect → alert → queue → stop. After the human answers, scribe and resume agent-owned work.
 
-**Canon:** [taste-gates.md](../../../docs/human-use/taste-gates.md) · [OWNERSHIP.md](../../../docs/human-use/OWNERSHIP.md) · [CYCLE.md](../../../docs/human-use/CYCLE.md)
+**Canon:** [taste-gates.md](../../../docs/human-use/taste-gates.md) · [taste-profile.md](../../../docs/human-use/taste-profile.md) · [OWNERSHIP.md](../../../docs/human-use/OWNERSHIP.md) · [CYCLE.md](../../../docs/human-use/CYCLE.md)
 
 ## When to load
 
@@ -25,6 +25,13 @@ Load this skill when **any** checkable heuristic below is true and undecided **f
 > **Localize on copy.** Hosts may keep a product track doc (e.g. HomeWorld `Docs/28_TASTE_GATES.md`) that lists the same heuristics with project paths. Prefer that doc when present; otherwise use this skill.
 
 ## Procedure
+
+### 0. Read profile
+
+Open [taste-profile.md](../../../docs/human-use/taste-profile.md) when present.
+
+- If the fork is **already covered** and this task is flesh-out only → follow the profile; do not invent.
+- If the fork **conflicts** or is an **open gap** → continue Detect → Alert → Queue; **stage** a candidate via [taste-profiler](../taste-profiler/SKILL.md).
 
 ### 1. Detect
 
@@ -77,7 +84,8 @@ When the human answers (chat pick, approve phrase, or dictate):
 
 1. Scribe confirmed taste into the file named in the alert (or the product track doc).
 2. Set queue entry `status` to `resolved`; note resolution in the handoff.
-3. Resume only **agent-owned** work named in `After you pick`.
+3. **Promote or reject** the staged profile candidate ([taste-profiler](../taste-profiler/SKILL.md)) when a session file is in use.
+4. Resume only **agent-owned** work named in `After you pick`.
 
 ## Gate template
 

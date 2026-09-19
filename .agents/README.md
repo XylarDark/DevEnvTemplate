@@ -36,6 +36,7 @@ Optional skills for hosts that want deeper coverage. They are **not** copied by 
 | [exclusive-resource-access](skills-extras/exclusive-resource-access/SKILL.md) | Browsers, ports, devices, or other single-user resources |
 | [multi-agent-swarm](skills-extras/multi-agent-swarm/SKILL.md) | Conductor-led swarms, collision maps, handoffs, phase gates |
 | [taste-gate](skills-extras/taste-gate/SKILL.md) | Would invent product feel, purpose, vision, or next track |
+| [taste-profiler](skills-extras/taste-profiler/SKILL.md) | Bootstrap / stage / promote durable taste profile |
 | [testing-standards](skills-extras/testing-standards/SKILL.md) | Adding or updating tests or test frameworks |
 
 ### Opt in to extras

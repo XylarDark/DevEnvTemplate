@@ -56,6 +56,16 @@
           "src": "docs/human-use/taste-gates.md",
           "kind": "file",
           "overwrite": false
+        },
+        {
+          "src": "docs/human-use/taste-profiler.md",
+          "kind": "file",
+          "overwrite": false
+        },
+        {
+          "src": "docs/human-use/taste-profile.md",
+          "kind": "file",
+          "overwrite": false
         }
       ]
     },
