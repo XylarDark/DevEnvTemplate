@@ -73,6 +73,13 @@ the regression is reintroduced.
 
 What the human will check besides the automated suite.
 
+For harness or visual work, name:
+
+- **Harness outcome** — expected three-state result (`pass` / `soft_fail` / `closed_fail`) from
+  automation, and which asserts must run after Arrange preflight.
+- **Human visual/taste stamp** — what you will eyeball or taste-gate that metrics cannot prove
+  (framing, composition, copy, feel). Harness green alone is not acceptance here.
+
 ```
 (fill in)
 ```

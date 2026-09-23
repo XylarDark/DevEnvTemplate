@@ -30,3 +30,22 @@ Human Use. Two pieces are **not** Cursor products.
 - **Steer:** if you want a competing model, you open that chat. The agent waits.
 - Do not add a mutation-testing CI job, a CRAP action, or a custom observability
   product to “close” this slice. Those are other Cursor-cannot files.
+
+## Harness Test responsibilities (portable)
+
+Stop **early victory** from metric proxies. The harness — scripts, reports, skills — must:
+
+1. **Arrange before Act** — preflight gates that block capture/run when `ready: false`, or
+   document **Harness exempt** where Arrange cannot apply.
+2. **Three-state outcomes** — `pass` / `soft_fail` / `closed_fail` (or equivalent). A harness
+   green is not a human visual or taste PASS.
+3. **Metric ≠ visual** — luminance, checksums, screenshot size, and DOM snapshots prove the
+   pipeline ran; framing, composition, and taste need a human stamp (see
+   [taste-gates.md](../taste-gates.md) when taste limits apply).
+
+Agents must record preconditions (content present, aim/focus, environment gates) in reports
+before Act. Empty or black output without that evidence is not grounds for **closed_fail**.
+
+Canonical checklist: [automation-harness.md](../../guides/automation-harness.md). Skills:
+`.agents/skills-extras/automation-standards` and `testing-standards` (opt in via
+[`.agents/README.md`](../../../.agents/README.md)).
