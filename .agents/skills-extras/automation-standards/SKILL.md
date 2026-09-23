@@ -71,3 +71,53 @@ so required-but-inaccessible settings stay visible and upgrade-safe.
 4. **Re-check on upgrades.** When upgrading the tool, SDK, or browser baseline,
    re-run the access check and update the gaps doc so stale assumptions do not
    linger.
+
+## Lead-correction → harness
+
+When Lead or a human corrects a **proven** miss (false PASS/FAIL with evidence),
+fold the lesson into the repo **immediately**: a blocking gate, an assert threshold,
+or one policy row — not a long runbook or chat-only rediscovery. Prefer compact hard
+rules; point to `docs/KNOWN_ERRORS.md` for episode detail.
+
+## Testing preconditions (automation side)
+
+Before Act/capture/run, automation must establish (and reports should record):
+
+1. Required content or assets present in the loaded environment.
+2. Focus, camera, or aim pointed at that content (when the workflow is visual).
+3. Environment gates match intent (mode, config, fixtures, lighting).
+
+Do not treat empty, black, or soft-reject output as **closed_fail** without that
+setup evidence in the report. Skipping preflight to save tokens is the anti-pattern.
+
+## Arrange before Act
+
+Prove, capture, and evidence scripts run an **Arrange/preflight** gate that can block
+Act when `ready: false`. If a module is exempt, document **Harness exempt** and why
+in that module’s doc or table — not only in chat.
+
+## Universal tooling gap checklist
+
+When automation needs capability the repo does not have yet, walk this ladder in order
+(any surface: API, CLI, GUI, CI, capture):
+
+1. **Docs-first** — vendor or pinned-version docs before inventing syntax, waits, or stacks.
+2. **Proven-results** — community or industry patterns that already work before custom ladders.
+3. **Rung-1 harden** — built-ins and tools already in the repo or host toolchain.
+4. **Dead-end research** — one bounded public research pass; log gaps in
+   `docs/operational/automation-gaps.md` before asking for new tooling.
+5. **Lead gates** — `APPROVE TOOL SCOUT` / `APPROVE TOOL BUILD` only; **no auto-install**
+   of third-party tools.
+
+Game-engine capture histories are **instances** of this ladder, not a separate policy.
+
+## Harness lifecycle patterns (stack-agnostic)
+
+- **Fixture lifecycle** — reseed, inventory, optional teardown; stamp what was applied in reports.
+- **Latent wait contracts** — explicit budgets; a wait miss classifies as soft_fail or closed_fail,
+  not an infinite hang.
+- **Readiness probe before Act** — fail with a clear blocked reason, not an import crash mid-run.
+- **Artifact stamps** — record paths and mtimes (or hashes) for outputs; optional fresh-prove purge
+  only at prove **start**, not mid-debug.
+
+Detail: [docs/guides/automation-harness.md](../../../docs/guides/automation-harness.md).

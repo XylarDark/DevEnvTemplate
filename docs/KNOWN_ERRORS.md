@@ -1,5 +1,17 @@
 # Known errors and fixes (team log)
 
+## Policy (always-on vs this file)
+
+| Tier | Where | Content |
+| ---- | ----- | ------- |
+| **Always-on** | Rules, skill bodies that load every turn, agent profile memory | **One line:** Cause → Avoid. No episode narratives. |
+| **This file** | `docs/KNOWN_ERRORS.md` | Symptom, cause, fix, prevention — retrieve when a failure matches. |
+| **Gaps** | `docs/operational/automation-gaps.md` | What automation cannot reach yet. |
+
+When promoting a lesson from prove work: compress to Cause→Avoid for always-on gates; cap new
+always-on rows — prefer an anchor link here (`#heading-slug`) over duplicating detail. Log
+along the way during debugging; write the full entry once the fix is verified.
+
 **Purpose:** One place to record **recurring** or **expensive** mistakes so the team and agents do not repeat them. Append new entries; do not delete history (strike through or add an “addressed” note if obsolete).
 
 **When to add an entry:** After you debug a non-obvious failure (build, CI, deploy, migration, flaky test) and have a verified fix.

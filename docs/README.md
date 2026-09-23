@@ -21,6 +21,7 @@ subdirectory that fits, not to this root.
 | [BEST-PRACTICES.md](BEST-PRACTICES.md)                           | Cross-cutting practices.                             |
 | [best-practices/](best-practices/)                               | Per-stack guides (Python, Next.js, FastAPI, deploy). |
 | [guides/tool-recommendations.md](guides/tool-recommendations.md) | Which tool to reach for.                             |
+| [guides/automation-harness.md](guides/automation-harness.md)       | Portable prove/capture harness: Arrange, three-state, metric≠visual. |
 
 ## Operating it
 

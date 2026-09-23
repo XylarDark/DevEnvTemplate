@@ -57,6 +57,40 @@ npm test -- --test-name-pattern="validates input"   # correct
 npm test --test-name-pattern="validates input"      # wrong: npm eats the flag
 ```
 
+## Preconditions before PASS/FAIL
+
+Before trusting automation output (or claiming PASS/FAIL in chat), verify in order:
+
+1. Required content or assets present in the loaded environment.
+2. Focus, camera, or aim on that content when the claim is visual.
+3. Environment gates match intent — record mode, config, and fixtures in the report.
+4. Then Act/capture/run and inspect output.
+
+Do not declare **closed_fail** from empty, black, or soft-reject output without setup
+evidence. Under-effort precondition skips are the anti-pattern.
+
+## Three-state outcomes
+
+Reports and harness JSON should use three states, not binary pass/fail:
+
+| State | Meaning |
+| ----- | ------- |
+| **pass** | Preconditions met; automated asserts satisfied. |
+| **soft_fail** | Harness/metrics OK but human visual or taste stamp still required (framing, composition). |
+| **closed_fail** | Hard precondition miss, readiness `false`, or assert threshold failed. |
+
+Equivalent labels (`blocked` / `in_progress` / `pass`) are fine if documented once.
+
+**Harness pass ≠ human PASS.** Metric or screenshot gates prove the pipeline ran; they do
+not prove framing, composition, or taste. Human eyeball or a taste-gate remains required
+for visual acceptance.
+
+## Metric proxy ≠ visual truth
+
+Automated signals — luminance, pixel percentage, checksum, file size, DOM text — are
+**harness signals only**. They do not replace human visual or taste judgment. A green
+metric with wrong framing is **soft_fail** until stamped.
+
 ## Structure: arrange, act, assert
 
 ```js
@@ -151,3 +185,8 @@ When a project has no test setup yet (this applies to host projects; this repo a
 - [ ] Error cases tested
 - [ ] Edge cases covered
 - [ ] Tests are readable and maintainable
+- [ ] Preconditions recorded before PASS/FAIL; three-state outcome when harness + human both apply
+- [ ] Visual claims separated from metric-only pass
+
+See [docs/guides/automation-harness.md](../../../docs/guides/automation-harness.md) for the
+full portable harness checklist (Arrange gates, tooling ladder, KNOWN_ERRORS tiering).
