@@ -2,6 +2,7 @@
 
 ### Added
 
+- **Architecture trade-offs** — [docs/architecture/tradeoffs.md](docs/architecture/tradeoffs.md) + standing prompt [tradeoff-analyst-brief.md](docs/architecture/tradeoff-analyst-brief.md) + opt-in skill [architecture-tradeoffs](.agents/skills-extras/architecture-tradeoffs/SKILL.md). Least-worst choices, not pattern fashion.
 - **Taste Gates** — [docs/human-use/taste-gates.md](docs/human-use/taste-gates.md) + opt-in skill [`.agents/skills-extras/taste-gate`](.agents/skills-extras/taste-gate/SKILL.md): detect human taste limits, OWNERSHIP alert, queue, stop, scribe/resume. Proven in HomeWorld Docs/28.
 - **Taste Profiler** — [docs/human-use/taste-profiler.md](docs/human-use/taste-profiler.md) + [taste-profile.md](docs/human-use/taste-profile.md) + opt-in skill [`.agents/skills-extras/taste-profiler`](.agents/skills-extras/taste-profiler/SKILL.md): durable prefs, session candidates, Lead-gated promote. Proven in HomeWorld Docs/29. Taste Gate reads profile first.
 - **Automation harness practices** (HomeWorld 2026-09-22 upstream) — [docs/guides/automation-harness.md](docs/guides/automation-harness.md); extended [automation-standards](.agents/skills-extras/automation-standards/SKILL.md) and [testing-standards](.agents/skills-extras/testing-standards/SKILL.md); [harness-engineering](docs/human-use/cursor-cannot/harness-engineering.md) Test responsibilities; KNOWN_ERRORS Cause→Avoid policy header; test-contract acceptance fields for three-state + human visual stamp.
