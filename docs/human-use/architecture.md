@@ -8,6 +8,10 @@ Non-trivial boundaries use [architecture/tradeoffs.md](../architecture/tradeoffs
 and the standing prompt [tradeoff-analyst-brief.md](../architecture/tradeoff-analyst-brief.md).
 Do not invent a characteristic this product did not ask for.
 
+Code inside a settled boundary uses [design-complexity.md](../architecture/design-complexity.md)
+and [design-complexity-brief.md](../architecture/design-complexity-brief.md).
+Working code is not the goal. A design that stays obvious under change is.
+
 Unreal-specific notes (engine version, render pipeline, Data Assets, plugins, Epic
 C++) belong in [templates/unreal](../templates/unreal/README.md) and
 [`.cursor/rules/21-unreal-engine.mdc`](../../.cursor/rules/21-unreal-engine.mdc).

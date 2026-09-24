@@ -61,6 +61,8 @@ does not: its source lives in `scripts/`, and tests live in `tests/unit/` and
 
 ## Function and class design
 
+Line caps and “one reason to change” are defaults for ordinary code. They lose when a split would make a shallow module or leak the same knowledge into two places. That test is [design-complexity.md](../../../docs/architecture/design-complexity.md).
+
 - One responsibility per function. 10–20 lines is ideal, 50 is the ceiling.
 - Prefer pure functions; extract complex logic into separately named functions.
 - A function should fit on one screen.

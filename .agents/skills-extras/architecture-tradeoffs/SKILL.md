@@ -29,3 +29,5 @@ Do not load for a typo, a one-file edit inside a settled boundary, or to propose
 6. Compare a MECE option set. Recommend the least-worst option and the downsides you accept.
 7. Draft an ADR (context, decision, alternatives, trade-offs, reversal trigger). Add a fitness check only where the boundary can silently regress.
 8. Leave open any consistency, money, legal, or SLA question the business has not answered.
+
+Once the quantum is fixed, design the code inside it with the [design-complexity](../design-complexity/SKILL.md) skill. Do not use this skill to split classes.

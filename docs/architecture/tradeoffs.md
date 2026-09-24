@@ -4,6 +4,7 @@ There is no best design for a novel boundary. The product of an architecture cho
 
 **Standing prompt (paste later):** [tradeoff-analyst-brief.md](tradeoff-analyst-brief.md).  
 **Skill (opt-in):** `.agents/skills-extras/architecture-tradeoffs`.  
+**Inside a quantum:** [design-complexity.md](design-complexity.md).  
 **Records:** [docs/adr/](../adr/).
 
 ## When to run the protocol
