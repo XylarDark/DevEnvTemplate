@@ -17,6 +17,7 @@ subdirectory that fits, not to this root.
 | Document                                                         | Contents                                             |
 | ---------------------------------------------------------------- | ---------------------------------------------------- |
 | [architecture/overview.md](architecture/overview.md)             | Module layout and the doctor pipeline.               |
+| [architecture/tradeoffs.md](architecture/tradeoffs.md)           | Least-worst trade-offs; link to the standing brief.  |
 | [architecture/tooling.md](architecture/tooling.md)               | Why the core is TypeScript, and performance levers.  |
 | [BEST-PRACTICES.md](BEST-PRACTICES.md)                           | Cross-cutting practices.                             |
 | [best-practices/](best-practices/)                               | Per-stack guides (Python, Next.js, FastAPI, deploy). |
