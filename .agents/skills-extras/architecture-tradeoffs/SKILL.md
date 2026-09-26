@@ -5,6 +5,8 @@ description: Use when choosing a module or service boundary, data ownership, reu
 
 # Architecture trade-offs
 
+**Subset of A–E:** prefer [architecture-trade-offs-design-depth](../architecture-trade-offs-design-depth/SKILL.md) when Layers C–E matter. Do not load this lean skill together with full A–E.
+
 There is no best design. Produce the least-worst option, name what it costs, and write it down.
 
 **Brief:** [tradeoff-analyst-brief.md](../../../docs/architecture/tradeoff-analyst-brief.md)  

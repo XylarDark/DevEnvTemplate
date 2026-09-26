@@ -22,6 +22,8 @@ security, multi-agent coordination, and token-efficient context — the minimum 
 
 ## Extras (`.agents/skills-extras/`)
 
+
+> Lean extras `architecture-tradeoffs` and `design-complexity` are **subsets of** `architecture-trade-offs-design-depth` (A–E). Do not load a lean skill together with full A–E.
 Optional skills for hosts that want deeper coverage. They are **not** copied by default and are
 **not** loaded until you opt in — keeping the dormant-skill surface small.
 
