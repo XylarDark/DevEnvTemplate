@@ -5,6 +5,8 @@ description: Use when designing or changing a module, public API, class split, o
 
 # Design complexity
 
+**Subset of A–E:** prefer [architecture-trade-offs-design-depth](../architecture-trade-offs-design-depth/SKILL.md) when Layers C–E matter. Do not load this lean skill together with full A–E.
+
 Working code is not the goal. A design that stays obvious under change is the goal.
 
 **Brief:** [design-complexity-brief.md](../../../docs/architecture/design-complexity-brief.md)  
