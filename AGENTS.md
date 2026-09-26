@@ -116,7 +116,7 @@ report a task complete. Keep only reusable, referenced tooling.
 cannot be scripted, record it in `docs/operational/automation-gaps.md` instead.
 
 **Plan multi-file work.** For changes spanning several modules, or that touch architecture or
-public APIs, propose a short plan before editing. See the `plan-first` skill. For boundaries, module APIs, data/replication, team ownership, or integration points, load the opt-in skill [architecture-trade-offs-design-depth](.agents/skills-extras/architecture-trade-offs-design-depth/SKILL.md) (Layers A–E). Copy it into `.agents/skills/` to enable; do not paste into this file.
+public APIs, propose a short plan before editing. See the `plan-first` skill. For boundaries, module APIs, data/replication, team ownership, or integration points, load the opt-in skill [architecture-trade-offs-design-depth](.agents/skills-extras/architecture-trade-offs-design-depth/SKILL.md) (Layers A–E; **writer**; canon blob `107a5118c95c1bf0b1b3d1755796632bff41b535`; see [SYNC.md](.agents/skills-extras/architecture-trade-offs-design-depth/SYNC.md)). Copy into `.agents/skills/` to enable; do not paste into this file.
 
 ## Development phase
 
