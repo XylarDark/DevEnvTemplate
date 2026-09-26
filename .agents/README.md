@@ -28,6 +28,7 @@ Optional skills for hosts that want deeper coverage. They are **not** copied by 
 | Skill | Trigger |
 | ----- | ------- |
 | [architecture-tradeoffs](skills-extras/architecture-tradeoffs/SKILL.md) | Module boundary, data ownership, or cross-quantum workflow |
+| [architecture-trade-offs-design-depth](skills-extras/architecture-trade-offs-design-depth/SKILL.md) | Full A–E architecture standard (Hard Parts + Ousterhout + DDIA + Team Topologies + Release It!) |
 | [design-complexity](skills-extras/design-complexity/SKILL.md) | Depth, hiding, and obviousness inside an already chosen boundary |
 | [automation-standards](skills-extras/automation-standards/SKILL.md) | Automation driving external tools, APIs, or CI |
 | [code-structure](skills-extras/code-structure/SKILL.md) | Modules, naming, file layout, performance budgets |
