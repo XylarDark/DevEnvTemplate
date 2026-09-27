@@ -24,6 +24,9 @@ subdirectory that fits, not to this root.
 | [best-practices/](best-practices/)                               | Per-stack guides (Python, Next.js, FastAPI, deploy). |
 | [guides/tool-recommendations.md](guides/tool-recommendations.md) | Which tool to reach for.                             |
 | [guides/automation-harness.md](guides/automation-harness.md)       | Portable prove/capture harness: Arrange, three-state, metric≠visual. |
+| [guides/pin-and-branch-hygiene.md](guides/pin-and-branch-hygiene.md) | Class D/S/C; PRs base master; never pin main; ALWAYSAPPLY N=3. |
+| [guides/research-prompt-contract.md](guides/research-prompt-contract.md) | Seven-heading Research paste; EXIT sections; Fitness A–D; ACCEPT. |
+| [guides/host-conductor-seats.md](guides/host-conductor-seats.md)   | Thin pointer: host Grok Bot seats; DET does not vendor them. |
 
 ## Operating it
 
