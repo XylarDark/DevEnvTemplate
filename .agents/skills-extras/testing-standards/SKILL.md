@@ -76,8 +76,8 @@ Reports and harness JSON should use three states, not binary pass/fail:
 | State | Meaning |
 | ----- | ------- |
 | **pass** | Preconditions met; automated asserts satisfied. |
-| **soft_fail** | Harness/metrics OK but human visual or taste stamp still required (framing, composition). |
-| **closed_fail** | Hard precondition miss, readiness `false`, or assert threshold failed. |
+| **soft_fail** | Harness/metrics OK but human visual or taste stamp still required (framing, composition); **or** pre-Act arrange block / `ready:false`. |
+| **closed_fail** | Hard assert threshold failed after Act (proved-wrong). |
 
 Equivalent labels (`blocked` / `in_progress` / `pass`) are fine if documented once.
 

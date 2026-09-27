@@ -34,7 +34,7 @@ is written, not a new file at the root.
 
 | Directory           | Purpose                                    | Examples                                                                                           |
 | ------------------- | ------------------------------------------ | -------------------------------------------------------------------------------------------------- |
-| **guides/**         | How-to and long-form guides                | `docs-organization.md`, [`multi-agent-swarm.md`](guides/multi-agent-swarm.md), tutorials         |
+| **guides/**         | How-to and long-form guides                | `docs-organization.md`, [`multi-agent-swarm.md`](guides/multi-agent-swarm.md), [`pin-and-branch-hygiene.md`](guides/pin-and-branch-hygiene.md), [`research-prompt-contract.md`](guides/research-prompt-contract.md), [`host-conductor-seats.md`](guides/host-conductor-seats.md), tutorials |
 | **architecture/**   | System design, diagrams, ADR supplements   | diagrams, service boundaries                                                                       |
 | **adr/**            | Architecture Decision Records              | `001-use-postgres.md`                                                                              |
 | **runbooks/**       | Operational procedures, on-call steps      | deploy, rollback, incident response                                                                |
