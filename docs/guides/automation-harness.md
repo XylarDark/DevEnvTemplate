@@ -43,8 +43,8 @@ Preflight returns `ready: true/false` and blocks Act when false. Exempt modules 
 | State | Meaning |
 | ----- | ------- |
 | `pass` | Preconditions + asserts satisfied. |
-| `soft_fail` | Harness OK; human visual/taste stamp still required. |
-| `closed_fail` | Precondition miss or hard assert failure. |
+| `soft_fail` | Harness OK but human visual/taste stamp still required; **or** pre-Act arrange block (`ready:false` / blocked) — not a closed FAIL. |
+| `closed_fail` | Proved-wrong after Act (hard assert failure). Precondition miss alone is not closed_fail. |
 
 ## 6. Metric ≠ visual
 
@@ -58,6 +58,7 @@ composition, and taste need human stamp (or [taste-gates](../human-use/taste-gat
 3. Rung-1 harden (built-ins, in-repo tools).
 4. Dead-end research + [automation-gaps.md](../operational/automation-gaps.md).
 5. Lead gates: `APPROVE TOOL SCOUT` / `APPROVE TOOL BUILD` — **no auto-install**.
+   Install waits host **`APPROVE TOOL BUILD`** (SCOUT first; no silent marketplace install).
 
 Preference order for *how* to automate (API → config → scripts → GUI) remains in
 automation-standards.
