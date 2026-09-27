@@ -27,6 +27,7 @@ subdirectory that fits, not to this root.
 | [guides/pin-and-branch-hygiene.md](guides/pin-and-branch-hygiene.md) | Class D/S/C; PRs base master; never pin main; ALWAYSAPPLY N=3. |
 | [guides/research-prompt-contract.md](guides/research-prompt-contract.md) | Seven-heading Research paste; EXIT sections; Fitness A–D; ACCEPT. |
 | [guides/host-conductor-seats.md](guides/host-conductor-seats.md)   | Thin pointer: host Grok Bot seats; DET does not vendor them. |
+| [guides/reading-canon.md](guides/reading-canon.md)                 | KEEP/CANDIDATE book+vendor pointers; seats do not ingest. |
 
 ## Operating it
 
