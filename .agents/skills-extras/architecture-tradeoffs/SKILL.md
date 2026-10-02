@@ -13,7 +13,7 @@ There is no best design. Produce the least-worst option, name what it costs, and
 **Harness defaults:** [tradeoffs.md](../../../docs/architecture/tradeoffs.md)  
 **ADRs:** `docs/adr/`
 
-> **Localize on copy.** Hosts keep their own quantum map. Do not invent characteristics the product vision did not ask for. If a driver is missing, ask and stop.
+> **Localize on copy.** Hosts keep their own quantum map. Do not invent characteristics the product vision did not ask for. If a driver is missing, or a design change would move this boundary, ask with the host scope-refinement protocol (Cursor question picker, max 2, then stop). Do not guess.
 
 ## When to load
 

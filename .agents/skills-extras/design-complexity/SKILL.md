@@ -19,7 +19,7 @@ Working code is not the goal. A design that stays obvious under change is the go
 
 A non-trivial module, API, class split, or error policy inside a quantum that is already decided.
 
-Do not load to choose a service boundary, and do not load for a typo.
+Do not load to choose a service boundary, and do not load for a typo. If a design change would redraw the module interface, ask with the host scope-refinement protocol before editing. Do not guess.
 
 ## Procedure
 

@@ -48,7 +48,7 @@ You are here: <task / path / shaping|settled>
 Why now: <what goes wrong if we skip or guess>
 I will not: <the feel/purpose/shape I must not invent>
 Recommend: <one option grounded in repo evidence, or "no evidence — skip">
-Need from you: <numbered options; recommended first; skip last>
+Need from you: Cursor structured question picker (recommended option first, Skip included). Do not paste a markdown menu. Shape and depth: the host scope-refinement protocol.
 After you pick: <what I do next; next human fork if any>
 ```
 

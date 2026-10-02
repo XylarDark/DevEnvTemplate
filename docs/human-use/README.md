@@ -21,6 +21,8 @@ Start here: **[OWNERSHIP.md](OWNERSHIP.md)** (jobs, split, alert shape). Then
 
 **Taste Profiler** (durable prefs; read before inventing): [taste-profiler.md](taste-profiler.md) · [taste-profile.md](taste-profile.md) · opt-in skill `taste-profiler`.
 
+**Scope refinement** (ask instead of guessing; design changes that move scope or architecture): [scope-refinement.md](scope-refinement.md) · opt-in skill `scope-refinement`.
+
 This is agentic engineering, not vibe coding. The model can leave the syntax. It
 cannot leave modular design, taste, or accountability.
 
